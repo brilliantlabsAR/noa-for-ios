@@ -11,6 +11,7 @@
 		351ABBA629D398E500A91567 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351ABBA529D398E500A91567 /* ContentView.swift */; };
 		351ABBA829D398E600A91567 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 351ABBA729D398E600A91567 /* Assets.xcassets */; };
 		351ABBAB29D398E600A91567 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 351ABBAA29D398E600A91567 /* Preview Assets.xcassets */; };
+		351ABBB329D3991000A91567 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 351ABBB229D3991000A91567 /* CoreBluetooth.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,9 @@
 		351ABBA529D398E500A91567 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		351ABBA729D398E600A91567 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		351ABBAA29D398E600A91567 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		351ABBB229D3991000A91567 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		351ABBB429D3991500A91567 /* a eye.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "a eye.entitlements"; sourceTree = "<group>"; };
+		351ABBB529D3992200A91567 /* a-eye-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "a-eye-Info.plist"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -26,6 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				351ABBB329D3991000A91567 /* CoreBluetooth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -37,6 +42,7 @@
 			children = (
 				351ABBA229D398E500A91567 /* a eye */,
 				351ABBA129D398E500A91567 /* Products */,
+				351ABBB129D3991000A91567 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -51,6 +57,8 @@
 		351ABBA229D398E500A91567 /* a eye */ = {
 			isa = PBXGroup;
 			children = (
+				351ABBB529D3992200A91567 /* a-eye-Info.plist */,
+				351ABBB429D3991500A91567 /* a eye.entitlements */,
 				351ABBA329D398E500A91567 /* a_eyeApp.swift */,
 				351ABBA529D398E500A91567 /* ContentView.swift */,
 				351ABBA729D398E600A91567 /* Assets.xcassets */,
@@ -65,6 +73,14 @@
 				351ABBAA29D398E600A91567 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		351ABBB129D3991000A91567 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				351ABBB229D3991000A91567 /* CoreBluetooth.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -264,12 +280,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "a eye/a eye.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"a eye/Preview Content\"";
 				DEVELOPMENT_TEAM = TWKJ9RPH32;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "a-eye-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -293,12 +311,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "a eye/a eye.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"a eye/Preview Content\"";
 				DEVELOPMENT_TEAM = TWKJ9RPH32;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "a-eye-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
