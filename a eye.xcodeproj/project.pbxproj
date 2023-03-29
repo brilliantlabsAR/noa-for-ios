@@ -12,6 +12,11 @@
 		351ABBA829D398E600A91567 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 351ABBA729D398E600A91567 /* Assets.xcassets */; };
 		351ABBAB29D398E600A91567 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 351ABBAA29D398E600A91567 /* Preview Assets.xcassets */; };
 		351ABBB329D3991000A91567 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 351ABBB229D3991000A91567 /* CoreBluetooth.framework */; };
+		354CD31129D4246C00E786E4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354CD31029D4246C00E786E4 /* ViewController.swift */; };
+		354CD31329D435A300E786E4 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354CD31229D435A300E786E4 /* SplashScreenView.swift */; };
+		354CD31529D4786E00E786E4 /* ApiKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354CD31429D4786D00E786E4 /* ApiKeys.swift */; };
+		354CD31729D478B500E786E4 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354CD31629D478B500E786E4 /* OpenAIService.swift */; };
+		354CD31A29D4799800E786E4 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 354CD31929D4799800E786E4 /* Alamofire */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +28,10 @@
 		351ABBB229D3991000A91567 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		351ABBB429D3991500A91567 /* a eye.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "a eye.entitlements"; sourceTree = "<group>"; };
 		351ABBB529D3992200A91567 /* a-eye-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "a-eye-Info.plist"; sourceTree = SOURCE_ROOT; };
+		354CD31029D4246C00E786E4 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		354CD31229D435A300E786E4 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
+		354CD31429D4786D00E786E4 /* ApiKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiKeys.swift; sourceTree = "<group>"; };
+		354CD31629D478B500E786E4 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,6 +40,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				351ABBB329D3991000A91567 /* CoreBluetooth.framework in Frameworks */,
+				354CD31A29D4799800E786E4 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,9 +68,13 @@
 			isa = PBXGroup;
 			children = (
 				351ABBB529D3992200A91567 /* a-eye-Info.plist */,
+				354CD31029D4246C00E786E4 /* ViewController.swift */,
 				351ABBB429D3991500A91567 /* a eye.entitlements */,
-				351ABBA329D398E500A91567 /* a_eyeApp.swift */,
 				351ABBA529D398E500A91567 /* ContentView.swift */,
+				354CD31429D4786D00E786E4 /* ApiKeys.swift */,
+				354CD31629D478B500E786E4 /* OpenAIService.swift */,
+				354CD31229D435A300E786E4 /* SplashScreenView.swift */,
+				351ABBA329D398E500A91567 /* a_eyeApp.swift */,
 				351ABBA729D398E600A91567 /* Assets.xcassets */,
 				351ABBA929D398E600A91567 /* Preview Content */,
 			);
@@ -99,6 +113,9 @@
 			dependencies = (
 			);
 			name = "a eye";
+			packageProductDependencies = (
+				354CD31929D4799800E786E4 /* Alamofire */,
+			);
 			productName = "a eye";
 			productReference = 351ABBA029D398E500A91567 /* a eye.app */;
 			productType = "com.apple.product-type.application";
@@ -127,6 +144,9 @@
 				Base,
 			);
 			mainGroup = 351ABB9729D398E500A91567;
+			packageReferences = (
+				354CD31829D4799800E786E4 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			productRefGroup = 351ABBA129D398E500A91567 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -153,8 +173,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				354CD31129D4246C00E786E4 /* ViewController.swift in Sources */,
 				351ABBA629D398E500A91567 /* ContentView.swift in Sources */,
 				351ABBA429D398E500A91567 /* a_eyeApp.swift in Sources */,
+				354CD31329D435A300E786E4 /* SplashScreenView.swift in Sources */,
+				354CD31529D4786E00E786E4 /* ApiKeys.swift in Sources */,
+				354CD31729D478B500E786E4 /* OpenAIService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,6 +305,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "a eye/a eye.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"a eye/Preview Content\"";
@@ -288,9 +313,12 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "a-eye-Info.plist";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Bluetooth access is requried to communicate with Monocle in the background.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Bluetooth access is requried to communicate with Monocle.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -300,6 +328,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "xyz.brilliantlabs.a-eye";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -312,6 +341,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "a eye/a eye.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"a eye/Preview Content\"";
@@ -319,9 +349,12 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "a-eye-Info.plist";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Bluetooth access is requried to communicate with Monocle in the background.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Bluetooth access is requried to communicate with Monocle.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -331,6 +364,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "xyz.brilliantlabs.a-eye";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -359,6 +393,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		354CD31829D4799800E786E4 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 5.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		354CD31929D4799800E786E4 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 354CD31829D4799800E786E4 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 351ABB9829D398E500A91567 /* Project object */;
 }

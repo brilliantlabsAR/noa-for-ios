@@ -11,7 +11,7 @@ import SwiftUI
 struct a_eyeApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SplashScreenView()
         }
     }
 }

@@ -1,7 +1,6 @@
-## User settings
+# User settings
 xcuserdata/
 
-### Xcode Patch ###
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj
 !*.xcodeproj/xcshareddata/
@@ -9,3 +8,6 @@ xcuserdata/
 !*.xcworkspace/contents.xcworkspacedata
 /*.gcno
 **/xcshareddata/WorkspaceSettings.xcsettings
+
+# Ignore API Keys
+ApiKeys.swift
