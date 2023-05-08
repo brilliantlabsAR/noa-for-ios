@@ -1,0 +1,42 @@
+PODS:
+  - Alamofire (5.6.4)
+  - GrowingTextView (0.7.2)
+  - IQKeyboardManagerSwift (6.5.11)
+  - ReachabilitySwift (3)
+  - SDWebImage (5.15.6):
+    - SDWebImage/Core (= 5.15.6)
+  - SDWebImage/Core (5.15.6)
+  - SwiftGifOrigin (1.7.0)
+  - SwiftyJSON (5.0.1)
+
+DEPENDENCIES:
+  - Alamofire
+  - GrowingTextView (= 0.7.2)
+  - IQKeyboardManagerSwift
+  - ReachabilitySwift (~> 3)
+  - SDWebImage
+  - SwiftGifOrigin (~> 1.7.0)
+  - SwiftyJSON
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - GrowingTextView
+    - IQKeyboardManagerSwift
+    - ReachabilitySwift
+    - SDWebImage
+    - SwiftGifOrigin
+    - SwiftyJSON
+
+SPEC CHECKSUMS:
+  Alamofire: 4e95d97098eacb88856099c4fc79b526a299e48c
+  GrowingTextView: 876bf42005b5e4a4fd740597db12caaf41f0fe6c
+  IQKeyboardManagerSwift: c7955c0bdbf7b2eb29bb7daaa44e3d90f55a9a85
+  ReachabilitySwift: f5b9bb30a0777fac8f09ce8b067e32faeb29bb64
+  SDWebImage: d47d81bea8a77187896b620dc79c3c528e8906b9
+  SwiftGifOrigin: fbd6cf37afcfcf97a5c3db996ddc0492e5c5c145
+  SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
+
+PODFILE CHECKSUM: b6e3f898e73776431810defd3d485fb3ec619d03
+
+COCOAPODS: 1.12.0
