@@ -13,22 +13,19 @@ import UIKit
 
 class ChatSendCell: UITableViewCell {
     @IBOutlet var lblSendTxt: UILabel!
+    @IBOutlet weak var lblTimeSentText: UILabel!
 }
 
 class ChatReceiveCell: UITableViewCell {
     @IBOutlet var lblReceiveTxt: UILabel!
+    @IBOutlet weak var lblTimeReceiveText: UILabel!
 }
-
-//    let rxCharacteristicUUID = CBUUID(string: "6e400003-b5a3-f393-e0a9-e50e24dcca9e")
-//    let txCharacteristicUUID = CBUUID(string: "6e400002-b5a3-f393-e0a9-e50e24dcca9e")
 
 class ChatDetailsViewController: UIViewController, CBPeripheralManagerDelegate, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     var peripheralManager: CBPeripheralManager?
     var peripheral: CBPeripheral?
     var periperalTXCharacteristic: CBCharacteristic?
     var cancellables = Set<AnyCancellable>()
-                                                
-    @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet var tableviewChat: UITableView!
     
     @IBOutlet var lblDeviceName: UILabel!
@@ -36,22 +33,18 @@ class ChatDetailsViewController: UIViewController, CBPeripheralManagerDelegate, 
     var arrSendChat = [String]()
     var arrReceiveChat = [String]()
     var chatMessages: [ChatMessage] = []
-    var messageText: String = "" // "Indian PM Name ?"
+    var messageText: String = ""
     let openAIService = OpenAIService()
-    // @State var cancellables = Set<AnyCancellable>()
     var listArray = [[String: String]]()
     var isOpenAI:Bool = true
     var isFastTime = false
     var timer = Timer()
-  
     var array = [String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         tableviewChat.delegate = self
         tableviewChat.dataSource = self
-        // self.tableviewChat.reloadData()
-        self.progressView.progress = Float(1.0)
         txtChat.returnKeyType = UIReturnKeyType.default
         txtChat.keyboardType = .default
         txtChat.autocorrectionType = .no
@@ -67,13 +60,13 @@ class ChatDetailsViewController: UIViewController, CBPeripheralManagerDelegate, 
     }
     
     @objc func appendRxDataToTextView(notification: Notification) {
-//        arrReceiveChat.append("\(notification.object!) \n")
         let a = "\n[Recv]: \(notification.object!) \n"
         print(a)
         if isFastTime == false{
             isFastTime = true
-            listArray.append(["text": "\(notification.object!)", "type": "recive"])
+            listArray.append(["text": "\(notification.object!)", "type": "recive" ,"time": chatTime()])
             tableviewChat.reloadData()
+            scrollToLastIndex()
             return
         }
         if isOpenAI == true{
@@ -81,49 +74,49 @@ class ChatDetailsViewController: UIViewController, CBPeripheralManagerDelegate, 
             isOpenAI = false
         }else{
             isOpenAI = true
-            listArray.append(["text": "\(notification.object!)", "type": "recive"])
-            var dialogMessage = UIAlertController(title: "recive", message: "\(notification.object!)", preferredStyle: .alert)
-            
-            // Create OK button with action handler
-            let ok = UIAlertAction(title: "OK", style: .default, handler: { (action) -> Void in
-                print("Ok button tapped")
-             })
-            
-            //Add OK button to a dialog message
-            dialogMessage.addAction(ok)
-            // Present Alert to
-            self.present(dialogMessage, animated: true, completion: nil)
+            listArray.append(["text": "\(notification.object!)", "type": "recive" ,"time": chatTime()])
             tableviewChat.reloadData()
+            scrollToLastIndex()
         }
-        // consoleTextView.text.append("\n[Recv]: \(notification.object!) \n")
     }
 
     func appendTxDataToTextView(String:String) {
-//        arrSendChat.append("\(String(txtChat.text!)) \n")
-        listArray.append(["text": "\(String)", "type": "sender"])
+        listArray.append(["text": "\(String)", "type": "sender", "time": chatTime()])
         tableviewChat.reloadData()
+        scrollToLastIndex()
+        
         let b = "\n[Sent]: \(String) \n"
         print(b)
     }
-    
+    func chatTime()-> String{
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm:ss a"
+        let date = formatter.string(from: Date())
+        return date
+    }
     @IBAction func btnBack(_ sender: Any) {
         navigationController?.popViewController(animated: true)
     }
     
     @IBAction func btnSend(_ sender: Any) {
-      //  appendTxDataToTextView()
-       // self.writeOutgoingValue(data: txtChat.text ?? "")
-         //sendMessage()
-       // let a = (50/100)
-       // progressView.progress = Float(a)
-
         let question = txtChat.text ?? ""
         self.timer = Timer.scheduledTimer(withTimeInterval: 4, repeats: true, block: { _ in
             self.appendTxDataToTextView(String: question)
             self.writeOutgoingValue(data: question)
             })
+        
     }
 
+    //MARK: - Function to scroll the table to bottom
+        @objc func scrollToLastIndex()
+        {
+            if self.listArray.count > 0
+            {
+                let indexP = IndexPath(row: (self.listArray.count - 1), section: 0)
+                self.tableviewChat.scrollToRow(at: indexP, at: .bottom, animated: false)
+            }
+        }
+    
     func sendGPTMessage(notification:Notification) {
         let myMessage = ChatMessage(id: UUID().uuidString, content: "\(notification.object!)", dateCreated: Date(), sender: .me)
         chatMessages.append(myMessage)
@@ -136,7 +129,6 @@ class ChatDetailsViewController: UIViewController, CBPeripheralManagerDelegate, 
             }
             let gptMessage = ChatMessage(id: response.id, content: textResponse, dateCreated: Date(), sender: .gpt)
             self.chatMessages.append(gptMessage)
-           // self.listArray.append(["text": textResponse, "type": "recive"])
             self.writeOutgoingValue(data: textResponse)
             self.tableviewChat.reloadData()
             self.txtChat.text = ""
@@ -181,12 +173,13 @@ class ChatDetailsViewController: UIViewController, CBPeripheralManagerDelegate, 
         if "\(listArray[indexPath.item]["type"] ?? "")" == "sender" {
             let cell = tableView.dequeueReusableCell(withIdentifier: "ChatSendCell", for: indexPath) as! ChatSendCell
             cell.lblSendTxt.text = "\(listArray[indexPath.item]["text"] ?? "")"
-           
+            cell.lblTimeSentText.text = "\(listArray[indexPath.item]["time"] ?? "")"
             cell.selectionStyle = .none
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "ChatReceiveCell", for: indexPath) as! ChatReceiveCell
             cell.lblReceiveTxt.text = "\(listArray[indexPath.item]["text"] ?? "")"
+            cell.lblTimeReceiveText.text = "\(listArray[indexPath.item]["time"] ?? "")"
             cell.selectionStyle = .none
             return cell
         }
@@ -194,27 +187,21 @@ class ChatDetailsViewController: UIViewController, CBPeripheralManagerDelegate, 
 
     // Write functions
     func writeOutgoingValue(data: String) {
-        //let cmdBytes: [UInt8] = [0x01]
         let cmdBytes1: [UInt8] = [0x04]
-      
-       // let cmd = Data(cmdBytes)
         let cmd1 = Data(cmdBytes1)
         
         var TxNotify: UInt8 = 0001
         let enableBytes = Data(bytes: &TxNotify, count: 8)
     
-       // let myStr = "import time\nwhile True:\n    print('\(data)')\n    time.sleep(5)"
+       //let myStr = "import time\nwhile True:\n    print('\(data)')\n    time.sleep(5)"
         let myStr = "print('\(data)')\n"
         
         let firstNBytes = Data(myStr.utf8)
 
         if let blePeripheral = BlePeripheral.connectedPeripheral {
             if let txCharacteristic = BlePeripheral.connectedTXChar {
-              //  blePeripheral.writeValue(cmd, for: txCharacteristic, type: .withResponse)
                 blePeripheral.writeValue(firstNBytes, for: txCharacteristic, type: .withResponse)
                 blePeripheral.writeValue(cmd1, for: txCharacteristic, type: .withResponse)
-              
-                // blePeripheral.setNotifyValue(true, for: txCharacteristic)
             }
         }
     }
@@ -222,14 +209,10 @@ class ChatDetailsViewController: UIViewController, CBPeripheralManagerDelegate, 
     func callOneTimewriteOutgoingValue() {
         let cmdBytes: [UInt8] = [0x01]
         let cmd = Data(cmdBytes)
-    
-       // let myStr = "import time\nwhile True:\n    print('\(data)')\n    time.sleep(5)"
-
         if let blePeripheral = BlePeripheral.connectedPeripheral {
             if let txCharacteristic = BlePeripheral.connectedTXChar {
                 blePeripheral.writeValue(cmd, for: txCharacteristic, type: .withResponse)
               
-                // blePeripheral.setNotifyValue(true, for: txCharacteristic)
             }
         }
     }
@@ -242,8 +225,6 @@ class ChatDetailsViewController: UIViewController, CBPeripheralManagerDelegate, 
 //    All of this needs to be tested in background mode
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-       // writeOutgoingValue(data: txtChat.text ?? "")
-       // appendTxDataToTextView()
         txtChat.resignFirstResponder()
         txtChat.text = ""
         return true

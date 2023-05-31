@@ -177,7 +177,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.lblBtName.text = "Unknown"
         } else {
             cell.lblBtName.text = peripheralFound.name! + " : \(rssiFound)"
-            // cell.rssiLabel.text = "RSSI: \(rssiFound)"
         }
         cell.selectionStyle = .none
         return cell
@@ -271,42 +270,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
         BlePeripheral.connectedService = services[0]
         Myservices = services[0]
-        sendData()
     }
-
-    func sendData() {
-        let RXCharacteristic = Myservices.characteristics?[0].uuid
-        // let TXCharacteristic
-
-        print(RXCharacteristic)
-    }
-
-//    func sendInitialCommand() {
-//        let cmdBytes: [UInt8] = [0x55, 0xe1, 0x00, 0x0a]
-//        let cmd = Data(cmdBytes)
-//        bluefruitPeripheral!.writeValue(cmd, for: txCharacteristic!, type: .withoutResponse)
-//    }
-//
-//    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-//        let rxCharacteristicUUID = CBUUID(string: "6e400003-b5a3-f393-e0a9-e50e24dcca9e")
-//        let txCharacteristicUUID = CBUUID(string: "6e400002-b5a3-f393-e0a9-e50e24dcca9e")
-//        for characteristic in service.characteristics! {
-//            if characteristic.uuid == rxCharacteristicUUID {
-//                rxCharacteristic = characteristic
-//                peripheral.setNotifyValue(true, for: rxCharacteristic!)
-//            } else if (characteristic.uuid == txCharacteristicUUID) {
-//                txCharacteristic = characteristic
-//            }
-//        }
-//        //sendInitialCommand()
-//        delayedConnection()
-//    }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         guard let characteristics = service.characteristics else {
             return
         }
-
         print("Found \(characteristics.count) characteristics.")
 
         for characteristic in characteristics {
@@ -332,7 +301,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
 
     @IBAction func btnTest(_ sender: Any) {}
-
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         var characteristicASCIIValue = NSString()
         guard characteristic == rxCharacteristic,
