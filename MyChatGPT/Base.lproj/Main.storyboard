@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="dem-8c-s7K">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="dem-8c-s7K">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -152,42 +153,32 @@
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="PSy-5z-QZZ">
                                 <rect key="frame" x="0.0" y="116" width="393" height="641"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatSendCell" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ChatSendCell" rowHeight="83" id="Bzc-ob-2tZ" customClass="ChatSendCell" customModule="MyChatGPT" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="50" width="393" height="83"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatSendCell" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ChatSendCell" id="Bzc-ob-2tZ" customClass="ChatSendCell" customModule="MyChatGPT" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="50" width="393" height="55"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Bzc-ob-2tZ" id="DSR-Es-995">
-                                            <rect key="frame" x="0.0" y="0.0" width="393" height="83"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="393" height="55"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BuQ-Cr-7kF">
-                                                    <rect key="frame" x="194" y="6" width="189" height="71"/>
+                                                    <rect key="frame" x="226" y="6" width="157" height="43"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="What is your name ?" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ixb-Ho-Ufz">
-                                                            <rect key="frame" x="10" y="14" width="141.33333333333334" height="18"/>
+                                                            <rect key="frame" x="10" y="12" width="138.66666666666666" height="18"/>
                                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="What is your name ?" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LWw-YG-ed1">
-                                                            <rect key="frame" x="11" y="39" width="141.66666666666666" height="18"/>
-                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                            <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                     </subviews>
                                                     <color key="backgroundColor" name="AccentColor"/>
                                                     <constraints>
-                                                        <constraint firstAttribute="trailing" secondItem="LWw-YG-ed1" secondAttribute="trailing" constant="36.333333333333343" id="AsG-hD-fS2"/>
-                                                        <constraint firstItem="Ixb-Ho-Ufz" firstAttribute="top" secondItem="BuQ-Cr-7kF" secondAttribute="top" constant="14" id="Bbn-ix-J1F"/>
-                                                        <constraint firstItem="LWw-YG-ed1" firstAttribute="top" secondItem="Ixb-Ho-Ufz" secondAttribute="bottom" constant="7" id="EHK-1x-MAb"/>
-                                                        <constraint firstAttribute="bottom" secondItem="LWw-YG-ed1" secondAttribute="bottom" constant="14" id="TNq-A3-l77"/>
-                                                        <constraint firstAttribute="trailing" secondItem="Ixb-Ho-Ufz" secondAttribute="trailing" constant="37.666666666666657" id="cHP-gQ-WZE"/>
-                                                        <constraint firstItem="LWw-YG-ed1" firstAttribute="leading" secondItem="BuQ-Cr-7kF" secondAttribute="leading" constant="11" id="ceU-BZ-r85"/>
-                                                        <constraint firstItem="Ixb-Ho-Ufz" firstAttribute="leading" secondItem="BuQ-Cr-7kF" secondAttribute="leading" constant="10" id="qk4-P7-2oK"/>
+                                                        <constraint firstAttribute="trailing" secondItem="Ixb-Ho-Ufz" secondAttribute="trailing" constant="8.3300000000000001" id="IW3-oa-vXA"/>
+                                                        <constraint firstItem="Ixb-Ho-Ufz" firstAttribute="leading" secondItem="BuQ-Cr-7kF" secondAttribute="leading" constant="10" id="f8A-sT-3FF"/>
+                                                        <constraint firstItem="Ixb-Ho-Ufz" firstAttribute="top" secondItem="BuQ-Cr-7kF" secondAttribute="top" constant="12" id="iiy-Zz-fsm"/>
+                                                        <constraint firstAttribute="bottom" secondItem="Ixb-Ho-Ufz" secondAttribute="bottom" constant="13" id="jsa-3d-Akk"/>
                                                     </constraints>
                                                     <userDefinedRuntimeAttributes>
                                                         <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -206,43 +197,32 @@
                                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <outlet property="lblSendTxt" destination="Ixb-Ho-Ufz" id="sKP-bb-PtR"/>
-                                            <outlet property="lblTXName" destination="LWw-YG-ed1" id="bfm-f6-IAm"/>
                                         </connections>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatReceiveCell" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ChatReceiveCell" id="UhA-v4-Pd4" customClass="ChatReceiveCell" customModule="MyChatGPT" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="133" width="393" height="83"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="ChatReceiveCell" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ChatReceiveCell" rowHeight="55" id="UhA-v4-Pd4" customClass="ChatReceiveCell" customModule="MyChatGPT" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="105" width="393" height="55"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="UhA-v4-Pd4" id="wqy-U8-IhK">
-                                            <rect key="frame" x="0.0" y="0.0" width="393" height="83"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="393" height="55"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DSg-3r-Vdf">
-                                                    <rect key="frame" x="10" y="6" width="189" height="71"/>
+                                                    <rect key="frame" x="10" y="6" width="185" height="43"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Name is Ayan Sarkar" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PUg-sa-kF1">
-                                                            <rect key="frame" x="10" y="14" width="169" height="18"/>
+                                                            <rect key="frame" x="10" y="14" width="165" height="17"/>
                                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                                            <color key="textColor" red="0.91436320540000005" green="0.91125053170000003" blue="0.91123270990000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Name is Ayan Sarkar" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="v1F-Xl-lBe">
-                                                            <rect key="frame" x="10" y="39" width="169" height="18"/>
-                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                            <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
                                                             <color key="textColor" red="0.91436320540000005" green="0.91125053170000003" blue="0.91123270990000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                     </subviews>
                                                     <color key="backgroundColor" red="0.18684279919999999" green="0.186640054" blue="0.19168967009999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
-                                                        <constraint firstAttribute="trailing" secondItem="v1F-Xl-lBe" secondAttribute="trailing" constant="10" id="3z3-AK-a0y"/>
-                                                        <constraint firstAttribute="bottom" secondItem="v1F-Xl-lBe" secondAttribute="bottom" constant="14" id="DK1-ph-xaz"/>
-                                                        <constraint firstItem="v1F-Xl-lBe" firstAttribute="leading" secondItem="DSg-3r-Vdf" secondAttribute="leading" constant="10" id="QPc-A7-Shx"/>
                                                         <constraint firstAttribute="trailing" secondItem="PUg-sa-kF1" secondAttribute="trailing" constant="10" id="Tup-50-yc1"/>
                                                         <constraint firstItem="PUg-sa-kF1" firstAttribute="top" secondItem="DSg-3r-Vdf" secondAttribute="top" constant="14" id="eWY-5J-6Ts"/>
                                                         <constraint firstItem="PUg-sa-kF1" firstAttribute="leading" secondItem="DSg-3r-Vdf" secondAttribute="leading" constant="10" id="fQS-WF-r4q"/>
-                                                        <constraint firstItem="v1F-Xl-lBe" firstAttribute="top" secondItem="PUg-sa-kF1" secondAttribute="bottom" constant="7" id="lcG-ia-tgu"/>
+                                                        <constraint firstAttribute="bottom" secondItem="PUg-sa-kF1" secondAttribute="bottom" constant="12" id="s6i-TI-Rkz"/>
                                                     </constraints>
                                                     <userDefinedRuntimeAttributes>
                                                         <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -260,7 +240,6 @@
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
-                                            <outlet property="lblRXName" destination="v1F-Xl-lBe" id="fic-nY-WvP"/>
                                             <outlet property="lblReceiveTxt" destination="PUg-sa-kF1" id="ogF-5b-aFy"/>
                                         </connections>
                                     </tableViewCell>
@@ -272,6 +251,7 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="L20-Pu-SWn"/>
                                 </constraints>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="18"/>
                                 <textInputTraits key="textInputTraits"/>
                                 <userDefinedRuntimeAttributes>
@@ -314,6 +294,14 @@
                                     <action selector="btnBack:" destination="0lZ-VL-rhH" eventType="touchUpInside" id="zUl-dp-5AT"/>
                                 </connections>
                             </button>
+                            <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.29999999999999999" translatesAutoresizingMaskIntoConstraints="NO" id="pAr-U5-TBZ">
+                                <rect key="frame" x="16" y="734" width="361" height="15"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="15" id="Zmh-bP-ehw"/>
+                                </constraints>
+                                <color key="progressTintColor" red="0.95584768060000003" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="trackTintColor" systemColor="systemGreenColor"/>
+                            </progressView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="aQ0-CF-ZV9"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -324,18 +312,22 @@
                             <constraint firstItem="KSt-ze-92H" firstAttribute="leading" secondItem="FGy-YT-dvT" secondAttribute="leading" constant="16" id="IX1-ck-dne"/>
                             <constraint firstItem="6jk-hu-yQS" firstAttribute="leading" secondItem="aQ0-CF-ZV9" secondAttribute="leading" constant="16" id="IXJ-Y9-ndD"/>
                             <constraint firstItem="GAx-sn-WUD" firstAttribute="leading" secondItem="aQ0-CF-ZV9" secondAttribute="leading" constant="39" id="QgH-mV-KG0"/>
-                            <constraint firstItem="6jk-hu-yQS" firstAttribute="top" secondItem="PSy-5z-QZZ" secondAttribute="bottom" constant="8" symbolic="YES" id="Rhq-R9-H8k"/>
                             <constraint firstItem="aQ0-CF-ZV9" firstAttribute="trailing" secondItem="GAx-sn-WUD" secondAttribute="trailing" constant="16" id="aUA-D7-XbE"/>
                             <constraint firstItem="GAx-sn-WUD" firstAttribute="top" secondItem="KSt-ze-92H" secondAttribute="bottom" constant="13.666666666666657" id="acU-6q-uTb"/>
                             <constraint firstItem="etg-v0-eVF" firstAttribute="leading" secondItem="6jk-hu-yQS" secondAttribute="trailing" constant="8" id="fab-Jl-fDu"/>
+                            <constraint firstItem="aQ0-CF-ZV9" firstAttribute="trailing" secondItem="pAr-U5-TBZ" secondAttribute="trailing" constant="16" id="nJ8-p3-C9i"/>
                             <constraint firstItem="aQ0-CF-ZV9" firstAttribute="trailing" secondItem="etg-v0-eVF" secondAttribute="trailing" constant="16" id="oAQ-lG-ssQ"/>
+                            <constraint firstItem="6jk-hu-yQS" firstAttribute="top" secondItem="PSy-5z-QZZ" secondAttribute="bottom" constant="8" symbolic="YES" id="rz5-0K-VMM"/>
                             <constraint firstItem="PSy-5z-QZZ" firstAttribute="top" secondItem="GAx-sn-WUD" secondAttribute="bottom" constant="5" id="scT-2h-oaG"/>
+                            <constraint firstItem="pAr-U5-TBZ" firstAttribute="leading" secondItem="aQ0-CF-ZV9" secondAttribute="leading" constant="16" id="tIT-nc-hhM"/>
+                            <constraint firstItem="6jk-hu-yQS" firstAttribute="top" secondItem="pAr-U5-TBZ" secondAttribute="bottom" constant="16" id="vvx-IW-Tcv"/>
                             <constraint firstItem="aQ0-CF-ZV9" firstAttribute="trailing" secondItem="PSy-5z-QZZ" secondAttribute="trailing" id="w6U-np-PV9"/>
                             <constraint firstItem="KSt-ze-92H" firstAttribute="top" secondItem="FGy-YT-dvT" secondAttribute="top" constant="43.333333333333336" id="zal-Ei-pNG"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="lblDeviceName" destination="GAx-sn-WUD" id="dgp-q6-oCQ"/>
+                        <outlet property="progressView" destination="pAr-U5-TBZ" id="Y9J-Jm-ahQ"/>
                         <outlet property="tableviewChat" destination="PSy-5z-QZZ" id="1PR-w3-nLm"/>
                         <outlet property="txtChat" destination="6jk-hu-yQS" id="JyD-FC-aPK"/>
                     </connections>
@@ -368,9 +360,6 @@
         <namedColor name="AccentColor">
             <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
         <systemColor name="systemGrayColor">
             <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>

@@ -8,9 +8,8 @@ target 'MyChatGPT' do
 pod 'Alamofire'
 pod 'IQKeyboardManagerSwift'
 pod 'SDWebImage' #5.9.5
-pod 'ReachabilitySwift', '~> 3'
-pod 'SwiftGifOrigin', '~> 1.7.0'
-pod 'GrowingTextView', '0.7.2'
+#pod 'ReachabilitySwift', '~> 3'
+pod 'SwiftyGif'
 pod 'SwiftyJSON'
 
 

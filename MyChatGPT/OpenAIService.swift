@@ -11,7 +11,7 @@ import Combine
 import SwiftyJSON
 
 
-let openAI = "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"
+let openAI = "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"
 class OpenAIService {
     let baseURL = "https://api.openai.com/v1/"
     
