@@ -168,61 +168,7 @@ class APIManager {
             }
         }
     }
-    
-//    static func callsendImageAPI(param: [String: Any], urlStr: String, arrImage: [UIImage], imageKey: String, onCompletion: @escaping (_ responseModel: ResponseModel) -> Void) {
-//        let urlStr = "\(SharedGlobalVariables.mainURL)\(urlStr)"
-//        guard let url = URL(string: urlStr) else {
-//            return
-//        }
-//        
-//        var urlRequest = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 10.0 * 1000)
-//        urlRequest.httpMethod = "POST"
-//        urlRequest.addValue("application/json", forHTTPHeaderField: "Accept")
-//        
-//        // Set Your Parameter
-//        let parameterDict = NSMutableDictionary()
-//        parameterDict.setValue(param["userId"], forKey: "userId")
-//        
-//        // Set Image Data
-//        let imgData = arrImage[0].jpegData(compressionQuality: 0.5)!
-//        
-//        // Now Execute
-//        AF.upload(multipartFormData: { multiPart in
-//            for (key, value) in parameterDict {
-//                if let temp = value as? String {
-//                    multiPart.append(temp.data(using: .utf8)!, withName: key as! String)
-//                } else if let temp = value as? Int {
-//                    multiPart.append("\(temp)".data(using: .utf8)!, withName: key as! String)
-//                } else if let temp = value as? NSArray {
-//                    temp.forEach { element in
-//                        let keyObj = key as! String + "[]"
-//                        if let string = element as? String {
-//                            multiPart.append(string.data(using: .utf8)!, withName: keyObj)
-//                        } else
-//                        if let num = element as? Int {
-//                            let value = "\(num)"
-//                            multiPart.append(value.data(using: .utf8)!, withName: keyObj)
-//                        }
-//                    }
-//                }
-//            }
-//            multiPart.append(imgData, withName: imageKey, fileName: "image.png", mimeType: strMimeType)
-//        }, with: urlRequest)
-//            .uploadProgress(queue: .main, closure: { progress in
-//                // Current upload progress of file
-//                print("Upload Progress: \(progress.fractionCompleted)")
-//            })
-//            .responseJSON { response in
-//            
-//                self.handleResponse(response: response) { responseM in
-//                    let responseMTemp = responseM
-//                    responseMTemp.strUrl = urlStr
-//                
-//                    onCompletion(responseMTemp)
-//                }
-//            }
-//    }
-    
+
     static func handleResponse(response: AFDataResponse<Any>, onCompletion: @escaping (_ responseModel: ResponseModel) -> Void)
     {
         let responseM = ResponseModel()

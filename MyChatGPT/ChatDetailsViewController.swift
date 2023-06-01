@@ -98,6 +98,7 @@ class ChatDetailsViewController: UIViewController, CBPeripheralManagerDelegate, 
         navigationController?.popViewController(animated: true)
     }
     
+    
     @IBAction func btnSend(_ sender: Any) {
         let question = txtChat.text ?? ""
         self.timer = Timer.scheduledTimer(withTimeInterval: 4, repeats: true, block: { _ in
