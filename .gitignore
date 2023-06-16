@@ -1,13 +1,28 @@
-# User settings
+###############################################################################
+# Python
+###############################################################################
+
+__pycache__
+
+###############################################################################
+# Xcode
+###############################################################################
+
+## User settings
 xcuserdata/
 
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcodeproj/xcshareddata/
-!*.xcodeproj/project.xcworkspace/
-!*.xcworkspace/contents.xcworkspacedata
-/*.gcno
-**/xcshareddata/WorkspaceSettings.xcsettings
+## Xcode 8 and earlier
+*.xcscmblueprint
+*.xccheckout
 
-# Ignore API Keys
-ApiKeys.swift
+###############################################################################
+# Misc.
+###############################################################################
+
+tmp/
+
+# Models
+*.bin
+
+# MacOS
+.DS_Store
