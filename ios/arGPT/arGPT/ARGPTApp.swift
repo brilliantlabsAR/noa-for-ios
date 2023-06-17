@@ -20,7 +20,6 @@ struct ARGPTApp: App {
     private let _m4aWriter = M4AWriter()
 
     @ObservedObject private var _bluetooth = BluetoothManager(
-        monoclePythonScript: Self.loadPythonScript(named: "MonocleApp"),
         autoConnectByProximity: true
     )
 
@@ -61,17 +60,6 @@ struct ARGPTApp: App {
 
     init() {
         _controller = Controller(settings: _settings, bluetooth: _bluetooth, messages: _chatMessageStore)
-    }
-
-    private static func loadPythonScript(named filename: String) -> String {
-        // Load source code from disk
-        let url = Bundle.main.url(forResource: filename, withExtension: "py")!
-        let data = try? Data(contentsOf: url)
-        guard let data = data,
-              let sourceCode = String(data: data, encoding: .utf8) else {
-            fatalError("Unable to load Monocle Python code from disk")
-        }
-        return sourceCode
     }
 
     /*

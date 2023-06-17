@@ -18,12 +18,45 @@ final class ARGPTTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    func testSerialStringMatcher() throws {
+        let matcher = Util.StreamingStringMatcher(lookingFor: "foobar")
+
+        XCTAssert(matcher.matchExists(afterAppending: "") == false)
+        XCTAssert(matcher.matchExists(afterAppending: "foobar") == true)
+
+        matcher.reset()
+
+        XCTAssert(matcher.matchExists(afterAppending: "fooba") == false)    // fooba
+        XCTAssert(matcher.matchExists(afterAppending: "foob") == false)     // foobafoob
+        XCTAssert(matcher.matchExists(afterAppending: "artichoke") == true) // foobafoobartichoke
+
+        matcher.reset()
+
+        XCTAssert(matcher.matchExists(afterAppending: "this is a string") == false)
+        XCTAssert(matcher.matchExists(afterAppending: "and foobar is embedded within") == true)
+
+        matcher.reset()
+
+        XCTAssert(matcher.matchExists(afterAppending: "this is a string") == false)
+        XCTAssert(matcher.matchExists(afterAppending: "foobarfoobar") == true)  // match first foobar
+        XCTAssert(matcher.matchExists(afterAppending: "blah") == true)          // match second foobar that we inserted earlier
+        XCTAssert(matcher.matchExists(afterAppending: "blah") == false)         // no more foobar left in buffer to match
+        XCTAssert(matcher.matchExists(afterAppending: "foobar") == true)
+
+        matcher.reset()
+
+        XCTAssert(matcher.matchExists(afterAppending: "this is a string") == false)
+        XCTAssert(matcher.matchExists(afterAppending: "foobar--foobar") == true)    // match first foobar
+        XCTAssert(matcher.matchExists(afterAppending: "blah") == true)              // match second foobar that we inserted earlier
+        XCTAssert(matcher.matchExists(afterAppending: "blah") == false)             // no more foobar left in buffer to match
+
+        matcher.reset()
+
+        XCTAssert(matcher.matchExists(afterAppending: "fffffffffff") == false)
+        XCTAssert(matcher.matchExists(afterAppending: "fffffffffff") == false)
+        XCTAssert(matcher.matchExists(afterAppending: "ffffoobarfffffoobarffff") == true)   // first foobar
+        XCTAssert(matcher.matchExists(afterAppending: "fffffffff") == true)                 // second foobar from above
+        XCTAssert(matcher.matchExists(afterAppending: "fffff") == false)
     }
 
     func testPerformanceExample() throws {

@@ -17,9 +17,18 @@ import CoreBluetooth
 class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     @Published public var discoveredDevices: [UUID] = []
     @Published public var isConnected = false
-    @Published public var monocleVoiceQuery = PassthroughSubject<AVAudioPCMBuffer, Never>() // PCM buffer containing voice query
-    @Published public var monocleTranscriptionAck = PassthroughSubject<UUID, Never>()       // transcription acknowledgment, signal for iOS app to send to ChatGPT
-    @Published public var connectedDeviceID: UUID?
+
+    /// Monocle connected
+    @Published var peripheralConnected = PassthroughSubject<UUID, Never>()
+
+    /// Monocle disconnected
+    @Published var peripheralDisconnected = PassthroughSubject<Void, Never>()
+
+    /// Data received from Monocle on serial TX characteristic
+    @Published var serialDataReceived = PassthroughSubject<Data, Never>()
+
+    /// Data received from Monocle on data TX characteristic
+    @Published var dataReceived = PassthroughSubject<Data, Never>()
 
     /// Sets the device ID to automatically connect to. This is kept separate from
     /// connectedDeviceID to avoid an infinite publishing loop from here -> Settings -> here when
@@ -30,14 +39,11 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                 // We have a connected peripheral. See if desired device ID changed and if so,
                 // disconnect.
                 if selectedDeviceID != connectedPeripheral.identifier {
-                    _manager.cancelPeripheralConnection(connectedPeripheral)
-                    connectedDeviceID = nil
+                    _manager.cancelPeripheralConnection(connectedPeripheral)    // should cause disconnect event
                 }
             }
         }
     }
-
-    private let _monoclePythonScript: Data
 
     private let _monocleSerialServiceUUID = CBUUID(string: "6e400001-b5a3-f393-e0a9-e50e24dcca9e")
     private let _serialRxCharacteristicUUID = CBUUID(string: "6e400002-b5a3-f393-e0a9-e50e24dcca9e")
@@ -73,18 +79,34 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     private var _dataRx: CBCharacteristic?
     private var _dataTx: CBCharacteristic?
 
-    private var _waitingForMicroPython = true
+    private var _didSendConnectedEvent = false
 
-    private var _audioData = Data()
-
-    public init(monoclePythonScript: String, autoConnectByProximity: Bool) {
-        _monoclePythonScript = monoclePythonScript.data(using: .utf8)!
+    public init(autoConnectByProximity: Bool) {
         _allowAutoConnectByProximity = autoConnectByProximity
 
         super.init()
 
         // Ensure manager is instantiated; all logic will then be driven by centralManagerDidUpdateState()
         _ = _manager
+    }
+
+    public func sendSerialData(_ data: Data) {
+        // Transmit on serial RX
+        guard let rx = _serialRx,
+              let connectedPeripheral = _connectedPeripheral else {
+            return
+        }
+        writeData(data, for: rx, peripheral: connectedPeripheral)
+        print("[BluetoothManager] Sent \(data.count) bytes on SerialRx")
+    }
+
+    public func sendData(_ data: Data) {
+        // Transmit on data RX
+        guard let rx = _dataRx,
+              let connectedPeripheral = _connectedPeripheral else {
+            return
+        }
+        writeData(data, for: rx, peripheral: connectedPeripheral)
     }
 
     public func sendToMonocle(transcriptionID: UUID) {
@@ -131,13 +153,13 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         _serialRx = nil
         _dataTx = nil
         _dataRx = nil
-        _waitingForMicroPython = true
 
         // No need to continue scanning
         _manager.stopScan()
 
-        // Broadcast
-        connectedDeviceID = peripheral.identifier
+        // We do not send the connection event just yet here. We wait for all characteristics to be
+        // obtained before doing so
+        _didSendConnectedEvent = false
     }
 
     private func forgetPeripheral() {
@@ -147,8 +169,9 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         _serialRx = nil
         _dataTx = nil
         _dataRx = nil
-        _waitingForMicroPython = true
-        connectedDeviceID = nil
+
+        peripheralDisconnected.send()
+        _didSendConnectedEvent = false
     }
 
     private func forgetCharacteristics() {
@@ -219,8 +242,6 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     }
 
     private func saveCharacteristics(of service: CBService) {
-        forgetCharacteristics()
-
         guard let peripheral = _connectedPeripheral else { return }
 
         if let characteristics = service.characteristics {
@@ -236,7 +257,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                     print("[BluetoothManager] Obtained SerialRx")
 
                     // Once we have serial RX, transmit program to Monocle
-                    transmitMonocleProgram()
+                    //transmitMonocleProgram()
                 }
 
                 if characteristic.uuid == _dataTxCharacteristicUUID {
@@ -251,29 +272,13 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                 }
             }
         }
-    }
 
-    // MARK: MicroPython script transmission
-
-    private func transmitMonocleProgram() {
-        guard let connectedPeripheral = _connectedPeripheral,
-              let serialRx = _serialRx else {
-            return
+        // Send connection event when all characteristics obtained
+        let haveAllCharacteristics = _serialTx != nil && _serialRx != nil && _dataTx != nil && _dataRx != nil
+        if haveAllCharacteristics, !_didSendConnectedEvent {
+            peripheralConnected.send(peripheral.identifier)
+            _didSendConnectedEvent = true
         }
-
-        print("[BluetoothManager] Write length = \(connectedPeripheral.maximumWriteValueLength(for: .withoutResponse))")
-
-        let rawREPLCommandCode = Data([ 0x03, 0x03, 0x01 ]) // ^C (kill current), ^C (again to be sure), ^A (raw REPL mode)
-        let endOfTransmission = Data([ 0x0a, 0x04 ])        // \n, ^D
-        var data = Data()
-        data.append(rawREPLCommandCode)
-        data.append(_monoclePythonScript)
-        data.append(endOfTransmission)
-
-        Util.hexDump(data)
-
-        writeData(data, for: serialRx, peripheral: connectedPeripheral)
-        print("[BluetoothManager] Sent Monocle script: \(data.count) bytes")
     }
 
     // MARK: Helpers
@@ -465,82 +470,13 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         }
 
         if characteristic.uuid == _serialTxCharacteristicUUID {
-            // Received value on serial service
-            print("[BluetoothManager] Received SerialTx value!")
             if let value = characteristic.value {
-                let str = String(decoding: value, as: UTF8.self)
-                print("[BluetoothManager] SerialTx value UTF-8 from Monocle: \(str)")
-
-                // Check for MicroPython
-                if _waitingForMicroPython, str.count >= 4 {
-                    let last3Idx = str.index(str.endIndex, offsetBy: -4)
-                    let last3Chars = String(str[last3Idx...])
-                    if last3Chars == ">>> " {
-                        print("[BluetoothManager] MicroPython detected")
-                        _waitingForMicroPython = false
-
-                        // Monocle program used to be transmitted here but this can create a race.
-                        // It has been observed that this callback can fire before the SerialRx
-                        // characteristic is available, making it impossible for program to be
-                        // transmitted at this time.
-                    }
-                }
-
-            } else {
-                print("[BluetoothManager] Error: Unable to access SerialTx value!")
+                serialDataReceived.send(value)
             }
         } else if characteristic.uuid == _dataTxCharacteristicUUID {
-            print("[BluetoothManager] Received DataTx value!")
-            if let value = characteristic.value, value.count >= 4 {
-                let command = String(decoding: value[0..<4], as: UTF8.self)
-                print("[BluetoothManager] DataTx value UTF-8 from Monocle: \(command)")
-
-                // Handle messages from Monocle app
-                if command.starts(with: "ast:") {
-                    // Delete currently stored audio and prepare to receive new audio sample over
-                    // multiple packets
-                    print("[BluetoothManager] Received audio start command")
-                    _audioData.removeAll(keepingCapacity: true)
-                } else if command.starts(with: "dat:") {
-                    // Append audio data
-                    print("[BluetoothManager] Received audio data packet (\(value.count - 4) bytes)")
-                    _audioData.append(value[4...])
-                } else if command.starts(with: "aen:") {
-                    // Audio finished, submit for transcription
-                    print("[BluetoothManager] Received complete audio buffer (\(_audioData.count) bytes)")
-                    if _audioData.count.isMultiple(of: 2) {
-                        convertAudioToLittleEndian()
-                        if let pcmBuffer = AVAudioPCMBuffer.fromMonoInt16Data(_audioData, sampleRate: 16000) {
-                            monocleVoiceQuery.send(pcmBuffer)
-                        } else {
-                            print("[BluetoothManager] Error: Unable to convert audio data to PCM buffer")
-                        }
-                    } else {
-                        print("[BluetoothManager] Error: Audio buffer is not a multiple of two bytes")
-                    }
-                } else if command.starts(with: "pon:") {
-                    // Transcript acknowledgment
-                    print("[BluetoothManager] Received pong (transcription acknowledgment)")
-                    let uuidStr = String(decoding: value[4...], as: UTF8.self)
-                    if let uuid = UUID(uuidString: uuidStr) {
-                        monocleTranscriptionAck.send(uuid)
-                    }
-                }
-            } else {
-                print("[BluetoothManager] Error: Unable to access DataTx value!")
+            if let value = characteristic.value {
+                dataReceived.send(value)
             }
-        }
-    }
-
-    // MARK: Audio Buffer Manipulation
-
-    private func convertAudioToLittleEndian() {
-        var idx = 0
-        while (idx + 2) <= _audioData.count {
-            let msb = _audioData[idx]
-            _audioData[idx] = _audioData[idx + 1]
-            _audioData[idx + 1] = msb
-            idx += 2
         }
     }
 }
