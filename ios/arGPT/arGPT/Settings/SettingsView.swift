@@ -20,15 +20,6 @@ struct SettingsView: View {
     // Observe Monocle devices
     @Binding private var _discoveredDevices: [UUID]
 
-//    private var _fakeDevices: [UUID] = {
-//        var devices: [UUID] = []
-//        let numDevices = 10
-//        for i in 0..<numDevices {
-//            devices.append(UUID())
-//        }
-//        return devices
-//    }()
-
     // Monocle connection state
     @Binding private var _isMonocleConnected: Bool
 
@@ -109,6 +100,26 @@ struct SettingsView: View {
                                     label: { Text("Forget") }
                                 )
                                 Spacer()
+                            }
+                        }
+                    }
+
+                    // Privacy section
+                    Section(header: Text("Privacy")) {
+                        Link(destination: URL(string: "https://brilliant.xyz/pages/privacy-policy")!) {
+                            HStack {
+                                Image(systemName: "link")
+                                Text("Privacy Policy")
+                            }
+                        }
+                    }
+
+                    // Legal section
+                    Section(header: Text("Legal")) {
+                        Link(destination: URL(string: "https://brilliant.xyz/pages/terms-conditions")!) {
+                            HStack {
+                                Image(systemName: "link")
+                                Text("Terms and Conditions")
                             }
                         }
                     }
