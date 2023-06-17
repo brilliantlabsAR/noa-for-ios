@@ -13,6 +13,7 @@ extension Util {
     class StreamingStringMatcher {
         private var _str = ""
         private let _target: String
+        private var _charactersProcessed = 0
 
         init(lookingFor substring: String) {
             assert(substring.count >= 1)
@@ -22,6 +23,12 @@ extension Util {
         /// Resets the matcher state by purging all accumulated data.
         public func reset() {
             _str = ""
+            _charactersProcessed = 0
+        }
+
+        /// Number of characters processed so far since initialization or last reset.
+        public var charactersProcessed: Int {
+            return _charactersProcessed
         }
 
         /// Ingests and appends string data and checks for a match in the current accumulated buffer.
@@ -32,6 +39,7 @@ extension Util {
         /// calls will return true until all of the substrings are accounted for.
         public func matchExists(afterAppending str: String) -> Bool {
             _str += str
+            _charactersProcessed += str.count
 
             // Look for possible substring match by locating the first character of the target string
             // inside the accumulated string

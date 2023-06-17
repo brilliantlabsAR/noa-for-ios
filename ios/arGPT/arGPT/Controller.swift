@@ -7,6 +7,7 @@
 
 import AVFoundation
 import Combine
+import CryptoKit
 import Foundation
 
 class Controller {
@@ -19,6 +20,7 @@ class Controller {
     private enum State {
         case disconnected
         case waitingForRawREPL
+        case waitingForARGPTVersion
         case transmitingFiles
         case running
     }
@@ -26,6 +28,8 @@ class Controller {
     private var _state = State.disconnected
     private var _matcher: Util.StreamingStringMatcher?
     private var _filesToTransmit: [(String, String)] = []
+    private var _filesVersion: String?
+    private var _receivedVersionResponse = ""
     private var _audioData = Data()
 
     private let _m4aWriter = M4AWriter()
@@ -92,6 +96,8 @@ class Controller {
             switch _state {
             case .waitingForRawREPL:
                 onWaitForRawREPLState(receivedString: str)
+            case .waitingForARGPTVersion:
+                onWaitForVersionString(receivedString: str)
             case .transmitingFiles:
                 onTransmittingFilesState(receivedString: str)
             case .running:
@@ -140,10 +146,47 @@ class Controller {
         if _matcher!.matchExists(afterAppending: str) {
             print("[Controller] Raw REPL detected")
             _matcher = nil
-            _filesToTransmit = loadFilesForTransmission()
+
+            // Next, load files up and check for version
+            let (filesToTransmit, version) = loadFilesForTransmission()
+            _filesToTransmit = filesToTransmit
+            _filesVersion = version
+            _receivedVersionResponse = ""
+            transmitVersionCheck()
+            _state = .waitingForARGPTVersion
+        }
+    }
+
+    private func onWaitForVersionString(receivedString str: String) {
+        // Result of print(ARGPT_VERSION) comes across as: OK<ARGPT_VERSION>\r\n^D^D>
+        // We therefore manually check for '>'. If it comes across before the string matcher has
+        // seen the desired version number, we assume it has failed.
+        guard let expectedVersion = _filesVersion else {
+            print("[Controller] Internal error: Waiting for version state but no version set! Cannot proceed.")
+            return
+        }
+
+        if _matcher == nil {
+            _matcher = Util.StreamingStringMatcher(lookingFor: expectedVersion)
+        }
+
+        if _matcher!.matchExists(afterAppending: str) {
+            print("[Controller] App already running on Monocle!")
+            _matcher = nil
+            startAppAndEnterRunningState()
+            return
+        }
+
+        let expectedResponseLength = 2 + expectedVersion.count  // "OK" + version
+        if str.contains(">") || _matcher!.charactersProcessed >= expectedResponseLength {
+            print("[Controller] App not running on Monocle. Will transmit files.")
+            _matcher = nil
             transmitNextFile()
             _state = .transmitingFiles
+            return
         }
+
+        print("[Controller] Continuing to wait for version string...")
     }
 
     private func onTransmittingFilesState(receivedString str: String) {
@@ -158,8 +201,7 @@ class Controller {
                 transmitNextFile()
             } else {
                 print("[Controller] All files written. Starting program...")
-                _bluetooth.sendSerialData(Data([ 0x04 ]))   // ^D to start app
-                _state = .running
+                startAppAndEnterRunningState()
             }
         }
     }
@@ -168,7 +210,17 @@ class Controller {
         _bluetooth.sendSerialData(Data([ 0x03, 0x03, 0x01 ]))   // ^C (kill current), ^C (again to be sure), ^A (raw REPL mode)
     }
 
-    private func loadFilesForTransmission() -> [(String, String)] {
+    private func transmitVersionCheck() {
+        // Send version check command
+        let command = "print(ARGPT_VERSION)".data(using: .utf8)!
+        var data = Data()
+        data.append(command)
+        data.append(Data([ 0x04 ])) // ^D to execute the command
+        _bluetooth.sendSerialData(data)
+    }
+
+    private func loadFilesForTransmission() -> ([(String, String)], String) {
+        // Load up all the files
         let basenames = [ "states", "graphics", "main" ]
         var files: [(String, String)] = []
         for basename in basenames {
@@ -178,7 +230,18 @@ class Controller {
             files.append((filename, escapedContents))
         }
         assert(files.count >= 1 && files.count == basenames.count)
-        return files
+
+        // Compute a unique version string based on file contents
+        let version = generateProgramVersionString(for: files)
+
+        // Insert that version string into main.py
+        for i in 0..<files.count {
+            if files[i].0 == "main.py" {
+                files[i].1 = "ARGPT_VERSION=\"\(version)\"\n" + files[i].1
+            }
+        }
+
+        return (files, version)
     }
 
     private func loadPythonScript(named basename: String) -> String {
@@ -189,6 +252,20 @@ class Controller {
             fatalError("Unable to load Monocle Python code from disk")
         }
         return sourceCode
+    }
+
+    private func generateProgramVersionString(for files: [(String, String)]) -> String {
+        let concatenatedScripts = files.reduce(into: "") { concatenated, fileItem in
+            let (filename, contents) = fileItem
+            concatenated += filename
+            concatenated += contents
+        }
+        guard let data = concatenatedScripts.data(using: .utf8) else {
+            print("[Controller] Internal error: Unable to convert concatenated files into a data object")
+            return "1.0"    // some default version string
+        }
+        let digest = SHA256.hash(data: data)
+        return digest.description
     }
 
     private func transmitNextFile() {
@@ -210,6 +287,11 @@ class Controller {
         // Send!
         _bluetooth.sendSerialData(data)
         print("[Controller] Sent \(filename): \(data.count) bytes")
+    }
+
+    private func startAppAndEnterRunningState() {
+        _bluetooth.sendSerialData(Data([ 0x04 ]))   // ^D to start app
+        _state = .running
     }
 
     // MARK: Monocle Commands
