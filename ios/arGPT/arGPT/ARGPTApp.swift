@@ -15,9 +15,7 @@ struct ARGPTApp: App {
     private let _settings = Settings()
     private let _chatMessageStore = ChatMessageStore()
 
-    @ObservedObject private var _bluetooth = BluetoothManager(
-        autoConnectByProximity: true
-    )
+    @ObservedObject private var _bluetooth = BluetoothManager(autoConnectByProximity: true)
 
     private var _subscribers = Set<AnyCancellable>()
 
@@ -41,8 +39,7 @@ struct ARGPTApp: App {
                 }
             )
             .environmentObject(_chatMessageStore)
-            .fullScreenCover(isPresented: $_displaySettings, content:
-            {
+            .fullScreenCover(isPresented: $_displaySettings, content: {
                 SettingsView(
                     discoveredDevices: $_bluetooth.discoveredDevices,
                     isMonocleConnected: $_bluetooth.isConnected
