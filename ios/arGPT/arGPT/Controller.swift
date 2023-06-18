@@ -35,7 +35,6 @@ class Controller {
     private let _m4aWriter = M4AWriter()
     private let _whisper = Whisper(configuration: .backgroundData)
     private let _chatGPT = ChatGPT(configuration: .backgroundData)
-    private let _mockInput = MockInputGenerator()
 
     private var _pendingQueryByID: [UUID: String] = [:]
 
@@ -343,8 +342,6 @@ class Controller {
 
     // Step 1: Voice received from Monocle and converted to M4A
     private func onVoiceReceived(voiceSample: AVAudioPCMBuffer) {
-        //guard let voiceSample = _mockInput.randomVoiceSample() else { return }
-
         print("[Controller] Voice received. Converting to M4A...")
         printTypingIndicatorToChat(as: .user)
 
@@ -413,6 +410,8 @@ class Controller {
 
         // Send all error messages to Monocle
         _bluetooth.sendToMonocle(message: message, isError: true)
+
+        print("[Controller] Error printed: \(message)")
     }
 
     private func printTypingIndicatorToChat(as participant: Participant) {

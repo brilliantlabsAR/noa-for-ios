@@ -15,17 +15,11 @@ struct ARGPTApp: App {
     private let _settings = Settings()
     private let _chatMessageStore = ChatMessageStore()
 
-    private let _speechToText = SpeechToText()
-
-    private let _m4aWriter = M4AWriter()
-
     @ObservedObject private var _bluetooth = BluetoothManager(
         autoConnectByProximity: true
     )
 
     private var _subscribers = Set<AnyCancellable>()
-
-    private let _mockInput = MockInputGenerator()
 
     private var _controller: Controller?
 
