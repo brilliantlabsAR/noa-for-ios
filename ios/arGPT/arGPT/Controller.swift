@@ -369,7 +369,7 @@ class Controller {
                 // the ID, allowing us to perform a ChatGPT request.
                 let id = UUID()
                 _pendingQueryByID[id] = query
-                _bluetooth.sendToMonocle(transcriptionID: id)
+                _bluetooth.sendData(text: "pin:" + id.uuidString)
                 print("[Controller] Sent transcription ID to Monocle: \(id)")
             }
         }
@@ -409,7 +409,7 @@ class Controller {
         _messages.putMessage(Message(content: message, isError: true, participant: participant))
 
         // Send all error messages to Monocle
-        _bluetooth.sendToMonocle(message: message, isError: true)
+        _bluetooth.sendData(text: "err:" + message)
 
         print("[Controller] Error printed: \(message)")
     }
@@ -423,7 +423,7 @@ class Controller {
 
         if !participant.isUser {
             // Send AI response to Monocle
-            _bluetooth.sendToMonocle(message: message, isError: false)
+            _bluetooth.sendData(text: "res:" + message)
         }
     }
 }

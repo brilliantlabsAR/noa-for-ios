@@ -109,28 +109,9 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         writeData(data, for: rx, peripheral: connectedPeripheral)
     }
 
-    public func sendToMonocle(transcriptionID: UUID) {
-        guard let rx = _dataRx,
-              let connectedPeripheral = _connectedPeripheral else {
-            return
-        }
-
-        // Transmit on RX
-        let transcriptionIDPacket = "pin:" + transcriptionID.uuidString
-        if let data = transcriptionIDPacket.data(using: .utf8) {
-            writeData(data, for: rx, peripheral: connectedPeripheral)
-        }
-    }
-
-    public func sendToMonocle(message: String, isError: Bool) {
-        guard let rx = _dataRx,
-              let connectedPeripheral = _connectedPeripheral else {
-            return
-        }
-
-        let messagePacket = (isError ? "err:" : "res:") + message
-        if let data = messagePacket.data(using: .utf8) {
-            writeData(data, for: rx, peripheral: connectedPeripheral)
+    public func sendData(text str: String) {
+        if let data = str.data(using: .utf8) {
+            sendData(data)
         }
     }
 
@@ -424,11 +405,6 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         if let error = error {
             print("[BluetoothManager] Error discovering services on peripheral UUID=\(peripheral.identifier): \(error.localizedDescription)")
             return
-        }
-
-        print("didDiscoverServices")
-        for service in peripheral.services ?? [] {
-            print("  descr=\(service.description) uuid=\(service.uuid)")
         }
 
         printServices()
