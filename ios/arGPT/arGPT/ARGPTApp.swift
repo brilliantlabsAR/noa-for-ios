@@ -55,48 +55,4 @@ struct ARGPTApp: App {
     init() {
         _controller = Controller(settings: _settings, bluetooth: _bluetooth, messages: _chatMessageStore)
     }
-
-    /*
-
-    private func runBigTest() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [unowned _chatMessageStore] in
-            // Put in a hundred messages initially. This will not auto-scroll because it occurs before the view is rendered.
-            for i in 0..<100 {
-                let participant = Int.random(in: 0...1) == 0 ? Participant.user : Participant.chatGPT
-                _chatMessageStore.putMessage(Message(content: "Hello \(i)", participant: participant))
-            }
-        }
-
-        // Add 100 more a second later. This should trigger scrolling.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [unowned _chatMessageStore] in
-            for i in 100..<200 {
-                let participant = Int.random(in: 0...1) == 0 ? Participant.user : Participant.chatGPT
-                _chatMessageStore.putMessage(Message(content: "Hello \(i)", participant: participant))
-            }
-        }
-
-        // After 4 seconds, add a typing-in-progress message so we can observe scrolling a single line
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [unowned _chatMessageStore] in
-            let participant = Int.random(in: 0...1) == 0 ? Participant.user : Participant.chatGPT
-            _chatMessageStore.putMessage(Message(content: "", typingInProgress: true, participant: participant))
-        }
-
-        // After 6 seconds, add final message (which will remove typing in progress message)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [unowned _chatMessageStore] in
-            let participant = Int.random(in: 0...1) == 0 ? Participant.user : Participant.chatGPT
-            _chatMessageStore.putMessage(Message(content: "This is the final message, I swear!", participant: participant))
-        }
-    }
-
-    private func runLittleTest() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [unowned _bluetooth] in
-            _bluetooth.monocleVoiceQuery.send("data from monocle")
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [unowned _bluetooth] in
-            _bluetooth.monocleVoiceQuery.send("data from monocle")
-        }
-    }
-
-    */
 }
