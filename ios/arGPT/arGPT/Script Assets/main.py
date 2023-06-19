@@ -25,20 +25,20 @@ def bluetooth_message_handler(message):
         if message.startswith("pin:"):
             bluetooth_send_message(b"pon:" + message[4:])
             state.after(0, state.WaitForResponse)
-    elif state.current_state == state.WaitForResponse:
-        if message.startswith("res:"):
-            gfx.error_flag = False
-            response = message[4:].decode("utf-8")
-            gfx.set_response(response)
+        elif message.startswith("err:"):
+            gfx.error_flag = True
+            gfx.set_response(message[4:].decode("utf-8"))
             gfx.set_prompt("")
             state.after(0, state.PrintResponse)
 
+    elif state.current_state == state.WaitForResponse:
+        if message.startswith("res:"):
+            gfx.error_flag = False
         elif message.startswith("err:"):
             gfx.error_flag = True
-            response = message[4:].decode("utf-8")
-            gfx.set_response(response)
-            gfx.set_prompt("")
-            state.after(0, state.PrintResponse)
+        gfx.set_response(message[4:].decode("utf-8"))
+        gfx.set_prompt("")
+        state.after(0, state.PrintResponse)
 
 
 def touch_pad_handler(_):
