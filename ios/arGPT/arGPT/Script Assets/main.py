@@ -130,4 +130,3 @@ while True:
             state.after(0, state.WaitForTap)
 
     gfx.run()
-    time.sleep(0.001)

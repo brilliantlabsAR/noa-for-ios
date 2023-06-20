@@ -27,7 +27,8 @@ class Graphics:
         self.__current_response += re.sub("""\n+""", "  ", response)
 
     def set_prompt(self, prompt):
-        self.__current_prompt = prompt
+        if self.__current_prompt != prompt:
+            self.__current_prompt = prompt
 
     def __split_lines(self, words):
         word_arrays = []
@@ -94,7 +95,6 @@ class Graphics:
                     )
                 )
 
-            time.sleep_ms(1)  # TODO why is this needed?
             display.show(text_objects)
 
             if time.ticks_ms() - self.__last_word_time > self.WORD_SPEED:
