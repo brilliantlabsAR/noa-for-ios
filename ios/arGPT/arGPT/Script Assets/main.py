@@ -33,10 +33,12 @@ def bluetooth_message_handler(message):
     elif state.current_state == state.WaitForResponse:
         if message.startswith("res:"):
             gfx.error_flag = False
+            gfx.append_response(message[4:].decode("utf-8"))
+            state.after(0, state.PrintResponse)
         elif message.startswith("err:"):
             gfx.error_flag = True
-        gfx.append_response(message[4:].decode("utf-8"))
-        state.after(0, state.PrintResponse)
+            gfx.append_response(message[4:].decode("utf-8"))
+            state.after(0, state.PrintResponse)
 
     elif state.current_state == state.PrintResponse:
         gfx.append_response(message[4:].decode("utf-8"))
