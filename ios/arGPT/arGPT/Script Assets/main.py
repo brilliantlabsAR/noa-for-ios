@@ -27,8 +27,7 @@ def bluetooth_message_handler(message):
             state.after(0, state.WaitForResponse)
         elif message.startswith("err:"):
             gfx.error_flag = True
-            gfx.set_response(message[4:].decode("utf-8"))
-            gfx.set_prompt("")
+            gfx.append_response(message[4:].decode("utf-8"))
             state.after(0, state.PrintResponse)
 
     elif state.current_state == state.WaitForResponse:
@@ -36,9 +35,11 @@ def bluetooth_message_handler(message):
             gfx.error_flag = False
         elif message.startswith("err:"):
             gfx.error_flag = True
-        gfx.set_response(message[4:].decode("utf-8"))
-        gfx.set_prompt("")
+        gfx.append_response(message[4:].decode("utf-8"))
         state.after(0, state.PrintResponse)
+
+    elif state.current_state == state.PrintResponse:
+        gfx.append_response(message[4:].decode("utf-8"))
 
 
 def touch_pad_handler(_):
@@ -62,7 +63,7 @@ while True:
 
     elif state.current_state == state.Welcome:
         if state.on_entry():
-            gfx.set_response(
+            gfx.append_response(
                 """Welcome to arGPT for Monocle.\nStart the arGPT iOS or Android app."""
             )
         if bluetooth.connected():
@@ -70,7 +71,7 @@ while True:
 
     elif state.current_state == state.Connected:
         if state.on_entry():
-            gfx.set_response("")
+            gfx.clear_response()
             gfx.set_prompt("Connected")
         state.after(2000, state.WaitForTap)
 
@@ -83,7 +84,7 @@ while True:
         if state.on_entry():
             microphone.record(seconds=RECORD_LENGTH)
             bluetooth_send_message(b"ast:")
-            gfx.set_response("")
+            gfx.clear_response()
             gfx.set_prompt("Listening [   ]")
         state.after(1000, state.SendAudio)
 
@@ -124,8 +125,7 @@ while True:
         state.after(3000, state.previous_state)
 
     elif state.current_state == state.PrintResponse:
-        if state.on_entry():
-            gfx.reset_done_flag()
+        gfx.set_prompt("")
         if gfx.done_printing:
             state.after(0, state.WaitForTap)
 

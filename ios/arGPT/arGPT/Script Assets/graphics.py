@@ -7,6 +7,7 @@ class Graphics:
     def __init__(self):
         self.MAX_LINES = 7
         self.WORD_SPEED = 300
+        self.FRAME_RATE = 20
         self.error_flag = False
         self.done_printing = False
         self.__current_response = ""
@@ -16,19 +17,17 @@ class Graphics:
         self.__last_frame_time = time.ticks_ms()
         self.__last_word_time = time.ticks_ms()
 
-    def reset_done_flag(self):
+    def clear_response(self):
+        self.__current_response = ""
+        self.__current_response_word = 0
+        self.__current_response_line_offset = 0
         self.done_printing = False
 
-    def set_response(self, response):
-        formatted_response = re.sub(r"""\n+""", "  ", response)
-        if self.__current_response != formatted_response:
-            self.__current_response = formatted_response
-            self.__current_response_word = 0
-            self.__current_response_line_offset = 0
+    def append_response(self, response):
+        self.__current_response += re.sub("""\n+""", "  ", response)
 
     def set_prompt(self, prompt):
-        if self.__current_prompt != prompt:
-            self.__current_prompt = prompt
+        self.__current_prompt = prompt
 
     def __split_lines(self, words):
         word_arrays = []
@@ -56,11 +55,17 @@ class Graphics:
         return word_arrays
 
     def run(self):
-        if time.ticks_ms() - self.__last_frame_time > 20:
+        if time.ticks_ms() - self.__last_frame_time > self.FRAME_RATE:
             self.__last_frame_time = time.ticks_ms()
             response_words = self.__current_response.split(" ")
+
+            # Spacial case to zero out empty buffer
+            if response_words == [""]:
+                response_words = []
+
             partial_response_words = response_words[: self.__current_response_word]
             response_lines = self.__split_lines(partial_response_words)
+
             if len(response_lines) > self.MAX_LINES:
                 self.__current_response_line_offset = (
                     len(response_lines) - self.MAX_LINES
@@ -89,11 +94,13 @@ class Graphics:
                     )
                 )
 
-                self.done_printing = True
-
             time.sleep_ms(1)  # TODO why is this needed?
             display.show(text_objects)
 
             if time.ticks_ms() - self.__last_word_time > self.WORD_SPEED:
                 self.__last_word_time = time.ticks_ms()
+                if self.__current_response_word == len(response_words):
+                    if len(response_words) > 0:
+                        self.done_printing = True
+                    return
                 self.__current_response_word += 1
