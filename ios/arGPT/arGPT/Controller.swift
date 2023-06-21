@@ -409,7 +409,7 @@ class Controller {
         _messages.putMessage(Message(content: message, isError: true, participant: participant))
 
         // Send all error messages to Monocle
-        _bluetooth.sendData(text: "err:" + message)
+        sendTextToMonocleInChunks(text: message, isError: true)
 
         print("[Controller] Error printed: \(message)")
     }
@@ -423,7 +423,31 @@ class Controller {
 
         if !participant.isUser {
             // Send AI response to Monocle
-            _bluetooth.sendData(text: "res:" + message)
+            sendTextToMonocleInChunks(text: message, isError: false)
+        }
+    }
+
+    private func sendTextToMonocleInChunks(text: String, isError: Bool) {
+        guard var chunkSize = _bluetooth.maximumDataLength else {
+            return
+        }
+
+        chunkSize -= 4  // make room for command identifier
+        guard chunkSize > 0 else {
+            print("[Controller] Internal error: Unusuable write length: \(chunkSize)")
+            return
+        }
+
+        // Split strings into chunks and prepend each one with the correct command
+        let command = isError ? "err:" : "res:"
+        var idx = 0
+        while idx < text.count {
+            let end = min(idx + chunkSize, text.count)
+            let startIdx = text.index(text.startIndex, offsetBy: idx)
+            let endIdx = text.index(text.startIndex, offsetBy: end)
+            let chunk = command + text[startIdx..<endIdx]
+            _bluetooth.sendData(text: chunk)
+            idx = end
         }
     }
 }
