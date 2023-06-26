@@ -1,7 +1,6 @@
 import bluetooth
 import graphics
 import microphone
-import time
 import touch
 import states
 
@@ -109,10 +108,8 @@ while True:
             gfx.set_prompt("Listening [=  ]")
 
         samples = []
-        chunk_size = bluetooth.max_length() // 4 - 1
-
-        for _ in range(16):
-            chunk = microphone.read(chunk_size)
+        for _ in range(4):
+            chunk = microphone.__read_raw((bluetooth.max_length() - 4) // 2)
             if chunk != None:
                 samples.extend(chunk)
 
@@ -120,14 +117,17 @@ while True:
             bluetooth_send_message(b"aen:")
             state.after(0, state.WaitForPing)
         else:
-            small_samples = []
+            resampled = []
+            for i in range(len(samples) // 4):
+                resampled.append(
+                    (
+                        (samples[4 * i] << 8 | samples[4 * i + 1])
+                        + (samples[4 * i + 2] << 8 | samples[4 * i + 3])
+                    )
+                    >> 9
+                )
 
-            for i in range(len(samples) / 4):
-                top_scaled_byte = round(256 / 65536 * samples[2 * i])
-                bottom_scaled_byte = round(256 / 65536 * samples[2 * i + 1])
-                small_samples.append((top_scaled_byte + top_scaled_byte) // 2)
-
-            bluetooth_send_message(b"dat:" + bytearray(small_samples))
+            bluetooth_send_message(b"dat:" + bytearray(resampled))
 
     elif (
         state.current_state == state.WaitForPing
