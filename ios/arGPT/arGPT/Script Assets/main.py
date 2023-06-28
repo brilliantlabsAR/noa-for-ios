@@ -107,24 +107,13 @@ while True:
         else:
             gfx.set_prompt("Listening [=  ]")
 
-        samples = []
-        for _ in range(4):
-            chunk = microphone.__read_raw((bluetooth.max_length() - 4) // 2)
-            if chunk != None:
-                samples.extend(chunk)
+        samples = microphone.__read_raw(bluetooth.max_length() // 2 - 6)
 
-        if samples == []:
+        if samples == None:
             bluetooth_send_message(b"aen:")
             state.after(0, state.WaitForPing)
         else:
-            resampled = bytearray()
-            samples = bytearray(samples)
-            for i in range(len(samples) // 4):
-                sample1 = int.from_bytes(samples[i*4:i*4+2], "big", True)
-                sample2 = int.from_bytes(samples[i*4+2:i*4+4], "big", True)
-                downsampled = (sample1 + sample2) >> 9
-                resampled += downsampled.to_bytes(1, "big", True)
-            bluetooth_send_message(b"dat:" + bytearray(resampled))
+            bluetooth_send_message(b"dat:" + samples)
 
     elif (
         state.current_state == state.WaitForPing
