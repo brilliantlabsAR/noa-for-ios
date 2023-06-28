@@ -344,11 +344,8 @@ class Controller {
             // Audio finished, submit for transcription
             print("[Controller] Received complete audio buffer (\(_audioData.count) bytes)")
             if _audioData.count.isMultiple(of: 2) {
-                convertAudioFrom16KHzInt16To8KHzInt8()
-                //convertAudioUnsignedToSigned()
                 Util.hexDump(_audioData, offsetBytes: 2)
                 if let pcmBuffer = AVAudioPCMBuffer.fromMonoInt8Data(_audioData, sampleRate: 8000) {
-                //convertAudioToLittleEndian()
                 //if let pcmBuffer = AVAudioPCMBuffer.fromMonoInt16Data(_audioData, sampleRate: 16000) {
                     if let audioConverter = _audioConverter {
                         var error: NSError?
@@ -389,28 +386,6 @@ class Controller {
             if let uuid = UUID(uuidString: uuidStr) {
                 onTranscriptionAcknowledged(id: uuid)
             }
-        }
-    }
-
-    // Given 16KHz/16-bit buffer, converts to 8KHz/8-bit
-    private func convertAudioFrom16KHzInt16To8KHzInt8() {
-        var audioData8Bit = Data(capacity: _audioData.count / 4)
-        var i = 0
-        while i < _audioData.count {
-            let sample1 = Int16(bitPattern: (UInt16(_audioData[i + 0]) << 8) | UInt16(_audioData[i + 1]))
-            let sample2 = Int16(bitPattern: (UInt16(_audioData[i + 2]) << 8) | UInt16(_audioData[i + 3]))
-            let (sum, _) = sample1.addingReportingOverflow(sample2)
-            let sample8Bit = UInt8(bitPattern: Int8(sum >> 9))
-            audioData8Bit.append(sample8Bit)
-            i += 4
-        }
-        _audioData = audioData8Bit
-    }
-
-    private func convertAudioUnsignedToSigned() {
-        for i in 0..<_audioData.count {
-            let (sum, _) = _audioData[i].subtractingReportingOverflow(0x80)
-            _audioData[i] = sum
         }
     }
 
