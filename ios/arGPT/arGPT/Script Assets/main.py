@@ -107,13 +107,29 @@ while True:
         else:
             gfx.set_prompt("Listening [=  ]")
 
-        samples = microphone.__read_raw(bluetooth.max_length() // 2 - 6)
+        samples = []
+        for _ in range(4):
+            chunk = microphone.__read_raw((bluetooth.max_length() - 4) // 2)
+            if chunk != None:
+                samples.extend(chunk)
 
-        if samples == None:
+        if samples == []:
             bluetooth_send_message(b"aen:")
             state.after(0, state.WaitForPing)
         else:
-            bluetooth_send_message(b"dat:" + samples)
+            resampled = bytearray()
+            samples = bytearray(samples)
+            for i in range(len(samples) // 4):
+                # MicroPython doesn't understand signed values, so we have to load them as unsigned
+                # integers and then actually convert them to unsigned and back
+                sample1 = int.from_bytes(samples[i*4:i*4+2], "big")     # 16-bit signed data read as unsigned
+                sample2 = int.from_bytes(samples[i*4+2:i*4+4], "big")
+                sample1 = ((sample1 + 0x8000) & 0xffff)                 # convert to true unsigned sample
+                sample2 = ((sample2 + 0x8000) & 0xffff)
+                downsampled = (sample1 + sample2) >> 9
+                downsampled = (downsampled - 0x80) & 0xff               # back to signed again
+                resampled += downsampled.to_bytes(1, "big")
+            bluetooth_send_message(b"dat:" + bytearray(resampled))
 
     elif (
         state.current_state == state.WaitForPing
