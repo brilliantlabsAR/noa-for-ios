@@ -431,7 +431,7 @@ class Controller {
 
         chunkSize -= 4  // make room for command identifier
         guard chunkSize > 0 else {
-            print("[Controller] Internal error: Unusuable write length: \(chunkSize)")
+            print("[Controller] Internal error: Unusable write length: \(chunkSize)")
             return
         }
 
@@ -466,7 +466,7 @@ class Controller {
         do {
             try _audioEngine.start()
         } catch {
-            print("[FitGPTApp] Error: Unable to start audio engine: \(error.localizedDescription)")
+            print("[Controller] Error: Unable to start audio engine: \(error.localizedDescription)")
         }
 
         // Set up converter
