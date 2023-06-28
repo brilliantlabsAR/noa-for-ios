@@ -335,16 +335,6 @@ class Controller {
         }
     }
 
-    private func convertAudioToLittleEndian() {
-        var idx = 0
-        while (idx + 2) <= _audioData.count {
-            let msb = _audioData[idx]
-            _audioData[idx] = _audioData[idx + 1]
-            _audioData[idx + 1] = msb
-            idx += 2
-        }
-    }
-
     // MARK: User ChatGPT Query Flow
 
     // Step 1: Voice received from Monocle and converted to M4A
