@@ -117,16 +117,13 @@ while True:
             bluetooth_send_message(b"aen:")
             state.after(0, state.WaitForPing)
         else:
-            resampled = []
+            resampled = bytearray()
+            samples = bytearray(samples)
             for i in range(len(samples) // 4):
-                resampled.append(
-                    (
-                        (samples[4 * i] << 8 | samples[4 * i + 1])
-                        + (samples[4 * i + 2] << 8 | samples[4 * i + 3])
-                    )
-                    >> 9
-                )
-
+                sample1 = int.from_bytes(samples[i*4:i*4+2], "big", True)
+                sample2 = int.from_bytes(samples[i*4+2:i*4+4], "big", True)
+                downsampled = (sample1 + sample2) >> 9
+                resampled += downsampled.to_bytes(1, "big", True)
             bluetooth_send_message(b"dat:" + bytearray(resampled))
 
     elif (

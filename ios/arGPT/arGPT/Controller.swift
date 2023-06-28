@@ -344,6 +344,8 @@ class Controller {
             // Audio finished, submit for transcription
             print("[Controller] Received complete audio buffer (\(_audioData.count) bytes)")
             if _audioData.count.isMultiple(of: 2) {
+                //convertAudioUnsignedToSigned()
+                Util.hexDump(_audioData, offsetBytes: 2)
                 if let pcmBuffer = AVAudioPCMBuffer.fromMonoInt8Data(_audioData, sampleRate: 8000) {
                 //if let pcmBuffer = AVAudioPCMBuffer.fromMonoInt16Data(_audioData, sampleRate: 16000) {
                     if let audioConverter = _audioConverter {
@@ -385,6 +387,13 @@ class Controller {
             if let uuid = UUID(uuidString: uuidStr) {
                 onTranscriptionAcknowledged(id: uuid)
             }
+        }
+    }
+
+    private func convertAudioUnsignedToSigned() {
+        for i in 0..<_audioData.count {
+            let (sum, _) = _audioData[i].subtractingReportingOverflow(0x80)
+            _audioData[i] = sum
         }
     }
 
