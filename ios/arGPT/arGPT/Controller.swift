@@ -38,7 +38,8 @@ class Controller {
 
     private var _pendingQueryByID: [UUID: String] = [:]
 
-    // Debug audio player
+    // Debug audio playback (use setupAudioSession() and playReceivedAudio() on PCM buffer decoded
+    // from Monocle)
     private let _audioEngine = AVAudioEngine()
     private var _playerNode = AVAudioPlayerNode()
     private var _audioConverter: AVAudioConverter?
@@ -126,9 +127,6 @@ class Controller {
 
             onMonocleCommand(command: command, data: receivedValue[4...])
         }.store(in: &_subscribers)
-
-        // Debug audio player
-        setupAudioSession()
     }
 
     /// Submit a query from the iOS app directly.
@@ -143,31 +141,6 @@ class Controller {
     public func clearHistory() {
         _messages.clear()
         _chatGPT.clearHistory()
-    }
-
-    // MARK: Debug Audio Playback
-    private func setupAudioSession() {
-        // Set up the app's audio session
-        do {
-            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [ .defaultToSpeaker ])
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            fatalError("Unable to set up audio session: \(error.localizedDescription)")
-        }
-
-        // Set up player
-        _audioEngine.attach(_playerNode)
-        _audioEngine.connect(_playerNode, to: _audioEngine.mainMixerNode, format: _playbackFormat)
-        _audioEngine.prepare()
-        do {
-            try _audioEngine.start()
-        } catch {
-            print("[FitGPTApp] Error: Unable to start audio engine: \(error.localizedDescription)")
-        }
-
-        // Set up converter
-        //_playbackFormat = _audioEngine.mainMixerNode.outputFormat(forBus: 0)
-        _audioConverter = AVAudioConverter(from: _monocleFormat, to: _playbackFormat)
     }
 
     // MARK: Monocle Script Transmission
@@ -344,34 +317,7 @@ class Controller {
             // Audio finished, submit for transcription
             print("[Controller] Received complete audio buffer (\(_audioData.count) bytes)")
             if _audioData.count.isMultiple(of: 2) {
-                Util.hexDump(_audioData, offsetBytes: 2)
                 if let pcmBuffer = AVAudioPCMBuffer.fromMonoInt8Data(_audioData, sampleRate: 8000) {
-                //if let pcmBuffer = AVAudioPCMBuffer.fromMonoInt16Data(_audioData, sampleRate: 16000) {
-                    if let audioConverter = _audioConverter {
-                        var error: NSError?
-                        var allSamplesReceived = false
-                        let outputBuffer = AVAudioPCMBuffer(pcmFormat: _playbackFormat, frameCapacity: pcmBuffer.frameLength * 48/8)!
-                        audioConverter.reset()
-                        audioConverter.convert(to: outputBuffer, error: &error, withInputFrom: { (inNumPackets: AVAudioPacketCount, outError: UnsafeMutablePointer<AVAudioConverterInputStatus>) -> AVAudioBuffer? in
-                            if allSamplesReceived {
-                                outError.pointee = .noDataNow
-                                return nil
-                            }
-                            allSamplesReceived = true
-                            outError.pointee = .haveData
-                            return pcmBuffer
-                        })
-
-                        print("\(pcmBuffer.frameLength) \(outputBuffer.frameLength)")
-                        print(_playbackFormat)
-                        print(_audioEngine.mainMixerNode.outputFormat(forBus: 0))
-                        print(outputBuffer.format)
-                        
-                        _playerNode.scheduleBuffer(outputBuffer)
-                        _playerNode.prepare(withFrameCount: outputBuffer.frameLength)
-                        _playerNode.play()
-                    }
-
                     onVoiceReceived(voiceSample: pcmBuffer)
                 } else {
                     print("[Controller] Error: Unable to convert audio data to PCM buffer")
@@ -509,6 +455,58 @@ class Controller {
             let chunk = command + text[startIdx..<endIdx]
             _bluetooth.sendData(text: chunk)
             idx = end
+        }
+    }
+
+    // MARK: Debug Audio Playback
+
+    private func setupAudioSession() {
+        // Set up the app's audio session
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [ .defaultToSpeaker ])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            fatalError("Unable to set up audio session: \(error.localizedDescription)")
+        }
+
+        // Set up player
+        _audioEngine.attach(_playerNode)
+        _audioEngine.connect(_playerNode, to: _audioEngine.mainMixerNode, format: _playbackFormat)
+        _audioEngine.prepare()
+        do {
+            try _audioEngine.start()
+        } catch {
+            print("[FitGPTApp] Error: Unable to start audio engine: \(error.localizedDescription)")
+        }
+
+        // Set up converter
+        _audioConverter = AVAudioConverter(from: _monocleFormat, to: _playbackFormat)
+    }
+
+    private func playReceivedAudio(_ pcmBuffer: AVAudioPCMBuffer) {
+        if let audioConverter = _audioConverter {
+            var error: NSError?
+            var allSamplesReceived = false
+            let outputBuffer = AVAudioPCMBuffer(pcmFormat: _playbackFormat, frameCapacity: pcmBuffer.frameLength * 48/8)!
+            audioConverter.reset()
+            audioConverter.convert(to: outputBuffer, error: &error, withInputFrom: { (inNumPackets: AVAudioPacketCount, outError: UnsafeMutablePointer<AVAudioConverterInputStatus>) -> AVAudioBuffer? in
+                if allSamplesReceived {
+                    outError.pointee = .noDataNow
+                    return nil
+                }
+                allSamplesReceived = true
+                outError.pointee = .haveData
+                return pcmBuffer
+            })
+
+            print("\(pcmBuffer.frameLength) \(outputBuffer.frameLength)")
+            print(_playbackFormat)
+            print(_audioEngine.mainMixerNode.outputFormat(forBus: 0))
+            print(outputBuffer.format)
+
+            _playerNode.scheduleBuffer(outputBuffer)
+            _playerNode.prepare(withFrameCount: outputBuffer.frameLength)
+            _playerNode.play()
         }
     }
 }
