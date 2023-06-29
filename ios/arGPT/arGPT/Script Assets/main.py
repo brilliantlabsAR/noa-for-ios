@@ -91,15 +91,7 @@ while True:
 
     elif state.current_state == state.SendAudio:
         if state.has_been() > 3000:
-            if state.has_been() // 250 % 4 == 0:
-                gfx.set_prompt("Sending   [=  ]")
-            elif state.has_been() // 250 % 4 == 1:
-                gfx.set_prompt("Sending   [ = ]")
-            elif state.has_been() // 250 % 4 == 2:
-                gfx.set_prompt("Sending   [  =]")
-            elif state.has_been() // 250 % 4 == 3:
-                gfx.set_prompt("Sending   [   ]")
-
+            gfx.set_prompt("Waiting for openAI")
         elif state.has_been() > 2000:
             gfx.set_prompt("Listening [===]")
         elif state.has_been() > 1000:
