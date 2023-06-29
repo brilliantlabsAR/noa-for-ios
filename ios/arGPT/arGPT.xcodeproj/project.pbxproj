@@ -52,6 +52,7 @@
 		CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */; };
 		CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */; };
 		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
+		F8BC4DE52A4DBD680005F6F0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DE42A4DBD680005F6F0 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -121,6 +122,7 @@
 		CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Tootsie.wav; sourceTree = "<group>"; };
 		CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_CPU.wav; sourceTree = "<group>"; };
 		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
+		F8BC4DE42A4DBD680005F6F0 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -235,6 +237,7 @@
 				CC4E3AED2A00BBB00058AC20 /* Chat */,
 				CC4E3AC32A00BA4C0058AC20 /* ARGPTApp.swift */,
 				CCB2F9612A2568EE00F24F2D /* Controller.swift */,
+				F8BC4DE42A4DBD680005F6F0 /* ContentView.swift */,
 				CC3FE01E2A0DF21700756941 /* AppDelegate.swift */,
 				CC3FE0202A0DF25100756941 /* SceneDelegate.swift */,
 				CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */,
@@ -454,6 +457,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CC27DC552A0304D600A942A9 /* TypingIndicator.swift in Sources */,
+				F8BC4DE52A4DBD680005F6F0 /* ContentView.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
 				CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */,
