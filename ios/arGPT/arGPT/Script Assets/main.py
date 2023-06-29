@@ -83,7 +83,7 @@ while True:
 
     elif state.current_state == state.StartRecording:
         if state.on_entry():
-            microphone.record(seconds=RECORD_LENGTH)
+            microphone.record(seconds=RECORD_LENGTH, bit_depth=8, sample_rate=8000)
             bluetooth_send_message(b"ast:")
             gfx.clear_response()
             gfx.set_prompt("Listening [   ]")
@@ -107,29 +107,17 @@ while True:
         else:
             gfx.set_prompt("Listening [=  ]")
 
-        samples = []
-        for _ in range(4):
-            chunk = microphone.__read_raw((bluetooth.max_length() - 4) // 2)
-            if chunk != None:
-                samples.extend(chunk)
+        samples = (bluetooth.max_length() - 4) // 2
+        chunk1 = microphone.read(samples)
+        chunk2 = microphone.read(samples)
 
-        if samples == []:
+        if chunk1 == None:
             bluetooth_send_message(b"aen:")
             state.after(0, state.WaitForPing)
+        elif chunk2 == None:
+            bluetooth_send_message(b"dat:" + chunk1)
         else:
-            resampled = bytearray()
-            samples = bytearray(samples)
-            for i in range(len(samples) // 4):
-                # MicroPython doesn't understand signed values, so we have to load them as unsigned
-                # integers and then actually convert them to unsigned and back
-                sample1 = int.from_bytes(samples[i*4:i*4+2], "big")     # 16-bit signed data read as unsigned
-                sample2 = int.from_bytes(samples[i*4+2:i*4+4], "big")
-                sample1 = ((sample1 + 0x8000) & 0xffff)                 # convert to true unsigned sample
-                sample2 = ((sample2 + 0x8000) & 0xffff)
-                downsampled = (sample1 + sample2) >> 9
-                downsampled = (downsampled - 0x80) & 0xff               # back to signed again
-                resampled += downsampled.to_bytes(1, "big")
-            bluetooth_send_message(b"dat:" + bytearray(resampled))
+            bluetooth_send_message(b"dat:" + chunk1 + chunk2)
 
     elif (
         state.current_state == state.WaitForPing
