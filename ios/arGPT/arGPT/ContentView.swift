@@ -2,12 +2,11 @@ import SwiftUI
 
 struct MainView: View {
     @State private var settingPopup: Bool = false
+    @State private var showingBottomSheet: Bool = false
     private var searchingButton = "Searching"
     
     var body: some View {
         ZStack {
-            Color(red: 242/255, green: 242/255, blue: 247/255)
-                .edgesIgnoringSafeArea(.all)
             VStack {
                 VStack {
                     Button(action: {}) {
@@ -20,11 +19,11 @@ struct MainView: View {
                             Button(action: {
                                 //Action here
                             }) {
-                                Label("Unpair Monocle", systemImage: "pencil.circle")
-                                    .foregroundColor(Color(red: 255/255, green: 0/255, blue: 0/255))
-                                
+                                Label("Unpair Monocle", systemImage: "person.circle")
                             }
-                        }
+                            .foregroundColor(Color.red)
+                            }
+                        
                     label: {
                             Image(systemName: "gearshape.fill")
                                 .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
@@ -54,39 +53,54 @@ struct MainView: View {
                     RoundedRectangle(cornerRadius: 25)
                         .fill(Color.white)
                         .frame(width: 370, height: 370)
-                        .overlay(
-                            VStack {
-                                Text("Bring your device close.")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .multilineTextAlignment(.center)
-                                    .frame(width: 306, height: 29)
+                        .sheet(isPresented: $showingBottomSheet) {
+                            bottomSheetView()
+                                .presentationDragIndicator(.hidden)
+                                .presentationDetents([.height(370)])
                                 
-                                Image("Monocle")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 306, height: 160)
-                                
-                                Button(action: {
-                                    // No Action needed
-                                }) {
-                                    Text(searchingButton)
-                                        .font(.system(size: 22, weight: .medium))
-                                }
-                                .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
-                                .padding(.horizontal, 60)
-                                .background(Color(red: 242/255, green: 242/255, blue: 247/255))
-                                .foregroundColor(Color(red: 142/255, green: 142/255, blue: 147/255))
-                                .cornerRadius(15)
-                            }
-                        )
+                        }
                 }
             }
         }
     }
 }
 
+// To make a thing appear need to be bool: true or this function "showingBottomSheet.toggle()"
+
+struct bottomSheetView: View {
+    var body: some View {
+        var searchingButton = "Searching"
+        
+        VStack {
+            Text("Bring your device close.")
+                .font(.system(size: 24, weight: .bold))
+                .multilineTextAlignment(.center)
+                .frame(width: 306, height: 29)
+            
+            Image("Monocle")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 306, height: 160)
+            
+            Button(action: {
+                // No Action needed
+            }) {
+                Text(searchingButton)
+                    .font(.system(size: 22, weight: .medium))
+            }
+            .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
+            .padding(.horizontal, 60)
+            .background(Color(red: 242/255, green: 242/255, blue: 247/255))
+            .foregroundColor(Color(red: 142/255, green: 142/255, blue: 147/255))
+            .cornerRadius(15)
+            
+        }
+    }
+}
 struct MainView_Previews: PreviewProvider {
     static var previews: some View {
         MainView()
+    
+        
     }
 }
