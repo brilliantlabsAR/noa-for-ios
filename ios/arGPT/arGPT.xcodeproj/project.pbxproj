@@ -53,6 +53,7 @@
 		CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */; };
 		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
 		F8BC4DE52A4DBD680005F6F0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DE42A4DBD680005F6F0 /* ContentView.swift */; };
+		F8BC4DEB2A4EE08F0005F6F0 /* ChatViewNew.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DEA2A4EE08F0005F6F0 /* ChatViewNew.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -123,6 +124,7 @@
 		CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_CPU.wav; sourceTree = "<group>"; };
 		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
 		F8BC4DE42A4DBD680005F6F0 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F8BC4DEA2A4EE08F0005F6F0 /* ChatViewNew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewNew.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -237,6 +239,7 @@
 				CC4E3AED2A00BBB00058AC20 /* Chat */,
 				CC4E3AC32A00BA4C0058AC20 /* ARGPTApp.swift */,
 				CCB2F9612A2568EE00F24F2D /* Controller.swift */,
+				F8BC4DEA2A4EE08F0005F6F0 /* ChatViewNew.swift */,
 				F8BC4DE42A4DBD680005F6F0 /* ContentView.swift */,
 				CC3FE01E2A0DF21700756941 /* AppDelegate.swift */,
 				CC3FE0202A0DF25100756941 /* SceneDelegate.swift */,
@@ -481,6 +484,7 @@
 				CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */,
 				CC3FE0162A0B1C3700756941 /* BluetoothManager.swift in Sources */,
 				CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */,
+				F8BC4DEB2A4EE08F0005F6F0 /* ChatViewNew.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

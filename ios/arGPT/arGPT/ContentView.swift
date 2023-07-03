@@ -1,9 +1,7 @@
 import SwiftUI
 
 struct MainView: View {
-    @State private var settingPopup: Bool = false
     @State private var showingBottomSheet: Bool = false
-    private var searchingButton = "Searching"
     
     var body: some View {
         ZStack {
@@ -12,6 +10,7 @@ struct MainView: View {
                     Button(action: {}) {
                         Menu {
                             Button(action: {
+                        
                                 //Action here
                             }) {
                                 Label("Change API Key", systemImage: "person.circle")
@@ -69,7 +68,7 @@ struct MainView: View {
 
 struct bottomSheetView: View {
     var body: some View {
-        var searchingButton = "Searching"
+        var buttonName = "Searching"
         
         VStack {
             Text("Bring your device close.")
@@ -85,7 +84,7 @@ struct bottomSheetView: View {
             Button(action: {
                 // No Action needed
             }) {
-                Text(searchingButton)
+                Text(buttonName)
                     .font(.system(size: 22, weight: .medium))
             }
             .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
