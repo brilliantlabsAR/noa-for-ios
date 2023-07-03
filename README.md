@@ -5,6 +5,8 @@
 
 *arGPT for iOS* is an application that pairs to your [Monocle](https://brilliant.xyz/products/monocle) and empowers you with access to ChatGPT anywhere you need it. Simply tap to speak a question and see the response appear in your field of view. The iOS application can also function as a standalone chat interface to ChatGPT, allowing queries to be entered via the iOS keyboard.
 
+![iOS screenshot](docs/iOS_Screenshot_1.webp)
+
 ## Getting Started
 
 Getting started is easy:
