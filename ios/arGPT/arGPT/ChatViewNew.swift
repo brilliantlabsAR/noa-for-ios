@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ChatViewNew: View {
     @State private var popUpApiBox: Bool = false
+    @State private var scale: CGFloat = 0
 
     var body: some View {
         ZStack {
@@ -33,9 +34,10 @@ struct ChatViewNew: View {
                                 
                             }) {
                                 Label("Unpair Monocle", systemImage: "person.circle")
+                                    .foregroundColor(Color.red)
                             }
-                            .foregroundColor(Color.red)
                         }
+                        
                         label: {
                             Image(systemName: "gearshape.fill")
                                 .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
@@ -51,10 +53,18 @@ struct ChatViewNew: View {
                     .fill(Color.black.opacity(0.4))
                     .edgesIgnoringSafeArea(.all)
                     .onTapGesture {
-                        self.popUpApiBox.toggle()
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            self.scale = 0.5
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                self.scale = 0.5
+                                self.popUpApiBox = false
+                            }
+                        }
                     }
 
-                ApiBox(popUpApiBox: $popUpApiBox)
+                ApiBox(scale: $scale, popUpApiBox: $popUpApiBox)
             }
         }
     }
@@ -62,6 +72,7 @@ struct ChatViewNew: View {
 
 struct ApiBox: View {
     
+    @Binding var scale: CGFloat
     @Binding var popUpApiBox: Bool
     @State private var apiCode: String = ""
 
@@ -86,9 +97,7 @@ struct ApiBox: View {
             
             HStack {
                 Button(action: {
-                    print("API Code is \(apiCode)")
-                    self.popUpApiBox.toggle()
-                    apiCode = ""
+                    closeWithAnimation()
                 }) {
                     Text("Done")
                         .bold()
@@ -101,8 +110,7 @@ struct ApiBox: View {
                     .padding(.top, -8)
                 
                 Button(action: {
-                    self.popUpApiBox.toggle()
-                    apiCode = ""
+                    closeWithAnimation()
                 }) {
                     Text("Close")
                         .font(.headline)
@@ -116,8 +124,24 @@ struct ApiBox: View {
         .background(Color.white)
         .cornerRadius(20)
         .shadow(radius: 20)
+        .scaleEffect(scale)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                self.scale = 1
+            }
+        }
+    }
+    
+    func closeWithAnimation() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            self.scale = 0
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.popUpApiBox.toggle()
+            }
+        }
     }
 }
+
 
 struct ChatViewNew_Previews: PreviewProvider {
     static var previews: some View {
