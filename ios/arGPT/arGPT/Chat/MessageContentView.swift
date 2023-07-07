@@ -12,6 +12,7 @@ struct MessageContentView: View {
     private let _isUser: Bool
     private let _isTyping: Bool
     private let _backgroundColor: Color
+    
 
     var body: some View {
         if _isTyping {
@@ -24,7 +25,7 @@ struct MessageContentView: View {
         } else {
             Text(_contentMessage)
                 .padding(10)
-                .foregroundColor(Color.white)
+                .foregroundColor(Color.black)
                 .background(_backgroundColor)
                 .cornerRadius(10)
         }
@@ -36,9 +37,9 @@ struct MessageContentView: View {
         _isUser = message.participant.isUser
         _isTyping = message.typingInProgress
         if message.isError {
-            _backgroundColor = Color.red
+            _backgroundColor = Color.red.opacity(0.9)
         } else {
-            _backgroundColor = isUser ? Color.blue : Color(UIColor.darkGray)
+            _backgroundColor = isUser ? Color(red: 87/255, green: 199/255, blue: 170/255) : Color.gray.opacity(0.15)
         }
     }
 }

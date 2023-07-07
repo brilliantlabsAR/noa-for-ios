@@ -27,94 +27,105 @@ struct ChatView: View {
 
     @State private var _textInput: String = ""
     @State private var _textEnteredViaKeyboard = false  // used to detect if keyboard text was submitted to show immediately, even if Monocle not connected
-
+    
+    @State private var popUpApiBox: Bool = true
+    @State private var scale: CGFloat = 0 // For animation
+    
     private let _onTextSubmitted: ((String) -> Void)?
     private let _onClearChatButtonPressed: (() -> Void)?
 
     var body: some View {
-        NavigationView {
-            VStack {
-                // Message view
-                if !_isMonocleConnected && !_textEnteredViaKeyboard {
+        ZStack {
+            VStack(alignment: .center) {
+                HStack {
                     Spacer()
-                    if _pairedMonocleID != nil {
-                        // We have a paired Monocle, it's just not connected
-                        Text("Monocle not connected.")
-                        Text("Power it on nearby or tap \(Image(systemName: "gear"))")
-                        Text("to connect a different one.")
-                    } else {
-                        Text("No Monocle paired.")
-                        Text("Power on Monocle nearby")
-                        Text("or tap \(Image(systemName: "gear")) to find one.")
-                    }
-                    Spacer()
-                } else if _chatMessageStore.messages.isEmpty {
-                    // No messages
-                    Spacer()
-                    Text("Speak through your Monocle.")
-                    Spacer()
-                } else {
-                    // List of messages
-                    ScrollViewReader { scrollView in
-                        List {
-                            // Use enumerated array so that we can ID each element, allowing us to scroll to the bottom. Adding an
-                            // EmptyView() at the end of the list with an ID does not seem to work.
-                            ForEach(Array(_chatMessageStore.messages.enumerated()), id: \.element) { i, element in
-                                MessageView(currentMessage: element).id(i)
+                        .frame(width: 70)
+                    
+                    Text("arGPT")
+                        .font(.system(size: 22, weight: .bold))
+                        .frame(maxWidth: .infinity)
+                    
+                    Button(action: {}) {
+                        Menu {
+                            Button(action: {
+                                self.popUpApiBox.toggle()
+                            }) {
+                                Label("Change API Key", systemImage: "person.circle")
                             }
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(.init(top: 5, leading: 10, bottom: 5, trailing: 10))
-                                .listRowBackground(Color(UIColor.clear))
-
-                            // Empty element with anchor always at end of list that we can scroll to
-                            Spacer().id(-1)
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(.init(top: 5, leading: 10, bottom: 5, trailing: 10))
-                                .listRowBackground(Color.clear)
+                            Button(action: {
+                                
+                                
+                            }) {
+                                Label("Unpair Monocle", systemImage: "person.circle")
+                                    .foregroundColor(Color.red)
+                            }
                         }
-                        .listStyle(GroupedListStyle())  // take up full width
-                        //.scrollContentBackground(.hidden)
-                        .onChange(of: _chatMessageStore.messages) { _ in
-                            withAnimation {
-                                // Scroll to bottom
-                                scrollView.scrollTo(-1)
-                            }
+                        
+                    label: {
+                        Image(systemName: "gearshape.fill")
+                            .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
+                        }
+                    }
+                    .padding(.trailing)
+                }
+                .padding(.top)
+                .frame(maxWidth: .infinity, alignment: .top)
+                Spacer()
+                
+                // Message view
+                // List of messages
+                ScrollViewReader { scrollView in
+                    List {
+                        // Use enumerated array so that we can ID each element, allowing us to scroll to the bottom. Adding an
+                        // EmptyView() at the end of the list with an ID does not seem to work.
+                        ForEach(Array(_chatMessageStore.messages.enumerated()), id: \.element) { i, element in
+                            MessageView(currentMessage: element).id(i)
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(.init(top: 5, leading: 10, bottom: 5, trailing: 10))
+                        .listRowBackground(Color(UIColor.clear))
+                        
+                        // Empty element with anchor always at end of list that we can scroll to
+                        Spacer().id(-1)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(.init(top: 5, leading: 10, bottom: 5, trailing: 10))
+                            .listRowBackground(Color.clear)
+                    }
+                    .listStyle(GroupedListStyle())  // take up full width
+                    .scrollContentBackground(.hidden)
+                    .onChange(of: _chatMessageStore.messages) { _ in
+                        withAnimation {
+                            // Scroll to bottom
+                            scrollView.scrollTo(-1)
                         }
                     }
                 }
-
-                HStack {
-                    // Settings button
-                    Button(
-                        action: {
-                            _displaySettings = true
-                        },
-                        label: {
-                            Image(systemName: "gear.circle.fill")
-                                .font(.system(.title))
-                                .frame(minHeight: 30, alignment: .center)
+                VStack {
+                    if !_isMonocleConnected  {
+                        if _pairedMonocleID != nil {
+                            // We have a paired Monocle, it's just not connected
+                            Text("No Monocle Connected! \(Image(systemName: "exclamationmark.circle"))")
+                                .foregroundColor(Color.red)
+                        } else {
+                            Text("No Monocle Paired! \(Image(systemName: "exclamationmark.triangle"))")
+                                .foregroundColor(Color.yellow)
                         }
-                    )
-
-                    // Clear session button
-                    Button(
-                        role: .destructive,
-                        action: {
-                            _onClearChatButtonPressed?()
-                            _textEnteredViaKeyboard = false
-                        },
-                        label: {
-                            Image(systemName: "clear.fill")
-                                .font(.system(.title))
-                        }
-                    )
-                    .disabled(_chatMessageStore.messages.count == 0)
-
+                    } else if _chatMessageStore.messages.isEmpty {
+                        // No messages
+                        Text("Speak through your Monocle.")
+                    } else {
+                        Text("")
+                    }
+                }
+                HStack(spacing: -35) {
+                    
                     // Text entry
-                    TextField("Question...", text: $_textInput)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    TextField("Ask a question", text: $_textInput)
+                        .padding(6)
+                        .padding(.leading, 10)
+                        .background(RoundedRectangle(cornerRadius: 25).strokeBorder(Color.gray.opacity(0.5)))
                         .frame(minHeight: CGFloat(30))
-
+                    
                     // Send button
                     Button(
                         action: {
@@ -125,20 +136,41 @@ struct ChatView: View {
                         label: {
                             Image(systemName: "arrow.up.circle.fill")
                                 .font(.system(.title))
+                                .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
                                 .frame(minHeight: 30, alignment: .center)
-                                .disabled(_textInput.isEmpty)
                         }
                     )
-                }.frame(minHeight: CGFloat(50)).padding()
+                }
+                .padding(.bottom, 5)
+                .padding(.top, -10)
+                .padding(.horizontal, 20)
             }
-            .navigationBarTitle(Text("arGPT Session"), displayMode: .inline)
-        }
-        .onChange(of: _isMonocleConnected) { _ in
-            // Whenever Monocle is connected, clear the text entered flag so that next time it
-            // disconnects, instructions are printed again
-            if _isMonocleConnected {
-                _textEnteredViaKeyboard = false
+            .onChange(of: _isMonocleConnected) { _ in
+                // Whenever Monocle is connected, clear the text entered flag so that next time it
+                // disconnects, instructions are printed again
+                if _isMonocleConnected {
+                    _textEnteredViaKeyboard = false
+                }
             }
+            .blur(radius: popUpApiBox ? 1 : 0)
+            
+            if popUpApiBox {
+                Rectangle()
+                    .fill(Color.black.opacity(0.4))
+                    .edgesIgnoringSafeArea(.all)
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            self.scale = 0
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                self.scale = 0
+                                self.popUpApiBox = false
+                            }
+                        }
+                    }
+                apiBox(scale: $scale, popUpApiBox: $popUpApiBox)
+                }
         }
     }
 
@@ -148,6 +180,78 @@ struct ChatView: View {
         __pairedMonocleID = pairedMonocleID
         _onTextSubmitted = onTextSubmitted
         _onClearChatButtonPressed = onClearChatButtonPressed
+    }
+}
+
+struct apiBox: View {
+    
+    @Binding var scale: CGFloat
+    @Binding var popUpApiBox: Bool
+    @State private var apiCode: String = ""
+
+    var body: some View {
+        VStack {
+            Text("Enter your OpenAI API key")
+                .font(.system(size: 20, weight: .semibold))
+                .padding(.top, 20)
+                .padding(.bottom, 2)
+            
+            Text("If you don’t have a key, visit platform.openai.com to create one.")
+                .font(.system(size: 15, weight: .regular))
+                .multilineTextAlignment(.center)
+                .padding(.bottom, 5)
+
+            TextField("sk-...", text: $apiCode)
+                .padding(.all, 2)
+                .background(Color.gray.opacity(0.2))
+                .padding(.horizontal)
+            
+            Divider().background(Color.gray)
+            
+            HStack {
+                Button(action: {
+                    closeWithAnimation()
+                }) {
+                    Text("Done")
+                        .bold()
+                        .foregroundColor(.blue)
+                        .frame(maxWidth: .infinity)
+                }
+                
+                Divider()
+                    .background(Color.gray)
+                    .padding(.top, -8)
+                
+                Button(action: {
+                    closeWithAnimation()
+                }) {
+                    Text("Close")
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .frame(height: 40)
+        }
+        .frame(width: 300)
+        .background(Color.white)
+        .cornerRadius(20)
+        .shadow(radius: 20)
+        .scaleEffect(scale)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                self.scale = 1
+            }
+        }
+    }
+    
+    func closeWithAnimation() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            self.scale = 0
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.popUpApiBox.toggle()
+            }
+        }
     }
 }
 
@@ -164,7 +268,7 @@ struct ChatView_Previews: PreviewProvider {
     }()
 
     static var previews: some View {
-        ChatView(displaySettings: .constant(false), isMonocleConnected: .constant(true), pairedMonocleID: .constant(UUID()))
+        ChatView(displaySettings: .constant(false), isMonocleConnected: .constant(false), pairedMonocleID: .constant(UUID()))
             .environmentObject(ChatView_Previews._chatMessageStore)
     }
 }

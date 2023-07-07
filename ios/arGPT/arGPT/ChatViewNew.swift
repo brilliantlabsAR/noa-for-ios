@@ -10,6 +10,8 @@ import SwiftUI
 struct ChatViewNew: View {
     @State private var popUpApiBox: Bool = false
     @State private var scale: CGFloat = 0
+    
+    
 
     var body: some View {
         ZStack {
@@ -47,7 +49,7 @@ struct ChatViewNew: View {
                 }
                 Spacer()
             }
-
+            
             if popUpApiBox {
                 Rectangle()
                     .fill(Color.black.opacity(0.4))
