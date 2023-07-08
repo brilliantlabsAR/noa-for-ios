@@ -23,29 +23,24 @@ struct ARGPTApp: App {
 
     @UIApplicationDelegateAdaptor private var _appDelegate: AppDelegate
 
-    @State private var _displaySettings = false
-
     var body: some Scene {
         WindowGroup {
-            ChatView(
-                displaySettings: $_displaySettings,
-                isMonocleConnected: $_bluetooth.isConnected,
-                pairedMonocleID: $_bluetooth.selectedDeviceID,
-                onTextSubmitted: { [weak _controller] (query: String) in
-                    _controller?.submitQuery(query: query)
-                },
-                onClearChatButtonPressed: { [weak _controller] in
-                    _controller?.clearHistory()
-                }
-            )
-            .environmentObject(_chatMessageStore)
-            .fullScreenCover(isPresented: $_displaySettings, content: {
-                SettingsView(
-                    discoveredDevices: $_bluetooth.discoveredDevices,
-                    isMonocleConnected: $_bluetooth.isConnected
+            if _bluetooth.selectedDeviceID == nil {
+                InitialView(pairedMonocleID: $_bluetooth.selectedDeviceID)
+            } else {
+                ChatView(
+                    isMonocleConnected: $_bluetooth.isConnected,
+                    pairedMonocleID: $_bluetooth.selectedDeviceID,
+                    onTextSubmitted: { [weak _controller] (query: String) in
+                        _controller?.submitQuery(query: query)
+                    },
+                    onClearChatButtonPressed: { [weak _controller] in
+                        _controller?.clearHistory()
+                    }
                 )
+                .environmentObject(_chatMessageStore)
                 .environmentObject(_settings)
-            })
+            }
         }
     }
 

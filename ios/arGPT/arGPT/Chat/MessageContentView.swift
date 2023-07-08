@@ -25,7 +25,7 @@ struct MessageContentView: View {
         } else {
             Text(_contentMessage)
                 .padding(10)
-                .foregroundColor(Color.black)
+                .foregroundColor(Color.white)
                 .background(_backgroundColor)
                 .cornerRadius(10)
         }
@@ -37,9 +37,9 @@ struct MessageContentView: View {
         _isUser = message.participant.isUser
         _isTyping = message.typingInProgress
         if message.isError {
-            _backgroundColor = Color.red.opacity(0.9)
+            _backgroundColor = Color(UIColor.systemRed)
         } else {
-            _backgroundColor = isUser ? Color(red: 87/255, green: 199/255, blue: 170/255) : Color.gray.opacity(0.15)
+            _backgroundColor = isUser ? Color(UIColor.systemBlue) : Color(UIColor.darkGray)
         }
     }
 }
