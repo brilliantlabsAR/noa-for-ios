@@ -9,6 +9,7 @@
 
 import SwiftUI
 
+/*
 extension View {
     func inExpandingRectangle() -> some View {
         ZStack {
@@ -18,17 +19,22 @@ extension View {
         }
     }
 }
+*/
 
 struct ChatView: View {
+    // Data model
     @EnvironmentObject private var _chatMessageStore: ChatMessageStore
-    @Binding private var _displaySettings: Bool
+    @EnvironmentObject private var _settings: Settings
+
+    // Monocle state
     @Binding private var _isMonocleConnected: Bool
     @Binding private var _pairedMonocleID: UUID?
 
     @State private var _textInput: String = ""
-    @State private var _textEnteredViaKeyboard = false  // used to detect if keyboard text was submitted to show immediately, even if Monocle not connected
     
-    @State private var popUpApiBox: Bool = true
+    @State private var popUpApiBox: Bool = false
+
+
     @State private var scale: CGFloat = 0 // For animation
     
     private let _onTextSubmitted: ((String) -> Void)?
@@ -53,8 +59,7 @@ struct ChatView: View {
                                 Label("Change API Key", systemImage: "person.circle")
                             }
                             Button(action: {
-                                
-                                
+                                popUpApiBox = true
                             }) {
                                 Label("Unpair Monocle", systemImage: "person.circle")
                                     .foregroundColor(Color.red)
@@ -131,7 +136,6 @@ struct ChatView: View {
                         action: {
                             _onTextSubmitted?(_textInput)
                             _textInput = ""
-                            _textEnteredViaKeyboard = true
                         },
                         label: {
                             Image(systemName: "arrow.up.circle.fill")
@@ -144,13 +148,6 @@ struct ChatView: View {
                 .padding(.bottom, 5)
                 .padding(.top, -10)
                 .padding(.horizontal, 20)
-            }
-            .onChange(of: _isMonocleConnected) { _ in
-                // Whenever Monocle is connected, clear the text entered flag so that next time it
-                // disconnects, instructions are printed again
-                if _isMonocleConnected {
-                    _textEnteredViaKeyboard = false
-                }
             }
             .blur(radius: popUpApiBox ? 1 : 0)
             
@@ -169,13 +166,16 @@ struct ChatView: View {
                             }
                         }
                     }
-                apiBox(scale: $scale, popUpApiBox: $popUpApiBox)
-                }
+                APIKeyPopupBox(scale: $scale, popUpApiBox: $popUpApiBox)
+            }
+        }
+        .onAppear {
+            // When view appears, check whether we need an API key
+            popUpApiBox = _settings.apiKey.isEmpty
         }
     }
 
-    public init(displaySettings: Binding<Bool>, isMonocleConnected: Binding<Bool>, pairedMonocleID: Binding<UUID?>, onTextSubmitted: ((String) -> Void)? = nil, onClearChatButtonPressed: (() -> Void)? = nil) {
-        __displaySettings = displaySettings
+    public init(isMonocleConnected: Binding<Bool>, pairedMonocleID: Binding<UUID?>, onTextSubmitted: ((String) -> Void)? = nil, onClearChatButtonPressed: (() -> Void)? = nil) {
         __isMonocleConnected = isMonocleConnected
         __pairedMonocleID = pairedMonocleID
         _onTextSubmitted = onTextSubmitted
@@ -183,7 +183,7 @@ struct ChatView: View {
     }
 }
 
-struct apiBox: View {
+struct APIKeyPopupBox: View {
     
     @Binding var scale: CGFloat
     @Binding var popUpApiBox: Bool
@@ -196,7 +196,7 @@ struct apiBox: View {
                 .padding(.top, 20)
                 .padding(.bottom, 2)
             
-            Text("If you don’t have a key, visit platform.openai.com to create one.")
+            Text("If you don’t have a key, press \"Find My Key...\" to be taken to OpenAI.")
                 .font(.system(size: 15, weight: .regular))
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 5)
@@ -223,9 +223,9 @@ struct apiBox: View {
                     .padding(.top, -8)
                 
                 Button(action: {
-                    closeWithAnimation()
+                    UIApplication.shared.open(URL(string: "http://platform.openai.com")!)
                 }) {
-                    Text("Close")
+                    Text("Find My Key...")
                         .font(.headline)
                         .foregroundColor(.blue)
                         .frame(maxWidth: .infinity)
@@ -234,7 +234,7 @@ struct apiBox: View {
             .frame(height: 40)
         }
         .frame(width: 300)
-        .background(Color.white)
+        .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(20)
         .shadow(radius: 20)
         .scaleEffect(scale)
@@ -268,7 +268,8 @@ struct ChatView_Previews: PreviewProvider {
     }()
 
     static var previews: some View {
-        ChatView(displaySettings: .constant(false), isMonocleConnected: .constant(false), pairedMonocleID: .constant(UUID()))
+        ChatView(isMonocleConnected: .constant(false), pairedMonocleID: .constant(UUID()))
             .environmentObject(ChatView_Previews._chatMessageStore)
+            .environmentObject(Settings())
     }
 }

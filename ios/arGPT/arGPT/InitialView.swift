@@ -1,37 +1,31 @@
+//
+//  InitialView.swift
+//  arGPT
+//
+//  Created by Artur Burlakin on 6/29/23.
+//
+//  Resources
+//  ---------
+//  - "Computed State in SwiftUI view"
+//    https://yoswift.dev/swiftui/computed-state/
+//
+
 import SwiftUI
 
-struct MainView: View {
-    @State private var showingBottomSheet: Bool = false
-    
+struct InitialView: View {
+    @Binding private var _pairedMonocleID: UUID?
+
+    private var _showPairingSheet: Binding<Bool> {
+        Binding(
+            get: { self._pairedMonocleID == nil },
+            set: { (_: Bool) in /* do nothing */}
+        )
+    }
+
     var body: some View {
         ZStack {
             VStack {
                 VStack {
-                    Button(action: {}) {
-                        Menu {
-                            Button(action: {
-                        
-                                //Action here
-                            }) {
-                                Label("Change API Key", systemImage: "person.circle")
-                            }
-                            Button(action: {
-                                //Action here
-                            }) {
-                                Label("Unpair Monocle", systemImage: "person.circle")
-                            }
-                            .foregroundColor(Color.red)
-                            }
-                        
-                    label: {
-                            Image(systemName: "gearshape.fill")
-                                .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
-                        }
-                    .fixedSize()
-                    .position(x:360)
-                    }
-                    
-                    
                     Image("BrilliantLabsLogo")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -41,7 +35,7 @@ struct MainView: View {
                         .font(.system(size: 32, weight: .bold))
                         .position(x: 203,y:-77)
                     
-                    Text("Let’s pair your device. Take your Monocle out of the case, and bring it close.")
+                    Text("Let’s pair your device. Take your Monocle out of the case and bring it close.")
                         .font(.system(size: 17))
                         .multilineTextAlignment(.center)
                         .frame(width: 346, height: 87)
@@ -52,8 +46,8 @@ struct MainView: View {
                     RoundedRectangle(cornerRadius: 25)
                         .fill(Color.white)
                         .frame(width: 370, height: 370)
-                        .sheet(isPresented: $showingBottomSheet) {
-                            bottomSheetView()
+                        .sheet(isPresented: _showPairingSheet) {
+                            PairingSheetView()
                                 .presentationDragIndicator(.hidden)
                                 .presentationDetents([.height(370)])
                                 
@@ -62,13 +56,15 @@ struct MainView: View {
             }
         }
     }
+
+    init(pairedMonocleID: Binding<UUID?>) {
+        __pairedMonocleID = pairedMonocleID
+    }
 }
 
-// To make a thing appear need to be bool: true or this function "showingBottomSheet.toggle()"
-
-struct bottomSheetView: View {
+struct PairingSheetView: View {
     var body: some View {
-        var buttonName = "Searching"
+        let buttonName = "Searching"
         
         VStack {
             Text("Bring your device close.")
@@ -92,14 +88,11 @@ struct bottomSheetView: View {
             .background(Color(red: 242/255, green: 242/255, blue: 247/255))
             .foregroundColor(Color(red: 142/255, green: 142/255, blue: 147/255))
             .cornerRadius(15)
-            
         }
     }
 }
 struct MainView_Previews: PreviewProvider {
     static var previews: some View {
-        MainView()
-    
-        
+        InitialView(pairedMonocleID: .constant(UUID()))
     }
 }

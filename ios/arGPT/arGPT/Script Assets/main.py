@@ -1,7 +1,6 @@
 import bluetooth
 import graphics
 import microphone
-import time
 import touch
 import states
 
@@ -84,7 +83,7 @@ while True:
 
     elif state.current_state == state.StartRecording:
         if state.on_entry():
-            microphone.record(seconds=RECORD_LENGTH)
+            microphone.record(seconds=RECORD_LENGTH, bit_depth=8, sample_rate=8000)
             bluetooth_send_message(b"ast:")
             gfx.clear_response()
             gfx.set_prompt("Listening [   ]")
@@ -92,15 +91,7 @@ while True:
 
     elif state.current_state == state.SendAudio:
         if state.has_been() > 3000:
-            if state.has_been() // 250 % 4 == 0:
-                gfx.set_prompt("Sending   [=  ]")
-            elif state.has_been() // 250 % 4 == 1:
-                gfx.set_prompt("Sending   [ = ]")
-            elif state.has_been() // 250 % 4 == 2:
-                gfx.set_prompt("Sending   [  =]")
-            elif state.has_been() // 250 % 4 == 3:
-                gfx.set_prompt("Sending   [   ]")
-
+            gfx.set_prompt("Waiting for openAI")
         elif state.has_been() > 2000:
             gfx.set_prompt("Listening [===]")
         elif state.has_been() > 1000:
@@ -108,13 +99,17 @@ while True:
         else:
             gfx.set_prompt("Listening [=  ]")
 
-        samples = microphone.__read_raw(bluetooth.max_length() // 2 - 6)
+        samples = (bluetooth.max_length() - 4) // 2
+        chunk1 = microphone.read(samples)
+        chunk2 = microphone.read(samples)
 
-        if samples == None:
+        if chunk1 == None:
             bluetooth_send_message(b"aen:")
             state.after(0, state.WaitForPing)
+        elif chunk2 == None:
+            bluetooth_send_message(b"dat:" + chunk1)
         else:
-            bluetooth_send_message(b"dat:" + samples)
+            bluetooth_send_message(b"dat:" + chunk1 + chunk2)
 
     elif (
         state.current_state == state.WaitForPing
