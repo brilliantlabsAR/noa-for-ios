@@ -10,6 +10,10 @@
 //    https://yoswift.dev/swiftui/computed-state/
 //
 
+//TODO: remove the commented out rectangle
+//TODO: should we allow the sheet to be dismissed?
+//TODO: remoe unused views (SettingsView)
+
 import SwiftUI
 
 struct InitialView: View {
@@ -43,14 +47,15 @@ struct InitialView: View {
                 }
                 .frame(width: 393, height: 351)
                 VStack {
-                    RoundedRectangle(cornerRadius: 25)
-                        .fill(Color.white)
-                        .frame(width: 370, height: 370)
+                    /*RoundedRectangle(cornerRadius: 25)
+                        .opacity(0)
+                        .frame(width: 370, height: 370)*/
+                    Spacer()
                         .sheet(isPresented: _showPairingSheet) {
                             PairingSheetView()
                                 .presentationDragIndicator(.hidden)
                                 .presentationDetents([.height(370)])
-                                
+                                .interactiveDismissDisabled(true)
                         }
                 }
             }

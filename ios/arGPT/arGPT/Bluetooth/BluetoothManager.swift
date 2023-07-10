@@ -33,7 +33,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     /// Sets the device ID to automatically connect to. This is kept separate from
     /// connectedDeviceID to avoid an infinite publishing loop from here -> Settings -> here when
     /// auto-connecting by proximity.
-    public var selectedDeviceID: UUID? {
+    @Published public var selectedDeviceID: UUID? {
         didSet {
             if let connectedPeripheral = _connectedPeripheral {
                 // We have a connected peripheral. See if desired device ID changed and if so,
