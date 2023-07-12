@@ -10,21 +10,22 @@
 //    https://yoswift.dev/swiftui/computed-state/
 //
 
-//TODO: remove the commented out rectangle
-//TODO: should we allow the sheet to be dismissed?
+//TODO: Monocle should not auto-pair, we need a pairing allowed flag
 //TODO: remoe unused views (SettingsView)
 
 import SwiftUI
 
 struct InitialView: View {
-    @Binding private var _pairedMonocleID: UUID?
+    @Binding var showPairingView: Bool
 
+    /*
     private var _showPairingSheet: Binding<Bool> {
         Binding(
             get: { self._pairedMonocleID == nil },
             set: { (_: Bool) in /* do nothing */}
         )
     }
+    */
 
     var body: some View {
         ZStack {
@@ -47,12 +48,12 @@ struct InitialView: View {
                 }
                 .frame(width: 393, height: 351)
                 VStack {
-                    /*RoundedRectangle(cornerRadius: 25)
-                        .opacity(0)
-                        .frame(width: 370, height: 370)*/
+//                    RoundedRectangle(cornerRadius: 25)
+//                        .opacity(0)
+//                        .frame(width: 370, height: 370)
                     Spacer()
-                        .sheet(isPresented: _showPairingSheet) {
-                            PairingSheetView()
+                        .sheet(isPresented: $showPairingView) {
+                            PairingSheetView(showPairingView: $showPairingView)
                                 .presentationDragIndicator(.hidden)
                                 .presentationDetents([.height(370)])
                                 .interactiveDismissDisabled(true)
@@ -61,16 +62,23 @@ struct InitialView: View {
             }
         }
     }
-
-    init(pairedMonocleID: Binding<UUID?>) {
-        __pairedMonocleID = pairedMonocleID
-    }
 }
 
 struct PairingSheetView: View {
+    @Binding var showPairingView: Bool
+
     var body: some View {
         let buttonName = "Searching"
-        
+        HStack {
+            Spacer()
+            Button(role: .cancel) {
+                showPairingView = false
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(.body))
+                    .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
+            }
+        }
         VStack {
             Text("Bring your device close.")
                 .font(.system(size: 24, weight: .bold))
@@ -96,8 +104,8 @@ struct PairingSheetView: View {
         }
     }
 }
-struct MainView_Previews: PreviewProvider {
+struct InitialView_Previews: PreviewProvider {
     static var previews: some View {
-        InitialView(pairedMonocleID: .constant(UUID()))
+        InitialView(showPairingView: .constant(true))
     }
 }

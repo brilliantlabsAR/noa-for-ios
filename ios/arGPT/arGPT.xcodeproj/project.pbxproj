@@ -52,8 +52,9 @@
 		CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */; };
 		CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */; };
 		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
-		F8BC4DE52A4DBD680005F6F0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DE42A4DBD680005F6F0 /* ContentView.swift */; };
-		F8BC4DEB2A4EE08F0005F6F0 /* ChatViewNew.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DEA2A4EE08F0005F6F0 /* ChatViewNew.swift */; };
+		CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */; };
+		CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */; };
+		F8BC4DE52A4DBD680005F6F0 /* InitialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DE42A4DBD680005F6F0 /* InitialView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -123,8 +124,9 @@
 		CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Tootsie.wav; sourceTree = "<group>"; };
 		CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_CPU.wav; sourceTree = "<group>"; };
 		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
-		F8BC4DE42A4DBD680005F6F0 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		F8BC4DEA2A4EE08F0005F6F0 /* ChatViewNew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewNew.swift; sourceTree = "<group>"; };
+		CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuView.swift; sourceTree = "<group>"; };
+		CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyPopupBoxView.swift; sourceTree = "<group>"; };
+		F8BC4DE42A4DBD680005F6F0 /* InitialView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InitialView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +159,8 @@
 			children = (
 				CC3FE00C2A09C8A400756941 /* Settings.swift */,
 				CC3FE0082A098DE700756941 /* SettingsView.swift */,
+				CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */,
+				CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -239,8 +243,7 @@
 				CC4E3AED2A00BBB00058AC20 /* Chat */,
 				CC4E3AC32A00BA4C0058AC20 /* ARGPTApp.swift */,
 				CCB2F9612A2568EE00F24F2D /* Controller.swift */,
-				F8BC4DEA2A4EE08F0005F6F0 /* ChatViewNew.swift */,
-				F8BC4DE42A4DBD680005F6F0 /* ContentView.swift */,
+				F8BC4DE42A4DBD680005F6F0 /* InitialView.swift */,
 				CC3FE01E2A0DF21700756941 /* AppDelegate.swift */,
 				CC3FE0202A0DF25100756941 /* SceneDelegate.swift */,
 				CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */,
@@ -460,7 +463,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CC27DC552A0304D600A942A9 /* TypingIndicator.swift in Sources */,
-				F8BC4DE52A4DBD680005F6F0 /* ContentView.swift in Sources */,
+				F8BC4DE52A4DBD680005F6F0 /* InitialView.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
 				CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */,
@@ -477,14 +480,15 @@
 				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
 				CC3FE0242A0EE66E00756941 /* SpeechToText.swift in Sources */,
+				CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */,
 				CC4E3AC42A00BA4C0058AC20 /* ARGPTApp.swift in Sources */,
 				CCCECE6B2A1EB4B100DBB7CA /* Whisper.swift in Sources */,
+				CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */,
 				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,
 				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,
 				CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */,
 				CC3FE0162A0B1C3700756941 /* BluetoothManager.swift in Sources */,
 				CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */,
-				F8BC4DEB2A4EE08F0005F6F0 /* ChatViewNew.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -644,7 +648,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"arGPT/Preview Content\"";
-				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				DEVELOPMENT_TEAM = 7T2874S592;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "arGPT-Info.plist";
@@ -680,7 +684,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"arGPT/Preview Content\"";
-				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				DEVELOPMENT_TEAM = 7T2874S592;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "arGPT-Info.plist";

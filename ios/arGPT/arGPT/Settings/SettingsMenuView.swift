@@ -9,7 +9,9 @@ import SwiftUI
 
 struct SettingsMenuView: View {
     @EnvironmentObject private var _settings: Settings
-    @Binding private var popUpApiBox: Bool
+    @EnvironmentObject private var _bluetooth: BluetoothManager
+    @Binding var popUpApiBox: Bool
+    @Binding var showPairingView: Bool
 
     var body: some View {
         Menu {
@@ -19,25 +21,33 @@ struct SettingsMenuView: View {
                 Label("Change API Key", systemImage: "person.circle")
             }
             Button(action: {
-                _settings.setPairedDeviceID(nil)
+                if _settings.pairedDeviceID != nil {
+                    // Unpair but do not go back to pairing screen just yet
+                    _bluetooth.enabled = false  // must stop scanning because we will auto repair otherwise
+                    _settings.setPairedDeviceID(nil)
+                } else {
+                    // Return to pairing screen only on explicit pairing request
+                    showPairingView = true
+                }
             }) {
-                Label("Unpair Monocle", systemImage: "person.circle")
-                    .foregroundColor(Color.red)
+                // Unpair/pair Monocle
+                if _settings.pairedDeviceID != nil {
+                    Label("Unpair Monocle", systemImage: "person.circle")
+                        .foregroundColor(Color.red)
+                } else {
+                    Label("Pair Monocle", systemImage: "person.circle")
+                }
             }
         } label: {
             Image(systemName: "gearshape.fill")
                 .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
         }
     }
-
-    init(popUpApiBox: Binding<Bool>) {
-        _popUpApiBox = popUpApiBox
-    }
 }
 
 struct SettingsMenuView_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsMenuView(popUpApiBox: .constant(false))
+        SettingsMenuView(popUpApiBox: .constant(false), showPairingView: .constant(false))
             .environmentObject(Settings())
     }
 }

@@ -25,16 +25,19 @@ struct ChatView: View {
     // Data model
     @EnvironmentObject private var _chatMessageStore: ChatMessageStore
     @EnvironmentObject private var _settings: Settings
+    @EnvironmentObject private var _bluetooth: BluetoothManager
 
-    // Monocle state
-    @Binding private var _isMonocleConnected: Bool
-    @Binding private var _pairedMonocleID: UUID?
+    // Allows pairing view to be brought up (replacing this one)
+    @Binding private var _showPairingView: Bool
 
+    // Stores text being input in text field
     @State private var _textInput: String = ""
-    
+
+    // Popup API box state
     @State private var popUpApiBox: Bool = false
     @State private var popupApiBoxScale: CGFloat = 0   // animation
-    
+
+    // Chat callbacks
     private let _onTextSubmitted: ((String) -> Void)?
     private let _onClearChatButtonPressed: (() -> Void)?
 
@@ -53,8 +56,9 @@ struct ChatView: View {
                     
                     // Settings menu
                     Button(action: {}) {
-                        SettingsMenuView(popUpApiBox: $popUpApiBox)
+                        SettingsMenuView(popUpApiBox: $popUpApiBox, showPairingView: $_showPairingView)
                             .environmentObject(_settings)
+                            .environmentObject(_bluetooth)
                     }
                     .padding(.trailing)
                 }
@@ -91,13 +95,13 @@ struct ChatView: View {
                     }
                 }
                 VStack {
-                    if !_isMonocleConnected  {
-                        if _pairedMonocleID != nil {
+                    if !_bluetooth.isConnected  {
+                        if _bluetooth.selectedDeviceID != nil {
                             // We have a paired Monocle, it's just not connected
-                            Text("No Monocle Connected! \(Image(systemName: "exclamationmark.circle"))")
+                            Text("\(Image(systemName: "exclamationmark.circle")) No Monocle Connected")
                                 .foregroundColor(Color.red)
                         } else {
-                            Text("No Monocle Paired! \(Image(systemName: "exclamationmark.triangle"))")
+                            Text("\(Image(systemName: "exclamationmark.circle")) No Monocle Paired")
                                 .foregroundColor(Color.yellow)
                         }
                     } else if _chatMessageStore.messages.isEmpty {
@@ -161,9 +165,12 @@ struct ChatView: View {
         }
     }
 
-    public init(isMonocleConnected: Binding<Bool>, pairedMonocleID: Binding<UUID?>, onTextSubmitted: ((String) -> Void)? = nil, onClearChatButtonPressed: (() -> Void)? = nil) {
-        __isMonocleConnected = isMonocleConnected
-        __pairedMonocleID = pairedMonocleID
+    public init(
+        showPairingView: Binding<Bool>,
+        onTextSubmitted: ((String) -> Void)? = nil,
+        onClearChatButtonPressed: (() -> Void)? = nil
+    ) {
+        __showPairingView = showPairingView
         _onTextSubmitted = onTextSubmitted
         _onClearChatButtonPressed = onClearChatButtonPressed
     }
@@ -182,8 +189,11 @@ struct ChatView_Previews: PreviewProvider {
     }()
 
     static var previews: some View {
-        ChatView(isMonocleConnected: .constant(false), pairedMonocleID: .constant(UUID()))
+        ChatView(
+            showPairingView: .constant(false)
+        )
             .environmentObject(ChatView_Previews._chatMessageStore)
             .environmentObject(Settings())
+            .environmentObject(BluetoothManager(autoConnectByProximity: true))
     }
 }
