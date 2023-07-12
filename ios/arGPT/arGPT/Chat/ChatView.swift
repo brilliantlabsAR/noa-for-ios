@@ -55,12 +55,10 @@ struct ChatView: View {
                         .frame(maxWidth: .infinity)
                     
                     // Settings menu
-                    Button(action: {}) {
-                        SettingsMenuView(popUpApiBox: $popUpApiBox, showPairingView: $_showPairingView)
-                            .environmentObject(_settings)
-                            .environmentObject(_bluetooth)
-                    }
-                    .padding(.trailing)
+                    SettingsMenuView(popUpApiBox: $popUpApiBox, showPairingView: $_showPairingView)
+                        .environmentObject(_settings)
+                        .environmentObject(_bluetooth)
+                        .padding(.trailing)
                 }
                 .padding(.top)
                 .frame(maxWidth: .infinity, alignment: .top)
