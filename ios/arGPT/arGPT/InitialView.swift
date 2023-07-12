@@ -21,8 +21,11 @@ struct InitialView: View {
         ZStack {
             VStack {
                 VStack {
-                    Image("BrilliantLabsLogo")
+                    let light = Image("BrilliantLabsLogo")
                         .resizable()
+                    let dark = Image("BrilliantLabsLogo_Dark")
+                        .resizable()
+                    ColorModeAdaptiveImage(light: light, dark: dark)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 12)
                         .position(x: 200, y: -10)
@@ -36,6 +39,7 @@ struct InitialView: View {
                         .frame(width: 346, height: 87)
                         .position(x: 200, y: -60)
                 }
+                .padding(.top)  // needed to avoid hitting unsafe top area (e.g., dynamic island)
                 .frame(width: 393, height: 351)
                 VStack {
                     Spacer()
