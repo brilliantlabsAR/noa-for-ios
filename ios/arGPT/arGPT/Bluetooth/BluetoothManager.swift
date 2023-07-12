@@ -49,6 +49,35 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         return _connectedPeripheral?.maximumWriteValueLength(for: .withoutResponse)
     }
 
+    /// Enables/disables the Bluetooth connectivity. Disconnects from connected peripheral (but
+    /// does not unpair it) and stops scanning when set to false. When set to true, will try to
+    /// immediately begin scanning.
+    public var enabled: Bool {
+        get {
+            return _enabled
+        }
+
+        set {
+            _enabled = newValue
+            print("[BluetoothManager] \(_enabled ? "Enabled" : "Disabled")")
+            if _enabled && _manager.state == .poweredOn {
+                startScan()
+            } else {
+                // Do not attempt to scan anymore
+                _manager.stopScan()
+
+                // Disconnect
+                if let connectedPeripheral = _connectedPeripheral {
+                    // This will cause a disconnect that in turn will cause the peripheral to be
+                    // forgotten
+                    _manager.cancelPeripheralConnection(connectedPeripheral)
+                }
+            }
+        }
+    }
+
+    private var _enabled = false
+
     private let _monocleSerialServiceUUID = CBUUID(string: "6e400001-b5a3-f393-e0a9-e50e24dcca9e")
     private let _serialRxCharacteristicUUID = CBUUID(string: "6e400002-b5a3-f393-e0a9-e50e24dcca9e")
     private let _serialTxCharacteristicUUID = CBUUID(string: "6e400003-b5a3-f393-e0a9-e50e24dcca9e")
@@ -120,6 +149,11 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     }
 
     private func startScan() {
+        if _manager.isScanning {
+            print("[BluetoothManager] Internal error: Already scanning")
+            return
+        }
+
         _manager.scanForPeripherals(withServices: [ _monocleSerialServiceUUID, _monocleDataServiceUUID ], options: [ CBCentralManagerScanOptionAllowDuplicatesKey: true ])
         print("[BluetoothManager] Scan initiated")
 
@@ -297,7 +331,9 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            startScan()
+            if enabled {
+                startScan()
+            }
         case .poweredOff:
             // Alert user to turn on Bluetooth
             print("[BluetoothManager] Bluetooth is powered off")
@@ -394,7 +430,9 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         }
 
         forgetPeripheral()
-        startScan()
+        if enabled {
+            startScan()
+        }
         updateDiscoveredPeripherals()
     }
 
