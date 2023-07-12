@@ -274,9 +274,6 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                 if characteristic.uuid == _serialRxCharacteristicUUID {
                     _serialRx = characteristic
                     print("[BluetoothManager] Obtained SerialRx")
-
-                    // Once we have serial RX, transmit program to Monocle
-                    //transmitMonocleProgram()
                 }
 
                 if characteristic.uuid == _dataTxCharacteristicUUID {
