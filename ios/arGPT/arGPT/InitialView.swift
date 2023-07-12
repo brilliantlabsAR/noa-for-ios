@@ -10,22 +10,12 @@
 //    https://yoswift.dev/swiftui/computed-state/
 //
 
-//TODO: Monocle should not auto-pair, we need a pairing allowed flag
 //TODO: remoe unused views (SettingsView)
 
 import SwiftUI
 
 struct InitialView: View {
     @Binding var showPairingView: Bool
-
-    /*
-    private var _showPairingSheet: Binding<Bool> {
-        Binding(
-            get: { self._pairedMonocleID == nil },
-            set: { (_: Bool) in /* do nothing */}
-        )
-    }
-    */
 
     var body: some View {
         ZStack {
@@ -48,9 +38,6 @@ struct InitialView: View {
                 }
                 .frame(width: 393, height: 351)
                 VStack {
-//                    RoundedRectangle(cornerRadius: 25)
-//                        .opacity(0)
-//                        .frame(width: 370, height: 370)
                     Spacer()
                         .sheet(isPresented: $showPairingView) {
                             PairingSheetView(showPairingView: $showPairingView)
