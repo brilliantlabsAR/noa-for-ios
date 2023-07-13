@@ -5,6 +5,8 @@
 //  Created by Bart Trzynadlowski on 5/29/23.
 //
 
+//TODO: in waitingForRawREPL state, keep trying every second because there seems to be a race condition (document htis)
+
 import AVFoundation
 import Combine
 import CryptoKit
@@ -26,6 +28,7 @@ class Controller {
     }
 
     private var _state = State.disconnected
+    private var _rawREPLTimer: Timer?
     private var _matcher: Util.StreamingStringMatcher?
     private var _filesToTransmit: [(String, String)] = []
     private var _filesVersion: String?
@@ -82,14 +85,23 @@ class Controller {
             // Wait for confirmation that raw REPL was activated
             _matcher = nil
             _state = .waitingForRawREPL
+
+            // Since firmware v23.181.0720, some sort of Bluetooth race condition has been exposed.
+            // If the iOS app is running and then Monocle is powered on, or if Monocle is restarted
+            // while the app is running, the raw REPL code is not received and Controller hangs
+            // forever in the waitingForRawREPL state. Presumably, Monocle needs some time before
+            // its receive characteristic is actually ready to accept data but to my knowledge, we
+            // have no way to detect this using CoreBluetooth. The "solution" is to periodically
+            // re-transmit the raw REPL code.
+            _rawREPLTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] (timer: Timer) in
+                self?.transmitRawREPLCode()
+            }
         }.store(in: &_subscribers)
 
         // Monocle disconnected
         _bluetooth.peripheralDisconnected.sink { [weak self] in
             guard let self = self else { return }
-
             print("[Controller] Monocle disconnected")
-
             _state = .disconnected
         }.store(in: &_subscribers)
 
@@ -153,6 +165,10 @@ class Controller {
         if _matcher!.matchExists(afterAppending: str) {
             print("[Controller] Raw REPL detected")
             _matcher = nil
+
+            // Stop transmiting the raw REPL code
+            _rawREPLTimer?.invalidate()
+            _rawREPLTimer = nil
 
             // Next, load files up and check for version
             let (filesToTransmit, version) = loadFilesForTransmission()
