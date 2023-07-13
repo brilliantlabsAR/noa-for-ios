@@ -9,18 +9,6 @@
 
 import SwiftUI
 
-/*
-extension View {
-    func inExpandingRectangle() -> some View {
-        ZStack {
-            Rectangle()
-                .fill(Color.clear)
-            self
-        }
-    }
-}
-*/
-
 struct ChatView: View {
     // Data model
     @EnvironmentObject private var _chatMessageStore: ChatMessageStore

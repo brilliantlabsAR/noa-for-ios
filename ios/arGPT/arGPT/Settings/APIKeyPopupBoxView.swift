@@ -22,7 +22,7 @@ struct APIKeyPopupBoxView: View {
                 .padding(.top, 20)
                 .padding(.bottom, 2)
 
-            Text("If you don’t have a key, press \"Find My Key...\" to be taken to OpenAI.")
+            Text("If you don’t have a key, press \"Get Key\" to be taken to OpenAI.")
                 .font(.system(size: 15, weight: .regular))
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 5)
@@ -52,7 +52,7 @@ struct APIKeyPopupBoxView: View {
                 Button(action: {
                     UIApplication.shared.open(URL(string: "http://platform.openai.com")!)
                 }) {
-                    Text("Find My Key...")
+                    Text("Get Key")
                         .font(.headline)
                         .foregroundColor(.blue)
                         .frame(maxWidth: .infinity)
