@@ -4,8 +4,14 @@
 //
 //  Created by Bart Trzynadlowski on 5/29/23.
 //
-
-//TODO: in waitingForRawREPL state, keep trying every second because there seems to be a race condition (document htis)
+//  Notes
+//  -----
+//  - Perhaps StreamingStringMatcher can be replaced with something much simpler. The firmware and
+//    FPGA version checkers simply accumulate string data. The reason this was not done elsewhere
+//    was out of concern that this would 1) be messy and 2) not be resilient against very long,
+//    "runaway" responses but (1) is simply not true and (2) is an unfounded concern. At some point
+//    it would be nice to eliminate StreamingStringMatcher for simpler logic.
+//
 
 import AVFoundation
 import Combine
@@ -22,6 +28,8 @@ class Controller {
     private enum State {
         case disconnected
         case waitingForRawREPL
+        case waitingForFirmwareVersion
+        case waitingForFPGAVersion
         case waitingForARGPTVersion
         case transmitingFiles
         case running
@@ -32,7 +40,11 @@ class Controller {
     private var _matcher: Util.StreamingStringMatcher?
     private var _filesToTransmit: [(String, String)] = []
     private var _filesVersion: String?
-    private var _receivedVersionResponse = ""
+
+    private var _receivedVersionResponse = ""   // buffer for firmware and FPGA version responses
+    private var _firmwareVersion: String?
+    private var _fpgaVersion: String?
+
     private var _audioData = Data()
 
     private let _m4aWriter = M4AWriter()
@@ -114,7 +126,13 @@ class Controller {
 
             switch _state {
             case .waitingForRawREPL:
+                _firmwareVersion = nil
+                _fpgaVersion = nil
                 onWaitForRawREPLState(receivedString: str)
+            case .waitingForFirmwareVersion:
+                onWaitForFirmwareVersionString(receivedString: str)
+            case .waitingForFPGAVersion:
+                onWaitForFPGAVersionString(receivedString: str)
             case .waitingForARGPTVersion:
                 onWaitForVersionString(receivedString: str)
             case .transmitingFiles:
@@ -155,7 +173,7 @@ class Controller {
         _chatGPT.clearHistory()
     }
 
-    // MARK: Monocle Script Transmission
+    // MARK: Monocle Firmware, FPGA, and Script Transmission
 
     private func onWaitForRawREPLState(receivedString str: String) {
         if _matcher == nil {
@@ -170,11 +188,81 @@ class Controller {
             _rawREPLTimer?.invalidate()
             _rawREPLTimer = nil
 
+            // Next, check firmware version
+            _receivedVersionResponse = ""
+            transmitFirmwareVersionCheck()
+            _state = .waitingForFirmwareVersion
+        }
+    }
+
+    private func onWaitForFirmwareVersionString(receivedString str: String) {
+        var proceedToNextState = false
+
+        // Sample version string:
+        //      0000: 4f 4b 76 32 33 2e 31 38 31 2e 30 37 32 30 0d 0a  OKv23.181.0720..
+        //      0010: 04 04 3e                                         ..>
+        // We wait for 04 3e (e.g., in case of error, only one 04 is printed) and then parse the
+        // accumulated string.
+        _receivedVersionResponse += str
+        if _receivedVersionResponse.contains("\u{4}>") {
+            let parts = _receivedVersionResponse.components(separatedBy: .newlines)
+            if _receivedVersionResponse.contains("Error") || parts[0].count <= 2 || !parts[0].starts(with: "OK") {
+                _firmwareVersion = nil
+            } else {
+                let idxAfterOK = parts[0].index(parts[0].startIndex, offsetBy: 2)
+                _firmwareVersion = String(parts[0][idxAfterOK...])
+            }
+            proceedToNextState = true
+        } else if _receivedVersionResponse.contains("Error") {
+            _firmwareVersion = nil
+            proceedToNextState = true
+        }
+
+        if proceedToNextState{
+            if _firmwareVersion == nil {
+                print("[Controller] Error: Unable to obtain firmware version")
+            } else {
+                print("[Controller] Firmware version: \(_firmwareVersion!)")
+            }
+            transmitFPGAVersionCheck()
+            _state = .waitingForFPGAVersion
+        }
+    }
+
+    private func onWaitForFPGAVersionString(receivedString str: String) {
+        var proceedToNextState = false
+
+        // Sample version string:
+        //      0000: 4f 4b 62 27 76 32 33 2e 31 37 39 2e 31 30 30 36  OKb'v23.179.1006
+        //      0010: 27 0d 0a 04 04 3e                                '....>
+        // As before, we wait for 04 3e.
+        _receivedVersionResponse += str
+        if _receivedVersionResponse.contains("\u{4}>") {
+            let parts = _receivedVersionResponse.components(separatedBy: .newlines)
+            if _receivedVersionResponse.contains("Error") || parts[0].count <= 2 || !parts[0].starts(with: "OK") {
+                _fpgaVersion = nil
+            } else {
+                let str = parts[0].replacingOccurrences(of: "b'", with: "").replacingOccurrences(of: "'", with: "") // strip out b''
+                let idxAfterOK = parts[0].index(parts[0].startIndex, offsetBy: 2)
+                _fpgaVersion = String(parts[0][idxAfterOK...])
+            }
+            proceedToNextState = true
+        } else if _receivedVersionResponse.contains("Error") {
+            _fpgaVersion = nil
+            proceedToNextState = true
+        }
+
+        if proceedToNextState{
+            if _fpgaVersion == nil {
+                print("[Controller] Error: Unable to obtain FPGA version")
+            } else {
+                print("[Controller] FPGA version: \(_firmwareVersion!)")
+            }
+
             // Next, load files up and check for version
             let (filesToTransmit, version) = loadFilesForTransmission()
             _filesToTransmit = filesToTransmit
             _filesVersion = version
-            _receivedVersionResponse = ""
             transmitVersionCheck()
             _state = .waitingForARGPTVersion
         }
@@ -233,9 +321,23 @@ class Controller {
         _bluetooth.sendSerialData(Data([ 0x03, 0x03, 0x01 ]))   // ^C (kill current), ^C (again to be sure), ^A (raw REPL mode)
     }
 
+    private func transmitFirmwareVersionCheck() {
+        // Check firmware version
+        transmitPythonCommand("import device;print(device.VERSION);del(device)")
+    }
+
+    private func transmitFPGAVersionCheck() {
+        // Check FPGA version
+        transmitPythonCommand("import fpga;print(fpga.read(2,12));del(fpga)")
+    }
+
     private func transmitVersionCheck() {
-        // Send version check command
-        let command = "print(ARGPT_VERSION)".data(using: .utf8)!
+        // Check app version
+        transmitPythonCommand("print(ARGPT_VERSION)")
+    }
+
+    private func transmitPythonCommand(_ command: String) {
+        let command = command.data(using: .utf8)!
         var data = Data()
         data.append(command)
         data.append(Data([ 0x04 ])) // ^D to execute the command
