@@ -13,7 +13,13 @@ struct ChatView: View {
     // Data model
     @EnvironmentObject private var _chatMessageStore: ChatMessageStore
     @EnvironmentObject private var _settings: Settings
-    @EnvironmentObject private var _bluetooth: BluetoothManager
+
+    // Monocle state
+    @Binding private var _isMonocleConnected: Bool
+    @Binding private var _pairedMonocleID: UUID?
+
+    // Bluetooth state
+    @Binding private var _bluetoothEnabled: Bool
 
     // Allows pairing view to be brought up (replacing this one)
     @Binding private var _showPairingView: Bool
@@ -43,9 +49,12 @@ struct ChatView: View {
                         .frame(maxWidth: .infinity)
                     
                     // Settings menu
-                    SettingsMenuView(popUpApiBox: $popUpApiBox, showPairingView: $_showPairingView)
+                    SettingsMenuView(
+                        popUpApiBox: $popUpApiBox,
+                        showPairingView: $_showPairingView,
+                        bluetoothEnabled: $_bluetoothEnabled
+                    )
                         .environmentObject(_settings)
-                        .environmentObject(_bluetooth)
                         .padding(.trailing)
                 }
                 .padding(.top)
@@ -81,8 +90,8 @@ struct ChatView: View {
                     }
                 }
                 VStack {
-                    if !_bluetooth.isConnected  {
-                        if _bluetooth.selectedDeviceID != nil {
+                    if !_isMonocleConnected  {
+                        if _pairedMonocleID != nil {
                             // We have a paired Monocle, it's just not connected
                             Text("\(Image(systemName: "exclamationmark.circle")) No Monocle Connected")
                                 .foregroundColor(Color.red)
@@ -152,10 +161,16 @@ struct ChatView: View {
     }
 
     public init(
+        isMonocleConnected: Binding<Bool>,
+        pairedMonocleID: Binding<UUID?>,
+        bluetoothEnabled: Binding<Bool>,
         showPairingView: Binding<Bool>,
         onTextSubmitted: ((String) -> Void)? = nil,
         onClearChatButtonPressed: (() -> Void)? = nil
     ) {
+        __isMonocleConnected = isMonocleConnected
+        __pairedMonocleID = pairedMonocleID
+        __bluetoothEnabled = bluetoothEnabled
         __showPairingView = showPairingView
         _onTextSubmitted = onTextSubmitted
         _onClearChatButtonPressed = onClearChatButtonPressed
@@ -176,10 +191,12 @@ struct ChatView_Previews: PreviewProvider {
 
     static var previews: some View {
         ChatView(
+            isMonocleConnected: .constant(true),
+            pairedMonocleID: .constant(UUID()),
+            bluetoothEnabled: .constant(true),
             showPairingView: .constant(false)
         )
             .environmentObject(ChatView_Previews._chatMessageStore)
             .environmentObject(Settings())
-            .environmentObject(BluetoothManager(autoConnectByProximity: true))
     }
 }

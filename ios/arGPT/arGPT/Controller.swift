@@ -18,9 +18,12 @@ import Combine
 import CryptoKit
 import Foundation
 
-class Controller {
+class Controller: ObservableObject {
+    // MARK: Internal State
+
+    private let _bluetooth = BluetoothManager(autoConnectByProximity: true)
+
     private let _settings: Settings
-    private let _bluetooth: BluetoothManager
     private let _messages: ChatMessageStore
 
     private var _subscribers = Set<AnyCancellable>()
@@ -61,10 +64,29 @@ class Controller {
     private var _playbackFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 48000, channels: 1, interleaved: false)!
     private let _monocleFormat = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 8000, channels: 1, interleaved: false)!
 
-    init(settings: Settings, bluetooth: BluetoothManager, messages: ChatMessageStore) {
+    // MARK: Public State
+
+    @Published private(set) var isMonocleConnected = false
+    @Published private(set) var pairedMonocleID: UUID?
+
+    /// Use this to enable/disable Bluetooth
+    @Published public var bluetoothEnabled = false {
+        didSet {
+            // Pass through to Bluetooth manager
+            _bluetooth.enabled = bluetoothEnabled
+        }
+    }
+
+    // MARK: Public Methods
+
+    init(settings: Settings, messages: ChatMessageStore) {
         _settings = settings
-        _bluetooth = bluetooth
         _messages = messages
+
+        // Set initial state
+        isMonocleConnected = _bluetooth.isConnected
+        pairedMonocleID = _bluetooth.selectedDeviceID
+        bluetoothEnabled = false
 
         // Subscribe to changed of paired device ID setting
         _settings.$pairedDeviceID.sink(receiveValue: { [weak self] (newPairedDeviceID: UUID?) in
@@ -73,11 +95,14 @@ class Controller {
             if let uuid = newPairedDeviceID {
                 print("[Controller] Pair to \(uuid)")
             } else {
-                print("[Controller] Unpair")
+                print("[Controller] Unpaired")
             }
 
             // Begin connection attempts or disconnect
             self._bluetooth.selectedDeviceID = newPairedDeviceID
+
+            // Update public state
+            pairedMonocleID = newPairedDeviceID
         })
         .store(in: &_subscribers)
 
@@ -108,6 +133,9 @@ class Controller {
             _rawREPLTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] (timer: Timer) in
                 self?.transmitRawREPLCode()
             }
+
+            // Update public state
+            isMonocleConnected = true
         }.store(in: &_subscribers)
 
         // Monocle disconnected
@@ -115,6 +143,7 @@ class Controller {
             guard let self = self else { return }
             print("[Controller] Monocle disconnected")
             _state = .disconnected
+            isMonocleConnected = false
         }.store(in: &_subscribers)
 
         // Data received on serial characteristic

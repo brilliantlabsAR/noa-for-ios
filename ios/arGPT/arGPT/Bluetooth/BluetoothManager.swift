@@ -15,20 +15,20 @@ import Combine
 import CoreBluetooth
 
 class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-    @Published public var discoveredDevices: [UUID] = []
-    @Published public var isConnected = false
+    @Published private(set)  var discoveredDevices: [UUID] = []
+    @Published private(set)  var isConnected = false
 
     /// Monocle connected
-    @Published var peripheralConnected = PassthroughSubject<UUID, Never>()
+    @Published private(set) var peripheralConnected = PassthroughSubject<UUID, Never>()
 
     /// Monocle disconnected
-    @Published var peripheralDisconnected = PassthroughSubject<Void, Never>()
+    @Published private(set) var peripheralDisconnected = PassthroughSubject<Void, Never>()
 
     /// Data received from Monocle on serial TX characteristic
-    @Published var serialDataReceived = PassthroughSubject<Data, Never>()
+    @Published private(set) var serialDataReceived = PassthroughSubject<Data, Never>()
 
     /// Data received from Monocle on data TX characteristic
-    @Published var dataReceived = PassthroughSubject<Data, Never>()
+    @Published private(set) var dataReceived = PassthroughSubject<Data, Never>()
 
     /// Sets the device ID to automatically connect to. This is kept separate from
     /// connectedDeviceID to avoid an infinite publishing loop from here -> Settings -> here when
@@ -64,7 +64,9 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                 startScan()
             } else {
                 // Do not attempt to scan anymore
-                _manager.stopScan()
+                if _manager.state == .poweredOn {
+                    _manager.stopScan()
+                }
 
                 // Disconnect
                 if let connectedPeripheral = _connectedPeripheral {

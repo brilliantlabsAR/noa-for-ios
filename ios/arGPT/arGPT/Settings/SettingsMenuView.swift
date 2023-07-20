@@ -9,9 +9,10 @@ import SwiftUI
 
 struct SettingsMenuView: View {
     @EnvironmentObject private var _settings: Settings
-    @EnvironmentObject private var _bluetooth: BluetoothManager
+
     @Binding var popUpApiBox: Bool
     @Binding var showPairingView: Bool
+    @Binding var bluetoothEnabled: Bool
 
     var body: some View {
         Menu {
@@ -23,7 +24,7 @@ struct SettingsMenuView: View {
             Button(action: {
                 if _settings.pairedDeviceID != nil {
                     // Unpair but do not go back to pairing screen just yet
-                    _bluetooth.enabled = false  // must stop scanning because we will auto repair otherwise
+                    bluetoothEnabled = false   // must stop scanning because we will auto repair otherwise
                     _settings.setPairedDeviceID(nil)
                 } else {
                     // Return to pairing screen only on explicit pairing request
@@ -47,7 +48,11 @@ struct SettingsMenuView: View {
 
 struct SettingsMenuView_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsMenuView(popUpApiBox: .constant(false), showPairingView: .constant(false))
+        SettingsMenuView(
+            popUpApiBox: .constant(false),
+            showPairingView: .constant(false),
+            bluetoothEnabled: .constant(true)
+        )
             .environmentObject(Settings())
     }
 }
