@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CC00398B2A6A4F11009E3BAC /* NewBluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
 		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
@@ -76,6 +77,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewBluetoothManager.swift; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
 		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
@@ -171,6 +173,7 @@
 			isa = PBXGroup;
 			children = (
 				CC3FE0152A0B1C3700756941 /* BluetoothManager.swift */,
+				CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */,
 			);
 			path = Bluetooth;
 			sourceTree = "<group>";
@@ -468,6 +471,7 @@
 				CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */,
 				CC27DC552A0304D600A942A9 /* TypingIndicator.swift in Sources */,
 				F8BC4DE52A4DBD680005F6F0 /* InitialView.swift in Sources */,
+				CC00398B2A6A4F11009E3BAC /* NewBluetoothManager.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
 				CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */,

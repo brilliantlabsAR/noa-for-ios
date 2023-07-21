@@ -15,13 +15,36 @@
 
 import AVFoundation
 import Combine
+import CoreBluetooth
 import CryptoKit
 import Foundation
 
 class Controller: ObservableObject {
     // MARK: Internal State
 
-    private let _bluetooth = BluetoothManager(autoConnectByProximity: true)
+    // Monocle characteristic IDs. Note that directionality is from Monocle's perspective (i.e., we
+    // transmit to Monocle on the receive characteristic).
+    private static let _serialTx = CBUUID(string: "6e400003-b5a3-f393-e0a9-e50e24dcca9e")
+    private static let _serialRx = CBUUID(string: "6e400002-b5a3-f393-e0a9-e50e24dcca9e")
+    private static let _dataTx = CBUUID(string: "e5700003-7bac-429a-b4ce-57ff900f479d")
+    private static let _dataRx = CBUUID(string: "e5700002-7bac-429a-b4ce-57ff900f479d")
+
+    private let _bluetooth = NewBluetoothManager(
+        autoConnectByProximity: true,
+        peripheralName: "monocle",
+        services: [
+            CBUUID(string: "6e400001-b5a3-f393-e0a9-e50e24dcca9e"): "Serial",
+            CBUUID(string: "e5700001-7bac-429a-b4ce-57ff900f479d"): "Data"
+        ],
+        receiveCharacteristics: [
+            Controller._serialTx: "SerialTx",
+            Controller._dataTx: "DataTx",
+        ],
+        transmitCharacteristics: [
+            Controller._serialRx: "SerialRx",
+            Controller._dataRx: "DataRx"
+        ]
+    )
 
     private let _settings: Settings
     private let _messages: ChatMessageStore
@@ -36,6 +59,7 @@ class Controller: ObservableObject {
         case waitingForARGPTVersion
         case transmitingFiles
         case running
+        case updatingFirmware
     }
 
     private var _state = State.disconnected
@@ -44,6 +68,8 @@ class Controller: ObservableObject {
     private var _filesToTransmit: [(String, String)] = []
     private var _filesVersion: String?
 
+    private let _requiredFirmwareVersion = "v23.181.0720"
+    private let _requiredFPGAVersion = "v23.181.0720"
     private var _receivedVersionResponse = ""   // buffer for firmware and FPGA version responses
     private var _firmwareVersion: String?
     private var _fpgaVersion: String?
@@ -76,6 +102,15 @@ class Controller: ObservableObject {
             _bluetooth.enabled = bluetoothEnabled
         }
     }
+
+    public enum UpdateState {
+        case notUpdating
+        case updatingFirmware
+        case updatingFPGA
+    }
+
+    @Published private(set) var updateState = UpdateState.notUpdating
+    @Published private(set) var updateProgressPercent: Int = 0
 
     // MARK: Public Methods
 
@@ -120,8 +155,7 @@ class Controller: ObservableObject {
             transmitRawREPLCode()
 
             // Wait for confirmation that raw REPL was activated
-            _matcher = nil
-            _state = .waitingForRawREPL
+            transitionState(to: .waitingForRawREPL)
 
             // Since firmware v23.181.0720, some sort of Bluetooth race condition has been exposed.
             // If the iOS app is running and then Monocle is powered on, or if Monocle is restarted
@@ -142,49 +176,20 @@ class Controller: ObservableObject {
         _bluetooth.peripheralDisconnected.sink { [weak self] in
             guard let self = self else { return }
             print("[Controller] Monocle disconnected")
-            _state = .disconnected
-            isMonocleConnected = false
+            transitionState(to: .disconnected)
         }.store(in: &_subscribers)
 
-        // Data received on serial characteristic
-        _bluetooth.serialDataReceived.sink { [weak self] (receivedValue: Data) in
+        // Data received
+        _bluetooth.dataReceived.sink { [weak self] (received: (characteristic: CBUUID, value: Data)) in
             guard let self = self else { return }
 
-            let str = String(decoding: receivedValue, as: UTF8.self)
-            print("[Controller] Serial data from Monocle: \(str)")
+            let (characteristicID, value) = received
 
-            switch _state {
-            case .waitingForRawREPL:
-                _firmwareVersion = nil
-                _fpgaVersion = nil
-                onWaitForRawREPLState(receivedString: str)
-            case .waitingForFirmwareVersion:
-                onWaitForFirmwareVersionString(receivedString: str)
-            case .waitingForFPGAVersion:
-                onWaitForFPGAVersionString(receivedString: str)
-            case .waitingForARGPTVersion:
-                onWaitForVersionString(receivedString: str)
-            case .transmitingFiles:
-                onTransmittingFilesState(receivedString: str)
-            case .running:
-                fallthrough
-            default:
-                break
+            if characteristicID == Self._serialTx {
+                handleSerialDataReceived(value)
+            } else if characteristicID == Self._dataTx {
+                handleDataReceived(value)
             }
-        }.store(in: &_subscribers)
-
-        // Data received on data characteristic
-        _bluetooth.dataReceived.sink { [weak self] (receivedValue: Data) in
-            guard let self = self,
-                  receivedValue.count >= 4,
-                  _state == .running else {
-                return
-            }
-
-            let command = String(decoding: receivedValue[0..<4], as: UTF8.self)
-            print("[Controller] Data command from Monocle: \(command)")
-
-            onMonocleCommand(command: command, data: receivedValue[4...])
         }.store(in: &_subscribers)
     }
 
@@ -200,6 +205,94 @@ class Controller: ObservableObject {
     public func clearHistory() {
         _messages.clear()
         _chatGPT.clearHistory()
+    }
+
+    // MARK: State Transitions and Received Data Dispatch
+
+    private func transitionState(to newState: State) {
+        // Perform setup for next state
+        switch newState {
+        case .disconnected:
+            isMonocleConnected = false
+            updateState = .notUpdating
+
+        case .waitingForRawREPL:
+            _matcher = nil
+
+        case .waitingForFirmwareVersion:
+            _receivedVersionResponse = ""
+            transmitFirmwareVersionCheck()
+
+        case .waitingForFPGAVersion:
+            transmitFPGAVersionCheck()
+
+        case .waitingForARGPTVersion:
+            // Load Monocle script files up and check for version
+            let (filesToTransmit, version) = loadFilesForTransmission()
+            _filesToTransmit = filesToTransmit
+            _filesVersion = version
+            transmitVersionCheck()
+
+        case .transmitingFiles:
+            // Begin transmitting scripts
+            _matcher = nil
+            transmitNextFile()
+
+        case .running:
+            // Send ^D to start app
+            _bluetooth.send(data: Data([ 0x04 ]), on: Self._serialRx)
+
+        case .updatingFirmware:
+            // Update the firmware
+            updateState = .updatingFirmware
+            updateProgressPercent = 0
+            print("[Controller] Updating firmware...")
+        }
+
+        // Transition!
+        _state = newState
+    }
+
+    private func handleSerialDataReceived(_ receivedValue: Data) {
+        let str = String(decoding: receivedValue, as: UTF8.self)
+        print("[Controller] Serial data from Monocle: \(str)")
+
+        switch _state {
+        case .waitingForRawREPL:
+            _firmwareVersion = nil
+            _fpgaVersion = nil
+            onWaitForRawREPLState(receivedString: str)
+
+        case .waitingForFirmwareVersion:
+            onWaitForFirmwareVersionString(receivedString: str)
+
+        case .waitingForFPGAVersion:
+            onWaitForFPGAVersionString(receivedString: str)
+
+        case .waitingForARGPTVersion:
+            onWaitForVersionString(receivedString: str)
+
+        case .transmitingFiles:
+            onTransmittingFilesState(receivedString: str)
+
+        case .running:
+            fallthrough
+
+        default:
+            break
+        }
+    }
+
+    private func handleDataReceived(_ receivedValue: Data) {
+        guard receivedValue.count >= 4,
+              _state == .running else {
+            return
+        }
+
+        let command = String(decoding: receivedValue[0..<4], as: UTF8.self)
+        print("[Controller] Data command from Monocle: \(command)")
+
+        onMonocleCommand(command: command, data: receivedValue[4...])
     }
 
     // MARK: Monocle Firmware, FPGA, and Script Transmission
@@ -218,9 +311,7 @@ class Controller: ObservableObject {
             _rawREPLTimer = nil
 
             // Next, check firmware version
-            _receivedVersionResponse = ""
-            transmitFirmwareVersionCheck()
-            _state = .waitingForFirmwareVersion
+            transitionState(to: .waitingForFirmwareVersion)
         }
     }
 
@@ -253,8 +344,7 @@ class Controller: ObservableObject {
             } else {
                 print("[Controller] Firmware version: \(_firmwareVersion!)")
             }
-            transmitFPGAVersionCheck()
-            _state = .waitingForFPGAVersion
+            transitionState(to: .waitingForFPGAVersion)
         }
     }
 
@@ -287,13 +377,23 @@ class Controller: ObservableObject {
             } else {
                 print("[Controller] FPGA version: \(_firmwareVersion!)")
             }
+            updateMonocleOrProceedToRun()
+        }
+    }
 
-            // Next, load files up and check for version
-            let (filesToTransmit, version) = loadFilesForTransmission()
-            _filesToTransmit = filesToTransmit
-            _filesVersion = version
-            transmitVersionCheck()
-            _state = .waitingForARGPTVersion
+    private func updateMonocleOrProceedToRun() {
+        if _firmwareVersion != _requiredFirmwareVersion {
+            // First, kick off firmware update
+            print("[Controller] Firmware update needed. Current version: \(_firmwareVersion!)")
+            transitionState(to: .updatingFirmware)
+        } else if _fpgaVersion != _requiredFPGAVersion {
+            // Second, FPGA update
+            print("[Controller] FPGA update needed. Current version: \(_fpgaVersion!)")
+            print("[Controller] FPGA update not yet implemented!")
+            transitionState(to: .waitingForARGPTVersion)
+        } else {
+            // Proceed with uploading and running Monocle script
+            transitionState(to: .waitingForARGPTVersion)
         }
     }
 
@@ -312,17 +412,14 @@ class Controller: ObservableObject {
 
         if _matcher!.matchExists(afterAppending: str) {
             print("[Controller] App already running on Monocle!")
-            _matcher = nil
-            startAppAndEnterRunningState()
+            transitionState(to: .running)
             return
         }
 
         let expectedResponseLength = 2 + expectedVersion.count  // "OK" + version
         if str.contains(">") || _matcher!.charactersProcessed >= expectedResponseLength {
             print("[Controller] App not running on Monocle. Will transmit files.")
-            _matcher = nil
-            transmitNextFile()
-            _state = .transmitingFiles
+            transitionState(to: .transmitingFiles)
             return
         }
 
@@ -341,13 +438,14 @@ class Controller: ObservableObject {
                 transmitNextFile()
             } else {
                 print("[Controller] All files written. Starting program...")
-                startAppAndEnterRunningState()
+                transitionState(to: .running)
             }
         }
     }
 
     private func transmitRawREPLCode() {
-        _bluetooth.sendSerialData(Data([ 0x03, 0x03, 0x01 ]))   // ^C (kill current), ^C (again to be sure), ^A (raw REPL mode)
+        // ^C (kill current), ^C (again to be sure), ^A (raw REPL mode)
+        _bluetooth.send(data: Data([ 0x03, 0x03, 0x01 ]), on: Self._serialRx)
     }
 
     private func transmitFirmwareVersionCheck() {
@@ -370,7 +468,7 @@ class Controller: ObservableObject {
         var data = Data()
         data.append(command)
         data.append(Data([ 0x04 ])) // ^D to execute the command
-        _bluetooth.sendSerialData(data)
+        _bluetooth.send(data: data, on: Self._serialRx)
     }
 
     private func loadFilesForTransmission() -> ([(String, String)], String) {
@@ -439,13 +537,8 @@ class Controller: ObservableObject {
         data.append(Data([ 0x04 ])) // ^D to execute the command
 
         // Send!
-        _bluetooth.sendSerialData(data)
+        _bluetooth.send(data: data, on: Self._serialRx)
         print("[Controller] Sent \(filename): \(data.count) bytes")
-    }
-
-    private func startAppAndEnterRunningState() {
-        _bluetooth.sendSerialData(Data([ 0x04 ]))   // ^D to start app
-        _state = .running
     }
 
     // MARK: Monocle Commands
@@ -513,7 +606,7 @@ class Controller: ObservableObject {
                 // the ID, allowing us to perform a ChatGPT request.
                 let id = UUID()
                 _pendingQueryByID[id] = query
-                _bluetooth.sendData(text: "pin:" + id.uuidString)
+                _bluetooth.send(text: "pin:" + id.uuidString, on: Self._dataRx)
                 print("[Controller] Sent transcription ID to Monocle: \(id)")
             }
         }
@@ -590,7 +683,7 @@ class Controller: ObservableObject {
             let startIdx = text.index(text.startIndex, offsetBy: idx)
             let endIdx = text.index(text.startIndex, offsetBy: end)
             let chunk = command + text[startIdx..<endIdx]
-            _bluetooth.sendData(text: chunk)
+            _bluetooth.send(text: chunk, on: Self._dataRx)
             idx = end
         }
     }

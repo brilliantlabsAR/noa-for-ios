@@ -14,6 +14,9 @@
 // - Step 2: Bluetooth enable -> @State variable on content view that is observed and used to poke Controller as needed.
 // - ...
 // - Can isMonocleConnected and pairedMonocleID be defined as bindings that only read and do not allow set?
+//
+// - Remember to remove BluetoothManager and replace with NewBluetoothManager.
+// - Clean up any TODO comments left over.
 //  
 
 import Combine
@@ -48,7 +51,7 @@ struct ARGPTApp: App {
 struct ContentView: View {
     @ObservedObject private var _settings: Settings
     private let _chatMessageStore: ChatMessageStore
-    private let _controller: Controller
+    @ObservedObject private var _controller: Controller
 
     /// Monocle state (as reported by Controller)
     @State private var _isMonocleConnected = false
@@ -62,7 +65,10 @@ struct ContentView: View {
 
     var body: some View {
         VStack {
-            if _showPairingView && _settings.pairedDeviceID == nil {
+            // Initial view includes pairing and updating
+            let showInitialScreen = (_showPairingView && _settings.pairedDeviceID == nil) || _controller.updateState != .notUpdating
+
+            if showInitialScreen {
                 // This view shown until 1) device becomes paired or 2) forcible dismissed by
                 // _showPairingView = false
                 InitialView(showPairingView: $_showPairingView)
