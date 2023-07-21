@@ -272,7 +272,7 @@ class Controller: ObservableObject {
                 _fpgaVersion = nil
             } else {
                 let str = parts[0].replacingOccurrences(of: "b'", with: "").replacingOccurrences(of: "'", with: "") // strip out b''
-                let idxAfterOK = parts[0].index(parts[0].startIndex, offsetBy: 2)
+                let idxAfterOK = str.index(str.startIndex, offsetBy: 2)
                 _fpgaVersion = String(parts[0][idxAfterOK...])
             }
             proceedToNextState = true

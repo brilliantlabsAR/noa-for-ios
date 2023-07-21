@@ -74,7 +74,6 @@ struct ContentView: View {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                 if _showPairingView {
                                     _bluetoothEnabled = true
-                                    print("ENABLE")
                                 }
                             }
                         }
