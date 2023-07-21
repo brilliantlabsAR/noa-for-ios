@@ -279,7 +279,7 @@ class NewBluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate,
         }
 
         // Send connection event when all characteristics obtained
-        let haveAllCharacteristics = _characteristicByID.count == (_receiveCharacteristicUUIDs.count + _transmitCharacteristicUUIDs.count)
+        let haveAllCharacteristics = _characteristicByID.count == Set(_receiveCharacteristicUUIDs + _transmitCharacteristicUUIDs).count // create set because transmit and receive characteristics may be shared
         if haveAllCharacteristics, !_didSendConnectedEvent {
             peripheralConnected.send(peripheral.identifier)
             _didSendConnectedEvent = true
@@ -402,7 +402,7 @@ class NewBluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate,
         if let error = error {
             print("[BluetoothManager] Error: Disconnected from peripheral: \(error.localizedDescription)")
         } else {
-            print("[BluetoothManager] Error: Disconnected from peripheral")
+            print("[BluetoothManager] Disconnected from peripheral")
         }
 
         forgetPeripheral()
