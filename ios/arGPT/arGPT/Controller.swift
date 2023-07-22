@@ -13,11 +13,297 @@
 //    it would be nice to eliminate StreamingStringMatcher for simpler logic.
 //
 
+//TODO: if DfuTarget disconnects and update not finished, need to recover by moving to disconnected state in Controller
+
+//TODO: in FirmwareUpdate, replace preconditions and fatalErrors with a transition to some sort of terminal error state that
+//      bubbles up to Controller
+
+//TODO: remove some of the fatalErrors with better use of data carrying enums!
+
+
 import AVFoundation
 import Combine
 import CoreBluetooth
 import CryptoKit
 import Foundation
+import zlib
+
+class FirmwareUpdate {
+    private let _bluetooth: NewBluetoothManager
+    private let _controlCharacteristic: CBUUID
+    private let _packetCharacteristic: CBUUID
+    private var _subscribers = Set<AnyCancellable>()
+
+    private enum State {
+        case idle
+        case startFileTransfer
+        case startNextChunk
+        case waitForChunkStartAcknowledge(chunkSize: UInt32, chunkCRC: UInt32)
+        case sendNextChunk(chunkSize: UInt32, chunkCRC: UInt32)
+        case validateAndExecuteChunk(chunkSize: UInt32, chunkCRC: UInt32)
+        case waitForExecuteSuccess
+        case finished
+    }
+
+    private var _state = State.idle
+    private var _filesRemaining: [(command: Data, createCommand: Data, type: String)] = [
+        (command: Data([ 0x06, 0x01 ]), createCommand: Data([ 0x01, 0x01 ]), type: "init"),
+        (command: Data([ 0x06, 0x02 ]), createCommand: Data([ 0x01, 0x02 ]), type: "image")
+    ]
+    private var _currentFileData: Data?
+    private var _fileSize: UInt32 = 0
+    private var _maxSize: UInt32 = 0
+    private var _fileOffset: Int = 0
+    private var _currentChunk: Int = 0
+    private var _chunks: Int = 0
+
+    init(bluetooth: NewBluetoothManager, controlCharacteristic: CBUUID, packetCharacteristic: CBUUID) {
+        _bluetooth = bluetooth
+        _controlCharacteristic = controlCharacteristic
+        _packetCharacteristic = packetCharacteristic
+
+        _bluetooth.dataReceived.sink { [weak self] (received: (characteristic: CBUUID, value: Data)) in
+            guard let self = self else { return }
+
+            let (characteristicID, value) = received
+
+            if characteristicID == _controlCharacteristic {
+                handleControlDataReceived(value)
+            }
+        }.store(in: &_subscribers)
+
+        // Begin transferring files
+        transitionState(to: .startFileTransfer)
+    }
+
+    private func transitionState(to newState: State) {
+        _state = newState
+
+        switch newState {
+        case .startFileTransfer:
+            // Send command to obtain max size, offset, and CRC from DFU
+            guard let file = _filesRemaining.first else {
+                transitionState(to: .finished)
+                return
+            }
+            _currentFileData = loadFile(ofType: file.type)
+            print("[FirmwareUpdate] Starting transfer of file: \(file.type)")
+            sendControl(data: file.command)
+
+        case .startNextChunk:
+            startNextChunk()
+
+        case .sendNextChunk(chunkSize: let chunkSize, chunkCRC: let chunkCRC):
+            sendNextChunk(chunkSize: chunkSize, chunkCRC: chunkCRC)
+
+        case .validateAndExecuteChunk:
+            // Request CRC of chunk just sent
+            sendControl(data: Data([ 0x03 ]))
+
+        case .finished:
+            print("[FirmwareUpdate] Finished firmware update")
+
+        default:
+            break
+        }
+    }
+
+    private func handleControlDataReceived(_ value: Data) {
+        switch _state {
+        case .startFileTransfer:
+            precondition(value.count >= 15)
+            guard let fileData = _currentFileData else {
+                fatalError("Firmware file not loaded")
+            }
+
+            _fileSize = UInt32(fileData.count)
+            _maxSize = getUInt32(from: value, atOffset: 3)
+            let offset = getUInt32(from: value, atOffset: 7)
+            let crc = getUInt32(from: value, atOffset: 11)
+            _chunks = Int((_fileSize / _maxSize) + ((_fileSize % _maxSize) == 0 ? 0 : 1))
+            print("[FirmwareUpdate] Buffer info: maxSize=\(_maxSize), offset=\(offset), crc=\(String(format: "%08x", crc))")
+            print("[FirmwareUpdate] Sending file in \(_chunks) chunks")
+
+            // Initialize state for transmitting chunks
+            _fileOffset = 0
+            _currentChunk = 0
+
+            transitionState(to: .startNextChunk)
+
+        case .waitForChunkStartAcknowledge(chunkSize: let chunkSize, chunkCRC: let chunkCRC):
+            precondition(value.count >= 3)  // expecting 0x60 0x01 0x01 and we will assume we got it
+            transitionState(to: .sendNextChunk(chunkSize: chunkSize, chunkCRC: chunkCRC))
+
+        case .validateAndExecuteChunk(chunkSize: let chunkSize, chunkCRC: let chunkCRC):
+            // Received CRC. Validate it and continue if it is ok.
+            precondition(value.count >= 11)
+
+            let returnedOffset = getUInt32(from: value, atOffset: 3)
+            let returnedCRC = getUInt32(from: value, atOffset: 7)
+            print("[FirmwareUpdate] Offset=\(returnedOffset), Expected CRC=\(String(format: "%08x", chunkCRC)), Received CRC=\(String(format: "%08x", returnedCRC))")
+
+            guard returnedCRC == chunkCRC else {
+//TODO: verify this is working!
+                print("[FirmwareUpdate] CRC mismatch, retrying this chunk...")
+                transitionState(to: .sendNextChunk(chunkSize: chunkSize, chunkCRC: chunkCRC))
+                return
+            }
+
+            // Finalize by executing command and proceed to next chunk
+            _currentChunk += 1
+            sendControl(data: Data([ 0x04 ]))
+            transitionState(to: .waitForExecuteSuccess)
+
+        case .waitForExecuteSuccess:
+            precondition(value.count >= 3)  // expecting 0x60 0x04 0x01
+            transitionState(to: .startNextChunk)
+
+        default:
+            break
+        }
+    }
+
+    private func startNextChunk() {
+        guard let file = _filesRemaining.first,
+              let fileData = _currentFileData else {
+            fatalError("Firmware file not loaded")
+        }
+
+        // First, do we have any chunks left?
+        if _currentChunk >= _chunks {
+            // Transfer complete. Remove file from queue.
+            print("[FirmwareUpdate] Transfer complete")
+            _filesRemaining.removeFirst()
+
+            // Decide how to proceed
+            if _filesRemaining.count > 0 {
+                transitionState(to: .startFileTransfer)
+            } else {
+                transitionState(to: .finished)
+            }
+
+            return
+        }
+
+        // Send chunk as a series of packets
+        var chunkSize = min(_fileSize, _maxSize)
+        if _currentChunk == (_chunks - 1) && (_fileSize % _maxSize) != 0 {
+            // Last chunk could be smaller
+            chunkSize = _fileSize % _maxSize
+        }
+
+        let chunkCRC = computeCRC(fileData[0..<(_fileOffset + Int(chunkSize))])
+
+        print("[FirmwareUpdate] Sending: chunk=\(_currentChunk), fileOffset=\(_fileOffset), chunkSize=\(chunkSize), chunkCRC=\(String(format: "%08x", chunkCRC))")
+
+        // Send command specifying chunk size
+        let chunkSizeAsBytes = Data([
+            UInt8(chunkSize & 0xff),
+            UInt8((chunkSize >> 8) & 0xff),
+            UInt8((chunkSize >> 16) & 0xff),
+            UInt8((chunkSize >> 24) & 0xff)
+        ])
+        var command = Data()
+        command.append(file.createCommand)
+        command.append(chunkSizeAsBytes)
+        sendControl(data: command)
+
+        transitionState(to: .waitForChunkStartAcknowledge(chunkSize: chunkSize, chunkCRC: chunkCRC))
+    }
+
+    private func sendNextChunk(chunkSize: UInt32, chunkCRC: UInt32) {
+        guard let fileData = _currentFileData else {
+            fatalError("Firmware file not loaded")
+        }
+
+        // Send packets as maximum 100 byte payloads (assume maximum 100 byte MTU)
+        let packets = (chunkSize / 100) + ((chunkSize % 100) == 0 ? 0 : 1)
+        print("PACKETS=\(packets)")
+        for i in 0..<packets {
+            var packetSize: UInt32 = 100
+            if i == (packets - 1) && (chunkSize % 100) != 0 {
+                packetSize = chunkSize % 100
+            }
+            print(" PACKET_SIZE=\(packetSize)")
+            print(" START=\(_fileOffset), END=\(_fileOffset + Int(packetSize)), FileSize=\(fileData.count)")
+
+            let fileChunk = fileData.subdata(in: _fileOffset..<(_fileOffset + Int(packetSize)))//fileData[_fileOffset..<(_fileOffset + Int(packetSize))]
+            _fileOffset += Int(packetSize)
+            print("  FileChunkSize=\(fileChunk.count)")
+            Util.hexDump(fileChunk)
+
+            sendPacket(data: fileChunk)
+
+            let percent: Int = Int(ceil(Float(_fileOffset) * Float(100.0) / Float(_fileSize)))
+            print("[FirmwareUpdate] \(percent)%")
+        }
+
+        transitionState(to: .validateAndExecuteChunk(chunkSize: chunkSize, chunkCRC: chunkCRC))
+    }
+
+    private func sendControl(data: Data) {
+        _bluetooth.send(data: data, on: _controlCharacteristic, response: true)
+    }
+
+    private func sendPacket(data: Data) {
+        _bluetooth.send(data: data, on: _packetCharacteristic, response: false)
+    }
+
+    private func getUInt32(from data: Data, atOffset offset: Int) -> UInt32 {
+        return (UInt32(data[offset + 3]) << 24) |
+               (UInt32(data[offset + 2]) << 16) |
+               (UInt32(data[offset + 1]) << 8)  |
+               (UInt32(data[offset + 0]) << 0)
+    }
+
+    private func loadFile(ofType type: String) -> Data {
+        var url: URL!
+
+        if type == "init" {
+            url = Bundle.main.url(forResource: "application", withExtension: "dat")!
+        } else if type == "image" {
+            url = Bundle.main.url(forResource: "application", withExtension: "bin")!
+        } else {
+            fatalError("Invalid firmware file type: \(type)")
+        }
+
+        guard let data = try? Data(contentsOf: url) else {
+            fatalError("Unable to load Monocle firmware file from disk")
+        }
+
+        return data
+    }
+
+    private func computeCRC(_ data: Data) -> UInt32 {
+        /*
+        return data.withUnsafeBytes { (unsafeBytes: UnsafeRawBufferPointer) -> UInt32 in
+            if let bytes = unsafeBytes.bindMemory(to: UInt8.self).baseAddress {
+                return UInt32(crc32(0, bytes, UInt32(data.count)))
+            }
+            return 0
+        }
+        */
+
+        var o: [UInt32] = Array(repeating: 0, count: 256)
+        let k = UInt32(3988292384)
+
+        for c in 0..<256 {
+            var a = UInt32(c)
+            for _ in 0..<8 {
+                a = (UInt32(1) & a) != 0 ? (k ^ (a >> 1)) : (a >> 1)
+            }
+            o[c] = a
+        }
+
+        var n = UInt32(0xffffffff)
+        for t in 0..<data.count {
+            let idx = Int((UInt32(255) & n) ^ UInt32(data[t]))
+            n = (n >> 8) ^ o[idx]
+        }
+
+        return UInt32(0xffffffff) ^ n
+    }
+}
 
 class Controller: ObservableObject {
     // MARK: Internal State
@@ -29,7 +315,8 @@ class Controller: ObservableObject {
     private static let _dataTx = CBUUID(string: "e5700003-7bac-429a-b4ce-57ff900f479d")
     private static let _dataRx = CBUUID(string: "e5700002-7bac-429a-b4ce-57ff900f479d")
 
-    private let _bluetooth = NewBluetoothManager(
+    // Monocle Bluetooth manager
+    private let _monocleBluetooth = NewBluetoothManager(
         autoConnectByProximity: true,
         peripheralName: "monocle",
         services: [
@@ -46,6 +333,26 @@ class Controller: ObservableObject {
         ]
     )
 
+    // DFU target characteristic IDs
+    private static let _dfuControl = CBUUID(string: "8ec90001-f315-4f60-9fb8-838830daea50")
+    private static let _dfuPacket = CBUUID(string: "8ec90002-f315-4f60-9fb8-838830daea50")
+
+    // DFU target Bluetooth manager
+    private let _dfuBluetooth = NewBluetoothManager(
+        autoConnectByProximity: true,   // DFU target will have different ID and so we must just auto-connect
+        peripheralName: "DfuTarg",
+        services: [
+            CBUUID(string: "0xfe59"): "Nordi DFU"
+        ],
+        receiveCharacteristics: [
+            Controller._dfuControl: "DFUControl"
+        ],
+        transmitCharacteristics: [
+            Controller._dfuControl: "DFUControl",
+            Controller._dfuPacket: "DFUPacket"
+        ]
+    )
+
     private let _settings: Settings
     private let _messages: ChatMessageStore
 
@@ -59,6 +366,7 @@ class Controller: ObservableObject {
         case waitingForARGPTVersion
         case transmitingFiles
         case running
+        case waitingForDFUTarget
         case updatingFirmware
     }
 
@@ -73,6 +381,7 @@ class Controller: ObservableObject {
     private var _receivedVersionResponse = ""   // buffer for firmware and FPGA version responses
     private var _firmwareVersion: String?
     private var _fpgaVersion: String?
+    private var _firmwareUpdate: FirmwareUpdate?
 
     private var _audioData = Data()
 
@@ -99,7 +408,7 @@ class Controller: ObservableObject {
     @Published public var bluetoothEnabled = false {
         didSet {
             // Pass through to Bluetooth manager
-            _bluetooth.enabled = bluetoothEnabled
+            _monocleBluetooth.enabled = bluetoothEnabled
         }
     }
 
@@ -119,8 +428,8 @@ class Controller: ObservableObject {
         _messages = messages
 
         // Set initial state
-        isMonocleConnected = _bluetooth.isConnected
-        pairedMonocleID = _bluetooth.selectedDeviceID
+        isMonocleConnected = _monocleBluetooth.isConnected
+        pairedMonocleID = _monocleBluetooth.selectedDeviceID
         bluetoothEnabled = false
 
         // Subscribe to changed of paired device ID setting
@@ -134,7 +443,7 @@ class Controller: ObservableObject {
             }
 
             // Begin connection attempts or disconnect
-            self._bluetooth.selectedDeviceID = newPairedDeviceID
+            self._monocleBluetooth.selectedDeviceID = newPairedDeviceID
 
             // Update public state
             pairedMonocleID = newPairedDeviceID
@@ -142,7 +451,7 @@ class Controller: ObservableObject {
         .store(in: &_subscribers)
 
         // Connection to Monocle
-        _bluetooth.peripheralConnected.sink { [weak self] (deviceID: UUID) in
+        _monocleBluetooth.peripheralConnected.sink { [weak self] (deviceID: UUID) in
             guard let self = self else { return }
 
             print("[Controller] Monocle connected")
@@ -173,14 +482,18 @@ class Controller: ObservableObject {
         }.store(in: &_subscribers)
 
         // Monocle disconnected
-        _bluetooth.peripheralDisconnected.sink { [weak self] in
+        _monocleBluetooth.peripheralDisconnected.sink { [weak self] in
             guard let self = self else { return }
             print("[Controller] Monocle disconnected")
-            transitionState(to: .disconnected)
+            if _state != .waitingForDFUTarget {
+                // When waiting for DFU target, a disconnect is expected, otherwise it is a
+                // "legitimate" Monocle disconnect
+                transitionState(to: .disconnected)
+            }
         }.store(in: &_subscribers)
 
-        // Data received
-        _bluetooth.dataReceived.sink { [weak self] (received: (characteristic: CBUUID, value: Data)) in
+        // Monocle data received
+        _monocleBluetooth.dataReceived.sink { [weak self] (received: (characteristic: CBUUID, value: Data)) in
             guard let self = self else { return }
 
             let (characteristicID, value) = received
@@ -190,6 +503,21 @@ class Controller: ObservableObject {
             } else if characteristicID == Self._dataTx {
                 handleDataReceived(value)
             }
+        }.store(in: &_subscribers)
+
+        // DFU target connected
+        _dfuBluetooth.peripheralConnected.sink { [weak self] (deviceID: UUID) in
+            guard let self = self else { return }
+            print("[Controller] DFUTarget connected")
+            transitionState(to: .updatingFirmware)
+        }.store(in: &_subscribers)
+
+        // DFU target disconnected
+        _dfuBluetooth.peripheralDisconnected.sink { [weak self] in
+            guard let self = self else { return }
+            print("[Controller] DFUTarget disconnected")
+            _firmwareUpdate = nil
+            _dfuBluetooth.enabled = false
         }.store(in: &_subscribers)
     }
 
@@ -240,13 +568,35 @@ class Controller: ObservableObject {
 
         case .running:
             // Send ^D to start app
-            _bluetooth.send(data: Data([ 0x04 ]), on: Self._serialRx)
+            _monocleBluetooth.send(data: Data([ 0x04 ]), on: Self._serialRx)
 
-        case .updatingFirmware:
-            // Update the firmware
+        case .waitingForDFUTarget:
+            if _monocleBluetooth.selectedDeviceID == nil {
+                // To have reached this state, we have paired, but in case of some race condition
+                // involving the UI unpairing, handle this case
+                print("[Controller] Internal error: Monocle became unpaired during firmware update process")
+                transitionState(to: .disconnected)
+                return
+            }
+
+            // Kick off firmware update. We will then get a disconnect event when Monocle switches
+            // to DFU target mode.
+            transmitInitiateFirmwareUpdateCommand()
+
+            // Enable DFU target. We will wait until this connection actually occurs.
+            _dfuBluetooth.selectedDeviceID = _monocleBluetooth.selectedDeviceID
+            _dfuBluetooth.enabled = true
+
+            // Update the firmware...
             updateState = .updatingFirmware
             updateProgressPercent = 0
+
+            print("[Controller] Firmware update initiated")
+
+        case .updatingFirmware:
+            // Instantiate object that will handle the firmware update
             print("[Controller] Updating firmware...")
+            _firmwareUpdate = FirmwareUpdate(bluetooth: _dfuBluetooth, controlCharacteristic: Self._dfuControl, packetCharacteristic: Self._dfuPacket)
         }
 
         // Transition!
@@ -382,10 +732,10 @@ class Controller: ObservableObject {
     }
 
     private func updateMonocleOrProceedToRun() {
-        if _firmwareVersion != _requiredFirmwareVersion {
+        if /*_firmwareVersion != _requiredFirmwareVersion*/ true {
             // First, kick off firmware update
             print("[Controller] Firmware update needed. Current version: \(_firmwareVersion!)")
-            transitionState(to: .updatingFirmware)
+            transitionState(to: .waitingForDFUTarget)
         } else if _fpgaVersion != _requiredFPGAVersion {
             // Second, FPGA update
             print("[Controller] FPGA update needed. Current version: \(_fpgaVersion!)")
@@ -445,7 +795,7 @@ class Controller: ObservableObject {
 
     private func transmitRawREPLCode() {
         // ^C (kill current), ^C (again to be sure), ^A (raw REPL mode)
-        _bluetooth.send(data: Data([ 0x03, 0x03, 0x01 ]), on: Self._serialRx)
+        _monocleBluetooth.send(data: Data([ 0x03, 0x03, 0x01 ]), on: Self._serialRx)
     }
 
     private func transmitFirmwareVersionCheck() {
@@ -458,6 +808,11 @@ class Controller: ObservableObject {
         transmitPythonCommand("import fpga;print(fpga.read(2,12));del(fpga)")
     }
 
+    private func transmitInitiateFirmwareUpdateCommand() {
+        // Begin a firmware update
+        transmitPythonCommand("import update;update.micropython()")
+    }
+
     private func transmitVersionCheck() {
         // Check app version
         transmitPythonCommand("print(ARGPT_VERSION)")
@@ -468,7 +823,7 @@ class Controller: ObservableObject {
         var data = Data()
         data.append(command)
         data.append(Data([ 0x04 ])) // ^D to execute the command
-        _bluetooth.send(data: data, on: Self._serialRx)
+        _monocleBluetooth.send(data: data, on: Self._serialRx)
     }
 
     private func loadFilesForTransmission() -> ([(String, String)], String) {
@@ -537,7 +892,7 @@ class Controller: ObservableObject {
         data.append(Data([ 0x04 ])) // ^D to execute the command
 
         // Send!
-        _bluetooth.send(data: data, on: Self._serialRx)
+        _monocleBluetooth.send(data: data, on: Self._serialRx)
         print("[Controller] Sent \(filename): \(data.count) bytes")
     }
 
@@ -606,7 +961,7 @@ class Controller: ObservableObject {
                 // the ID, allowing us to perform a ChatGPT request.
                 let id = UUID()
                 _pendingQueryByID[id] = query
-                _bluetooth.send(text: "pin:" + id.uuidString, on: Self._dataRx)
+                _monocleBluetooth.send(text: "pin:" + id.uuidString, on: Self._dataRx)
                 print("[Controller] Sent transcription ID to Monocle: \(id)")
             }
         }
@@ -665,7 +1020,7 @@ class Controller: ObservableObject {
     }
 
     private func sendTextToMonocleInChunks(text: String, isError: Bool) {
-        guard var chunkSize = _bluetooth.maximumDataLength else {
+        guard var chunkSize = _monocleBluetooth.maximumDataLength else {
             return
         }
 
@@ -683,7 +1038,7 @@ class Controller: ObservableObject {
             let startIdx = text.index(text.startIndex, offsetBy: idx)
             let endIdx = text.index(text.startIndex, offsetBy: end)
             let chunk = command + text[startIdx..<endIdx]
-            _bluetooth.send(text: chunk, on: Self._dataRx)
+            _monocleBluetooth.send(text: chunk, on: Self._dataRx)
             idx = end
         }
     }

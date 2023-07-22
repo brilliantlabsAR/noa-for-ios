@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		CC00398B2A6A4F11009E3BAC /* NewBluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */; };
+		CC0039922A6B7F7C009E3BAC /* application.dat in Resources */ = {isa = PBXBuildFile; fileRef = CC0039902A6B7F78009E3BAC /* application.dat */; };
+		CC0039932A6B7F7C009E3BAC /* application.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC00398E2A6B7F6F009E3BAC /* application.bin */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
 		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
@@ -78,6 +80,8 @@
 
 /* Begin PBXFileReference section */
 		CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewBluetoothManager.swift; sourceTree = "<group>"; };
+		CC00398E2A6B7F6F009E3BAC /* application.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = application.bin; sourceTree = "<group>"; };
+		CC0039902A6B7F78009E3BAC /* application.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = application.dat; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
 		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
@@ -158,6 +162,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CC00398C2A6B7F4E009E3BAC /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				CC200A4F2A37E396005C67E0 /* graphics.py */,
+				CC200A4E2A37E396005C67E0 /* states.py */,
+				CC200A4C2A37E38C005C67E0 /* main.py */,
+			);
+			path = Scripts;
+			sourceTree = "<group>";
+		};
+		CC00398D2A6B7F5A009E3BAC /* Firmware */ = {
+			isa = PBXGroup;
+			children = (
+				CC0039902A6B7F78009E3BAC /* application.dat */,
+				CC00398E2A6B7F6F009E3BAC /* application.bin */,
+			);
+			path = Firmware;
+			sourceTree = "<group>";
+		};
 		CC3FE0072A098DBC00756941 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -257,7 +280,7 @@
 				CC3FE0172A0B215700756941 /* arGPT-Info.plist */,
 				CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */,
 				CC3FE0272A0EF80300756941 /* Voice Assets */,
-				CCB2F9632A25812B00F24F2D /* Script Assets */,
+				CCB2F9632A25812B00F24F2D /* Monocle Assets */,
 				CC4E3AC92A00BA4D0058AC20 /* Preview Content */,
 			);
 			path = arGPT;
@@ -302,14 +325,13 @@
 			path = Chat;
 			sourceTree = "<group>";
 		};
-		CCB2F9632A25812B00F24F2D /* Script Assets */ = {
+		CCB2F9632A25812B00F24F2D /* Monocle Assets */ = {
 			isa = PBXGroup;
 			children = (
-				CC200A4F2A37E396005C67E0 /* graphics.py */,
-				CC200A4E2A37E396005C67E0 /* states.py */,
-				CC200A4C2A37E38C005C67E0 /* main.py */,
+				CC00398D2A6B7F5A009E3BAC /* Firmware */,
+				CC00398C2A6B7F4E009E3BAC /* Scripts */,
 			);
-			path = "Script Assets";
+			path = "Monocle Assets";
 			sourceTree = "<group>";
 		};
 		CCB2F9642A2598E900F24F2D /* Util */ = {
@@ -436,11 +458,13 @@
 				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,
 				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
 				CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */,
+				CC0039932A6B7F7C009E3BAC /* application.bin in Resources */,
 				CC200A502A37E396005C67E0 /* states.py in Resources */,
 				CC200A4D2A37E38C005C67E0 /* main.py in Resources */,
 				CCCECE762A1EF36C00DBB7CA /* Question_Nutrition.wav in Resources */,
 				CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */,
 				CC4E3AC82A00BA4C0058AC20 /* Assets.xcassets in Resources */,
+				CC0039922A6B7F7C009E3BAC /* application.dat in Resources */,
 				CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */,
 				CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */,
 				CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */,

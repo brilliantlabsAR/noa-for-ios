@@ -14,6 +14,8 @@
 // - Step 2: Bluetooth enable -> @State variable on content view that is observed and used to poke Controller as needed.
 // - ...
 // - Can isMonocleConnected and pairedMonocleID be defined as bindings that only read and do not allow set?
+// - STATES: Controller should expose a state beyond just updateState. So we don't have to check if bluetooth enabled for
+//   InitialScreen.onAppear but rather look at actual state
 //
 // - Remember to remove BluetoothManager and replace with NewBluetoothManager.
 // - Clean up any TODO comments left over.

@@ -136,7 +136,7 @@ class NewBluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate,
         _ = _manager
     }
 
-    public func send(data: Data, on id: CBUUID) {
+    public func send(data: Data, on id: CBUUID, response: Bool = false) {
         guard let characteristic = _characteristicByID[id] else {
             print("[BluetoothManager] Failed to send because characteristic is not available: UUID=\(id)")
             return
@@ -147,7 +147,7 @@ class NewBluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate,
             return
         }
 
-        writeData(data, on: characteristic, peripheral: connectedPeripheral)
+        writeData(data, on: characteristic, peripheral: connectedPeripheral, response: response)
         print("[BluetoothManager] Sent \(data.count) bytes on \(toString(characteristic))")
     }
 
@@ -288,12 +288,12 @@ class NewBluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate,
 
     // MARK: Helpers
 
-    private func writeData(_ data: Data, on characteristic: CBCharacteristic, peripheral: CBPeripheral) {
+    private func writeData(_ data: Data, on characteristic: CBCharacteristic, peripheral: CBPeripheral, response: Bool = false) {
         let chunkSize = peripheral.maximumWriteValueLength(for: .withoutResponse)
         var idx = 0
         while idx < data.count {
             let endIdx = min(idx + chunkSize, data.count)
-            peripheral.writeValue(data.subdata(in: idx..<endIdx), for: characteristic, type: .withoutResponse)
+            peripheral.writeValue(data.subdata(in: idx..<endIdx), for: characteristic, type: response ? .withResponse : .withoutResponse)
             idx = endIdx
         }
     }
