@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		CC00398B2A6A4F11009E3BAC /* NewBluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */; };
-		CC0039922A6B7F7C009E3BAC /* application.dat in Resources */ = {isa = PBXBuildFile; fileRef = CC0039902A6B7F78009E3BAC /* application.dat */; };
-		CC0039932A6B7F7C009E3BAC /* application.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC00398E2A6B7F6F009E3BAC /* application.bin */; };
+		CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC0039952A6C7E57009E3BAC /* NordicDFU */; };
+		CC0039982A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
 		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
@@ -80,8 +80,7 @@
 
 /* Begin PBXFileReference section */
 		CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewBluetoothManager.swift; sourceTree = "<group>"; };
-		CC00398E2A6B7F6F009E3BAC /* application.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = application.bin; sourceTree = "<group>"; };
-		CC0039902A6B7F78009E3BAC /* application.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = application.dat; sourceTree = "<group>"; };
+		CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.200.1232.zip"; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
 		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
@@ -142,6 +141,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,8 +175,7 @@
 		CC00398D2A6B7F5A009E3BAC /* Firmware */ = {
 			isa = PBXGroup;
 			children = (
-				CC0039902A6B7F78009E3BAC /* application.dat */,
-				CC00398E2A6B7F6F009E3BAC /* application.bin */,
+				CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */,
 			);
 			path = Firmware;
 			sourceTree = "<group>";
@@ -360,6 +359,9 @@
 			dependencies = (
 			);
 			name = arGPT;
+			packageProductDependencies = (
+				CC0039952A6C7E57009E3BAC /* NordicDFU */,
+			);
 			productName = "ChatGPT for Monocle";
 			productReference = CC4E3AC02A00BA4C0058AC20 /* arGPT.app */;
 			productType = "com.apple.product-type.application";
@@ -432,6 +434,9 @@
 				Base,
 			);
 			mainGroup = CC4E3AB72A00BA4C0058AC20;
+			packageReferences = (
+				CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
+			);
 			productRefGroup = CC4E3AC12A00BA4C0058AC20 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -453,18 +458,17 @@
 				CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */,
 				CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */,
 				CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */,
+				CC0039982A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip in Resources */,
 				CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */,
 				CC200A512A37E396005C67E0 /* graphics.py in Resources */,
 				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,
 				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
 				CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */,
-				CC0039932A6B7F7C009E3BAC /* application.bin in Resources */,
 				CC200A502A37E396005C67E0 /* states.py in Resources */,
 				CC200A4D2A37E38C005C67E0 /* main.py in Resources */,
 				CCCECE762A1EF36C00DBB7CA /* Question_Nutrition.wav in Resources */,
 				CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */,
 				CC4E3AC82A00BA4C0058AC20 /* Assets.xcassets in Resources */,
-				CC0039922A6B7F7C009E3BAC /* application.dat in Resources */,
 				CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */,
 				CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */,
 				CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */,
@@ -872,6 +876,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CC0039952A6C7E57009E3BAC /* NordicDFU */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
+			productName = NordicDFU;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CC4E3AB82A00BA4C0058AC20 /* Project object */;
 }

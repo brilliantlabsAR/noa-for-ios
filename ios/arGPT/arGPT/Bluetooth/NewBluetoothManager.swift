@@ -75,6 +75,10 @@ class NewBluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate,
         }
     }
 
+    public var peripheral: CBPeripheral? {
+        return _connectedPeripheral
+    }
+
     private var _enabled = false
 
     private let _peripheralName: String
