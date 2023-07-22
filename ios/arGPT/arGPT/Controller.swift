@@ -38,9 +38,9 @@ class FirmwareUpdate {
         case idle
         case startFileTransfer
         case startNextChunk
-        case waitForChunkStartAcknowledge(chunkSize: UInt32, chunkCRC: UInt32)
-        case sendNextChunk(chunkSize: UInt32, chunkCRC: UInt32)
-        case validateAndExecuteChunk(chunkSize: UInt32, chunkCRC: UInt32)
+        case waitForChunkStartAcknowledge(chunkStartOffset: Int, chunkSize: UInt32, chunkCRC: UInt32)
+        case sendNextChunk(chunkStartOffset: Int, chunkSize: UInt32, chunkCRC: UInt32)
+        case validateAndExecuteChunk(chunkStartOffset: Int, chunkSize: UInt32, chunkCRC: UInt32)
         case waitForExecuteSuccess
         case finished
     }
@@ -93,8 +93,8 @@ class FirmwareUpdate {
         case .startNextChunk:
             startNextChunk()
 
-        case .sendNextChunk(chunkSize: let chunkSize, chunkCRC: let chunkCRC):
-            sendNextChunk(chunkSize: chunkSize, chunkCRC: chunkCRC)
+        case .sendNextChunk(chunkStartOffset: let chunkStartOffset, chunkSize: let chunkSize, chunkCRC: let chunkCRC):
+            sendNextChunk(chunkStartOffset: chunkStartOffset, chunkSize: chunkSize, chunkCRC: chunkCRC)
 
         case .validateAndExecuteChunk:
             // Request CRC of chunk just sent
@@ -130,11 +130,11 @@ class FirmwareUpdate {
 
             transitionState(to: .startNextChunk)
 
-        case .waitForChunkStartAcknowledge(chunkSize: let chunkSize, chunkCRC: let chunkCRC):
+        case .waitForChunkStartAcknowledge(chunkStartOffset: let chunkStartOffset, chunkSize: let chunkSize, chunkCRC: let chunkCRC):
             precondition(value.count >= 3)  // expecting 0x60 0x01 0x01 and we will assume we got it
-            transitionState(to: .sendNextChunk(chunkSize: chunkSize, chunkCRC: chunkCRC))
+            transitionState(to: .sendNextChunk(chunkStartOffset: chunkStartOffset, chunkSize: chunkSize, chunkCRC: chunkCRC))
 
-        case .validateAndExecuteChunk(chunkSize: let chunkSize, chunkCRC: let chunkCRC):
+        case .validateAndExecuteChunk(chunkStartOffset: let chunkStartOffset, chunkSize: let chunkSize, chunkCRC: let chunkCRC):
             // Received CRC. Validate it and continue if it is ok.
             precondition(value.count >= 11)
 
@@ -145,7 +145,7 @@ class FirmwareUpdate {
             guard returnedCRC == chunkCRC else {
 //TODO: verify this is working!
                 print("[FirmwareUpdate] CRC mismatch, retrying this chunk...")
-                transitionState(to: .sendNextChunk(chunkSize: chunkSize, chunkCRC: chunkCRC))
+                transitionState(to: .sendNextChunk(chunkStartOffset: chunkStartOffset, chunkSize: chunkSize, chunkCRC: chunkCRC))
                 return
             }
 
@@ -208,13 +208,16 @@ class FirmwareUpdate {
         command.append(chunkSizeAsBytes)
         sendControl(data: command)
 
-        transitionState(to: .waitForChunkStartAcknowledge(chunkSize: chunkSize, chunkCRC: chunkCRC))
+        transitionState(to: .waitForChunkStartAcknowledge(chunkStartOffset: _fileOffset, chunkSize: chunkSize, chunkCRC: chunkCRC))
     }
 
-    private func sendNextChunk(chunkSize: UInt32, chunkCRC: UInt32) {
+    private func sendNextChunk(chunkStartOffset: Int, chunkSize: UInt32, chunkCRC: UInt32) {
         guard let fileData = _currentFileData else {
             fatalError("Firmware file not loaded")
         }
+
+        // Reset file offset pointer to start of chunk
+        _fileOffset = chunkStartOffset
 
         // Send packets as maximum 100 byte payloads (assume maximum 100 byte MTU)
         let packets = (chunkSize / 100) + ((chunkSize % 100) == 0 ? 0 : 1)
@@ -238,7 +241,7 @@ class FirmwareUpdate {
             print("[FirmwareUpdate] \(percent)%")
         }
 
-        transitionState(to: .validateAndExecuteChunk(chunkSize: chunkSize, chunkCRC: chunkCRC))
+        transitionState(to: .validateAndExecuteChunk(chunkStartOffset: chunkStartOffset, chunkSize: chunkSize, chunkCRC: chunkCRC))
     }
 
     private func sendControl(data: Data) {
