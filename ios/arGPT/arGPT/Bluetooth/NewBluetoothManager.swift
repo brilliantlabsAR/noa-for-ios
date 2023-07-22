@@ -164,7 +164,6 @@ class NewBluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate,
     private func startScan() {
         if _manager.isScanning {
             print("[BluetoothManager] Internal error: Already scanning")
-            return
         }
 
         _manager.scanForPeripherals(withServices: _serviceUUIDs, options: [ CBCentralManagerScanOptionAllowDuplicatesKey: true ])
