@@ -6,6 +6,13 @@
 //
 //  Notes
 //  -----
+//  - There is a bug where occasionally the firmware version cannot successfully be read. What
+//    appears to be happening is the "raw REPL; CTRL-B to exit" is transmitted twice, with the
+//    second one being intercepted by the code awaiting the firmware version. This is probably due
+//    to a race condition with the raw REPL retry timer. It *seems* to happen more frequently after
+//    a firmware or FPGA update has taken place. Need to investigate this further if it becomes a
+//    serious problem. Not sure why this doesn't also cause an FPGA update but if that is ever
+//    observed, this should become a top priority issue to resolve.
 //  - The state code is a bit much to have in one file. Future refactoring advice:
 //      - Rely more on data-carrying enums. When transitioning states, pass state as a variable or
 //        struct attached to the enum.
@@ -13,16 +20,11 @@
 //        the logic (including the original smaller states) into a separate object.
 //  - Move Bluetooth off the main queue because FPGA updates completely saturate it. Otherwise, all
 //    other communication is low bandwidth and safe to dispatch there.
-//  - Perhaps StreamingStringMatcher can be replaced with something much simpler. The firmware and
-//    FPGA version checkers simply accumulate string data. The reason this was not done elsewhere
-//    was out of concern that this would 1) be messy and 2) not be resilient against very long,
-//    "runaway" responses but (1) is simply not true and (2) is an unfounded concern. At some point
-//    it would be nice to eliminate StreamingStringMatcher for simpler logic.
+//  - StreamingStringMatcher is dumb. I don't know what I was thinking there. Better just to have
+//    some _serialBuffer string object that is appended to, checked, and occasionally reset. Should
+//    also look into how we would deal with responses coming across as multiple transfers if we had
+//    an async implementation. Probably need to observe new lines / terminating sequences like '>'.
 //
-
-//TODO: get rid of fatalErrors and such in the state machine. These are often being used as assertions
-//      and we can mitigate them entirely with the use of data-carrying enums to ensure that we always
-//      have the required state vars.
 
 import AVFoundation
 import Combine
@@ -90,14 +92,14 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         case waitingForFirmwareVersion
         case waitingForFPGAVersion
         case waitingForARGPTVersion
-        case transmitingFiles
+        case transmittingScripts(scriptTransmissionState: ScriptTransmissionState)
 
         // Running state: Monocle app is up and able to communicate with iOS
         case running
 
         // Firmware update states
         case initiateDFUAndWaitForDFUTarget
-        case performDFU
+        case performDFU(peripheral: CBPeripheral)
 
         // FPGA update states
         case initiateFPGAUpdate(maximumDataLength: Int)
@@ -131,16 +133,33 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             return chunk >= chunks
         }
 
+        /// Compare whether objects are the same
         static func == (lhs: Controller.FPGAUpdateState, rhs: Controller.FPGAUpdateState) -> Bool {
-            return lhs.image == rhs.image && lhs.chunkSize == rhs.chunkSize && lhs.chunks == rhs.chunks && lhs.chunk == rhs.chunk
+            return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+        }
+    }
+
+    private class ScriptTransmissionState: Equatable {
+        /// Files remaining to transmit. The first file is always transmitted next.
+        var filesToTransmit: [(name: String, content: String)] = []
+
+        init(filesToTransmit: [(name: String, content: String)]) {
+            self.filesToTransmit = filesToTransmit
+        }
+
+        public func tryDequeueNextScript() -> (name: String, content: String)? {
+            guard filesToTransmit.count > 0 else { return nil }
+            return filesToTransmit.removeFirst()
+        }
+
+        static func == (lhs: Controller.ScriptTransmissionState, rhs: Controller.ScriptTransmissionState) -> Bool {
+            return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
         }
     }
 
     private var _state = State.disconnected
     private var _rawREPLTimer: Timer?
     private var _matcher: Util.StreamingStringMatcher?
-    private var _filesToTransmit: [(String, String)] = []
-    private var _filesVersion: String?
 
     private let _requiredFirmwareVersion = "v23.200.1232"
     private let _requiredFPGAVersion = "v23.179.1006"
@@ -269,11 +288,24 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         _monocleBluetooth.peripheralDisconnected.sink { [weak self] in
             guard let self = self else { return }
             print("[Controller] Monocle disconnected")
-            if _state != .initiateDFUAndWaitForDFUTarget && _state != .performDFU {
-                // When waiting for DFU target/performing update, a disconnect is expected,
-                // otherwise it is a "legitimate" Monocle disconnect. Note DFU target may connect
-                // before we receive Monocle disconnect event, hence need to check all update
-                // states.
+
+            // Are we in a DFU state?
+            var isPerformingDFU = false
+            switch _state {
+            case .initiateDFUAndWaitForDFUTarget:
+                isPerformingDFU = true
+            case .performDFU(peripheral: _):
+                isPerformingDFU = true
+            default:
+                break
+            }
+
+            if !isPerformingDFU {
+                // When waiting for DFU target/performing update, a disconnect is expected and we
+                // don't want to change the state. Otherwise, Monocle has disconnected and we need
+                // to move to the disconnected state. Note DFU target will often connect *before*
+                // we receive the Monocle disconnect event and continue to progress, hence the need
+                // to check *all* DFU states.
                 transitionState(to: .disconnected)
             }
         }.store(in: &_subscribers)
@@ -293,9 +325,12 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
         // DFU target connected
         _dfuBluetooth.peripheralConnected.sink { [weak self] (deviceID: UUID) in
-            guard let self = self else { return }
+            guard let self = self,
+                  let peripheral = _dfuBluetooth.peripheral else {
+                return
+            }
             print("[Controller] DFUTarget connected")
-            transitionState(to: .performDFU)
+            transitionState(to: .performDFU(peripheral: peripheral))
         }.store(in: &_subscribers)
 
         // DFU target disconnected (which means update succeeded, in which case device comes back
@@ -352,16 +387,13 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             transmitFPGAVersionCheck()
 
         case .waitingForARGPTVersion:
-            // Load Monocle script files up and check for version
-            let (filesToTransmit, version) = loadFilesForTransmission()
-            _filesToTransmit = filesToTransmit
-            _filesVersion = version
+            // Check Monocle script version
             transmitVersionCheck()
 
-        case .transmitingFiles:
+        case .transmittingScripts(scriptTransmissionState: let transmissionState):
             // Begin transmitting scripts
             _matcher = nil
-            transmitNextFile()
+            transmitNextScript(scriptTransmissionState: transmissionState)
 
         case .running:
             // Send ^D to start app
@@ -381,7 +413,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
             print("[Controller] Firmware update initiated")
 
-        case .performDFU:
+        case .performDFU(peripheral: let peripheral):
             // We may enter this state at any time (e.g., if app starts up when Monocle is in DFU
             // state due to a previously failed update, etc.). Set the external state.
             updateState = .updatingFirmware
@@ -389,12 +421,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
             // Instantiate Nordic DFU library object that will handle the firmware update
             print("[Controller] Updating firmware...")
-            guard let peripheral = _dfuBluetooth.peripheral else {
-                //TODO: move this into .performDFU enum
-                print("[Controller] Internal error: Unable to get DFU peripheral")
-                transitionState(to: .disconnected)
-                return
-            }
             _dfuController = _dfuInitiator.start(target: peripheral)
 
         case .initiateFPGAUpdate(maximumDataLength: let maximumDataLength):
@@ -439,8 +465,8 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         case .waitingForARGPTVersion:
             onWaitForVersionString(receivedString: str)
 
-        case .transmitingFiles:
-            onTransmittingFilesState(receivedString: str)
+        case .transmittingScripts(scriptTransmissionState: let transmissionState):
+            onScriptTransmitted(receivedString: str, scriptTransmissionState: transmissionState)
 
         case .running:
             break
@@ -646,14 +672,12 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     private func onWaitForVersionString(receivedString str: String) {
+        // Get required script files and their version from disk
+        let (filesToTransmit, expectedVersion) = loadFilesForTransmission()
+
         // Result of print(ARGPT_VERSION) comes across as: OK<ARGPT_VERSION>\r\n^D^D>
         // We therefore manually check for '>'. If it comes across before the string matcher has
         // seen the desired version number, we assume it has failed.
-        guard let expectedVersion = _filesVersion else {
-            print("[Controller] Internal error: Waiting for version state but no version set! Cannot proceed.")
-            return
-        }
-
         if _matcher == nil {
             _matcher = Util.StreamingStringMatcher(lookingFor: expectedVersion)
         }
@@ -666,28 +690,25 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
         let expectedResponseLength = 2 + expectedVersion.count  // "OK" + version
         if str.contains(">") || _matcher!.charactersProcessed >= expectedResponseLength {
-            print("[Controller] App not running on Monocle. Will transmit files.")
-            transitionState(to: .transmitingFiles)
+            // Create transmission state object containing files and proceed to transmission state
+            print("[Controller] App not running on Monocle. Will transmit scripts.")
+            let transmissionState = ScriptTransmissionState(filesToTransmit: filesToTransmit)
+            transitionState(to: .transmittingScripts(scriptTransmissionState: transmissionState))
             return
         }
 
         print("[Controller] Continuing to wait for version string...")
     }
 
-    private func onTransmittingFilesState(receivedString str: String) {
+    private func onScriptTransmitted(receivedString str: String, scriptTransmissionState: ScriptTransmissionState) {
         if _matcher == nil {
             _matcher = Util.StreamingStringMatcher(lookingFor: "OK\u{4}\u{4}>")
         }
 
         if _matcher!.matchExists(afterAppending: str) {
-            print("[Controller] File succesfully written")
+            print("[Controller] Script succesfully written")
             _matcher = nil
-            if _filesToTransmit.count > 0 {
-                transmitNextFile()
-            } else {
-                print("[Controller] All files written. Starting program...")
-                transitionState(to: .running)
-            }
+            transmitNextScript(scriptTransmissionState: scriptTransmissionState)
         }
     }
 
@@ -734,15 +755,15 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         _monocleBluetooth.send(data: data, on: Self._serialRx)
     }
 
-    private func loadFilesForTransmission() -> ([(String, String)], String) {
+    private func loadFilesForTransmission() -> ([(name: String, content: String)], String) {
         // Load up all the files
         let basenames = [ "states", "graphics", "main" ]
-        var files: [(String, String)] = []
+        var files: [(name: String, content: String)] = []
         for basename in basenames {
             let filename = basename + ".py"
             let contents = loadPythonScript(named: basename)
             let escapedContents = contents.replacingOccurrences(of: "\n", with: "\\n")
-            files.append((filename, escapedContents))
+            files.append((name: filename, content: escapedContents))
         }
         assert(files.count >= 1 && files.count == basenames.count)
 
@@ -751,8 +772,8 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
         // Insert that version string into main.py
         for i in 0..<files.count {
-            if files[i].0 == "main.py" {
-                files[i].1 = "ARGPT_VERSION=\"\(version)\"\n" + files[i].1
+            if files[i].name == "main.py" {
+                files[i].content = "ARGPT_VERSION=\"\(version)\"\n" + files[i].content
             }
         }
 
@@ -783,12 +804,12 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         return digest.description
     }
 
-    private func transmitNextFile() {
-        guard _filesToTransmit.count >= 1 else {
+    private func transmitNextScript(scriptTransmissionState: ScriptTransmissionState) {
+        guard let (filename, contents) = scriptTransmissionState.tryDequeueNextScript() else {
+            print("[Controller] All scripts written. Starting program...")
+            transitionState(to: .running)
             return
         }
-
-        let (filename, contents) = _filesToTransmit.remove(at: 0)
 
         // Construct file write commands
         guard let command = "f=open('\(filename)','w');f.write('''\(contents)''');f.close()".data(using: .utf8) else {

@@ -5,14 +5,6 @@
 //  Created by Bart Trzynadlowski on 5/1/23.
 //
 
-//
-// TODO:
-// -----
-// - Clean up any TODO comments left over.
-// - Remove fatalErrors in Controller, use data-carrying enums to make this easier.
-// - Get rid of _matcher and just have an accumulating _serialBuffer and check for expected strings inside that.
-//
-
 import Combine
 import SwiftUI
 
@@ -38,9 +30,6 @@ struct ARGPTApp: App {
         _controller = Controller(settings: _settings, messages: _chatMessageStore)
     }
 }
-
-//TODO: when factoring this out into a separate file, indicate that only ContentView may *enable* Bluetooth and settings menu (unpair) can disable it
-//TODO: may want a top-level state variable of some sort for the views to monitor -- especially once we start working on DFU update
 
 struct ContentView: View {
     @ObservedObject private var _settings: Settings

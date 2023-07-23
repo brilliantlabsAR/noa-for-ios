@@ -214,7 +214,7 @@
 			path = Speech;
 			sourceTree = "<group>";
 		};
-		CC3FE0272A0EF80300756941 /* Voice Assets */ = {
+		CC3FE0272A0EF80300756941 /* Test Voice Assets */ = {
 			isa = PBXGroup;
 			children = (
 				CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */,
@@ -230,7 +230,7 @@
 				CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */,
 				CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */,
 			);
-			path = "Voice Assets";
+			path = "Test Voice Assets";
 			sourceTree = "<group>";
 		};
 		CC3FE0342A0F12C800756941 /* OpenAI */ = {
@@ -282,7 +282,7 @@
 				CC3FE00A2A09C0BF00756941 /* Settings.bundle */,
 				CC3FE0172A0B215700756941 /* arGPT-Info.plist */,
 				CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */,
-				CC3FE0272A0EF80300756941 /* Voice Assets */,
+				CC3FE0272A0EF80300756941 /* Test Voice Assets */,
 				CCB2F9632A25812B00F24F2D /* Monocle Assets */,
 				CC4E3AC92A00BA4D0058AC20 /* Preview Content */,
 			);
