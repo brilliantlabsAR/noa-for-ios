@@ -10,6 +10,7 @@
 		CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */; };
 		CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC0039952A6C7E57009E3BAC /* NordicDFU */; };
 		CC0039982A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */; };
+		CC00399A2A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC0039992A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
 		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
@@ -79,6 +80,7 @@
 /* Begin PBXFileReference section */
 		CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
 		CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.200.1232.zip"; sourceTree = "<group>"; };
+		CC0039992A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga-v23.179.1006.bin"; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
 		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
@@ -174,6 +176,14 @@
 				CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */,
 			);
 			path = Firmware;
+			sourceTree = "<group>";
+		};
+		CC00399B2A6D0D14009E3BAC /* FPGA */ = {
+			isa = PBXGroup;
+			children = (
+				CC0039992A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin */,
+			);
+			path = FPGA;
 			sourceTree = "<group>";
 		};
 		CC3FE0072A098DBC00756941 /* Settings */ = {
@@ -322,6 +332,7 @@
 			isa = PBXGroup;
 			children = (
 				CC00398D2A6B7F5A009E3BAC /* Firmware */,
+				CC00399B2A6D0D14009E3BAC /* FPGA */,
 				CC00398C2A6B7F4E009E3BAC /* Scripts */,
 			);
 			path = "Monocle Assets";
@@ -459,6 +470,7 @@
 				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
 				CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */,
 				CC200A502A37E396005C67E0 /* states.py in Resources */,
+				CC00399A2A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin in Resources */,
 				CC200A4D2A37E38C005C67E0 /* main.py in Resources */,
 				CCCECE762A1EF36C00DBB7CA /* Question_Nutrition.wav in Resources */,
 				CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */,

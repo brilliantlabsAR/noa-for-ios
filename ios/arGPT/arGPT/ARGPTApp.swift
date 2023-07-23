@@ -10,6 +10,7 @@
 // -----
 // - Clean up any TODO comments left over.
 // - Remove fatalErrors in Controller, use data-carrying enums to make this easier.
+// - Get rid of _matcher and just have an accumulating _serialBuffer and check for expected strings inside that.
 //
 
 import Combine
@@ -140,7 +141,6 @@ struct ContentView: View {
             _controller.bluetoothEnabled = $0
         }
         .onChange(of: _showDeviceSheet) {
-            print("*** SHOWDEVICESHEET -> \($0) \(_controller.updateState) \(_deviceSheetType)")
             let dismissed = $0 == false
 
             // When enabled, update device sheet type
@@ -162,7 +162,6 @@ struct ContentView: View {
             }
         }
         .onChange(of: _controller.updateState) { (value: Controller.UpdateState) in
-            print("*** UPDATE STATE -> \(_controller.updateState)")
             _showDeviceSheet = decideShowDeviceSheet()
             _deviceSheetType = decideDeviceSheetType()
         }

@@ -11,6 +11,8 @@
 //        struct attached to the enum.
 //      - Try to collapse the firmware and FPGA update stuff into a couple of states and then farm
 //        the logic (including the original smaller states) into a separate object.
+//  - Move Bluetooth off the main queue because FPGA updates completely saturate it. Otherwise, all
+//    other communication is low bandwidth and safe to dispatch there.
 //  - Perhaps StreamingStringMatcher can be replaced with something much simpler. The firmware and
 //    FPGA version checkers simply accumulate string data. The reason this was not done elsewhere
 //    was out of concern that this would 1) be messy and 2) not be resilient against very long,
@@ -63,7 +65,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         autoConnectByProximity: true,   // DFU target will have different ID and so we must just auto-connect
         peripheralName: "DfuTarg",
         services: [
-            CBUUID(string: "0xfe59"): "Nordi DFU"
+            CBUUID(string: "0xfe59"): "Nordic DFU"
         ],
         receiveCharacteristics: [:],    // DFUServiceConroller will handle services on its own
         transmitCharacteristics: [:]
@@ -80,16 +82,58 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _subscribers = Set<AnyCancellable>()
 
     // Internal controller state
-    private enum State {
+    private enum State: Equatable {
         case disconnected
+
+        // Startup sequence: raw REPL, check whether updates required, transmit scripts if needed
         case waitingForRawREPL
         case waitingForFirmwareVersion
         case waitingForFPGAVersion
         case waitingForARGPTVersion
         case transmitingFiles
+
+        // Running state: Monocle app is up and able to communicate with iOS
         case running
+
+        // Firmware update states
         case initiateDFUAndWaitForDFUTarget
         case performDFU
+
+        // FPGA update states
+        case initiateFPGAUpdate(maximumDataLength: Int)
+        case waitForFPGAErased(updateState: FPGAUpdateState)
+        case sendNextFPGAImageChunk(updateState: FPGAUpdateState)
+        case writeFPGAAndReset
+    }
+
+    private class FPGAUpdateState: Equatable {
+        /// FPGA image as Base64-encoded string
+        var image: String
+
+        /// Size of a single chunk, in Base64-encoded characters
+        var chunkSize: Int
+
+        /// Total number of chunks
+        var chunks: Int
+
+        /// Next chunk to transmit
+        var chunk: Int
+
+        init(maximumDataLength: Int) {
+            image = Controller.loadFPGAImageAsBase64()
+            chunkSize = (((maximumDataLength - 45) / 3) / 4) * 4 * 3    // update string must be 45 characters!
+            chunks = image.count / chunkSize + ((image.count % chunkSize) == 0 ? 0 : 1)
+            chunk = 0
+            print("[Controller] FPGA update: image=\(image.count) bytes, chunkSize=\(chunkSize), chunks=\(chunks)")
+        }
+
+        public var entireImageTransmitted: Bool {
+            return chunk >= chunks
+        }
+
+        static func == (lhs: Controller.FPGAUpdateState, rhs: Controller.FPGAUpdateState) -> Bool {
+            return lhs.image == rhs.image && lhs.chunkSize == rhs.chunkSize && lhs.chunks == rhs.chunks && lhs.chunk == rhs.chunk
+        }
     }
 
     private var _state = State.disconnected
@@ -99,8 +143,8 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _filesVersion: String?
 
     private let _requiredFirmwareVersion = "v23.200.1232"
-    private let _requiredFPGAVersion = "v23.181.0720"
-    private var _receivedVersionResponse = ""   // buffer for firmware and FPGA version responses
+    private let _requiredFPGAVersion = "v23.200.1232"   // does not match file name but this is the version reported
+    private var _receivedVersionResponse = ""           // buffer for firmware and FPGA version responses
     private var _firmwareVersion: String?
     private var _fpgaVersion: String?
 
@@ -286,6 +330,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     // MARK: State Transitions and Received Data Dispatch
 
     private func transitionState(to newState: State) {
+        // Transition!
+        _state = newState
+
         // Perform setup for next state
         switch newState {
         case .disconnected:
@@ -348,10 +395,28 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 return
             }
             _dfuController = _dfuInitiator.start(target: peripheral)
-        }
 
-        // Transition!
-        _state = newState
+        case .initiateFPGAUpdate(maximumDataLength: let maximumDataLength):
+            updateState = .updatingFPGA
+            updateProgressPercent = 0
+            _matcher = nil
+            let updateState = FPGAUpdateState(maximumDataLength: maximumDataLength)
+            print("[Controller] Updating FPGA...")
+            transmitFPGADisableAndErase()
+            transitionState(to: .waitForFPGAErased(updateState: updateState))
+
+        case .waitForFPGAErased(_):
+            _matcher = nil
+
+        case .sendNextFPGAImageChunk(updateState: let updateState):
+            // Kick off first chunk. Subsequent chunks will be handled after each confirmation.
+            _matcher = nil
+            transmitNextFPGAImageChunk(updateState: updateState)
+
+        case .writeFPGAAndReset:
+            // Write to FPGA and reset device
+            transmitFPGAWriteAndDeviceReset()
+        }
     }
 
     private func handleSerialDataReceived(_ receivedValue: Data) {
@@ -377,7 +442,13 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             onTransmittingFilesState(receivedString: str)
 
         case .running:
-            fallthrough
+            break
+
+        case .waitForFPGAErased(updateState: let updateState):
+            onFPGAErased(receivedString: str, updateState: updateState)
+
+        case .sendNextFPGAImageChunk(updateState: let updateState):
+            onFPGAImageChunkTransmitted(receivedString: str, updateState: updateState)
 
         default:
             break
@@ -490,11 +561,86 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         } else if _fpgaVersion != _requiredFPGAVersion {
             // Second, FPGA update
             print("[Controller] FPGA update needed. Current version: \(_fpgaVersion ?? "unknown")")
-            print("[Controller] FPGA update not yet implemented!")
-            transitionState(to: .waitingForARGPTVersion)
+            if let maximumDataLength = _monocleBluetooth.maximumDataLength, maximumDataLength > 100 {
+                // Need a reasonable MTU size
+                transitionState(to: .initiateFPGAUpdate(maximumDataLength: maximumDataLength))
+            } else {
+                // We don't know the MTU size or it is unreasonably small, cannot update, proceed otherwise
+                let mtuSize = _monocleBluetooth.maximumDataLength == nil ? "unknown" : "\(_monocleBluetooth.maximumDataLength!)"
+                print("[Controller] Error: Unable to update FPGA. MTU size: \(mtuSize)")
+                transitionState(to: .waitingForARGPTVersion)
+            }
         } else {
             // Proceed with uploading and running Monocle script
             transitionState(to: .waitingForARGPTVersion)
+        }
+    }
+
+    private func onFPGAErased(receivedString str: String, updateState: FPGAUpdateState) {
+        if _matcher == nil {
+            // Annoyingly, this comes across over two transfers
+            _matcher = Util.StreamingStringMatcher(lookingFor: "OK\u{4}\u{4}>")
+        }
+
+        if _matcher!.matchExists(afterAppending: str) {
+            print("[Controller] FPGA successfully disabled and erased")
+            transitionState(to: .sendNextFPGAImageChunk(updateState: updateState))
+        }
+    }
+
+    private func transmitNextFPGAImageChunk(updateState: FPGAUpdateState) {
+        print("[Controller] FPGA update: Sending chunk \(updateState.chunk)/\(updateState.chunks)")
+
+        // Extract current chunk
+        let chunkStart = updateState.image.index(updateState.image.startIndex, offsetBy: updateState.chunk * updateState.chunkSize)
+        let chunkEnd = updateState.image.index(updateState.image.startIndex, offsetBy: min(updateState.image.count, (updateState.chunk + 1) * updateState.chunkSize))
+        let chunkData = updateState.image[chunkStart..<chunkEnd]
+
+        // Must be exactly 45 bytes as in FPGAUpdateState (44 bytes here, 45th byte is ^D appended to execute)
+        let command = "update.Fpga.write(ubinascii.a2b_base64(b'" + chunkData + "'))"
+
+        // Progress
+        let progress = min(100, 100 * updateState.chunk * updateState.chunkSize / updateState.image.count)
+        let deltaProgress = progress - updateProgressPercent
+        updateProgressPercent = 100 * updateState.chunk * updateState.chunkSize / updateState.image.count
+
+        // Update state
+        updateState.chunk += 1
+
+        // Send! We will expect an OK response to be received
+        if deltaProgress >= 1 {
+            // Insert a delay every 1% to update display. Otherwise, the FPGA back and forth
+            // completely saturates the main thread.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) { [weak self] in
+                self?.transmitPythonCommand(command)
+            }
+        } else {
+            transmitPythonCommand(command)
+        }
+    }
+
+    private func onFPGAImageChunkTransmitted(receivedString str: String, updateState: FPGAUpdateState) {
+        if _matcher == nil {
+            _matcher = Util.StreamingStringMatcher(lookingFor: "OK\u{4}\u{4}>")
+        }
+
+        if _matcher!.matchExists(afterAppending: str) {
+            // This state persists and we need to keep resetting the matcher
+            _matcher!.reset()
+
+            // Transmit next chunk or finish
+            if updateState.entireImageTransmitted {
+                transitionState(to: .writeFPGAAndReset)
+            } else {
+                transmitNextFPGAImageChunk(updateState: updateState)
+            }
+        } else if _matcher!.charactersProcessed >= 5 {
+            _matcher!.reset()
+
+            // Probably encountered "Error" and we must retry
+            updateState.chunk -= 1
+            print("[Controller] FPGA update: Retrying chunk \(updateState.chunk)")
+            transmitNextFPGAImageChunk(updateState: updateState)
         }
     }
 
@@ -562,6 +708,16 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private func transmitInitiateFirmwareUpdateCommand() {
         // Begin a firmware update
         transmitPythonCommand("import update;update.micropython()")
+    }
+
+    private func transmitFPGADisableAndErase() {
+        // Begin FPGA update by turning it off and erasing it
+        transmitPythonCommand("import ubinascii,update,device,bluetooth,fpga;fpga.run(False);update.Fpga.erase()")
+    }
+
+    private func transmitFPGAWriteAndDeviceReset() {
+        // Commit data to FPGA and reset device
+        transmitPythonCommand("update.Fpga.write(b'done');device.reset()")
     }
 
     private func transmitVersionCheck() {
@@ -645,6 +801,14 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         // Send!
         _monocleBluetooth.send(data: data, on: Self._serialRx)
         print("[Controller] Sent \(filename): \(data.count) bytes")
+    }
+
+    private static func loadFPGAImageAsBase64() -> String {
+        let url = Bundle.main.url(forResource: "monocle-fpga-v23.179.1006", withExtension: "bin")!
+        guard let data = try? Data(contentsOf: url) else {
+            fatalError("Unable to load FPGA image from disk")
+        }
+        return data.base64EncodedString()
     }
 
     // MARK: Monocle Commands
