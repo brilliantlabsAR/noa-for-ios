@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CC00398B2A6A4F11009E3BAC /* NewBluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */; };
+		CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */; };
 		CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC0039952A6C7E57009E3BAC /* NordicDFU */; };
 		CC0039982A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
@@ -77,7 +77,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewBluetoothManager.swift; sourceTree = "<group>"; };
+		CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
 		CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.200.1232.zip"; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
@@ -189,7 +189,7 @@
 		CC3FE0142A0B1C1D00756941 /* Bluetooth */ = {
 			isa = PBXGroup;
 			children = (
-				CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */,
+				CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */,
 			);
 			path = Bluetooth;
 			sourceTree = "<group>";
@@ -493,7 +493,7 @@
 				CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */,
 				CC27DC552A0304D600A942A9 /* TypingIndicator.swift in Sources */,
 				F8BC4DE52A4DBD680005F6F0 /* InitialView.swift in Sources */,
-				CC00398B2A6A4F11009E3BAC /* NewBluetoothManager.swift in Sources */,
+				CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
 				CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */,

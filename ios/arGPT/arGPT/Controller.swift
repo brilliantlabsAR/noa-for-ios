@@ -41,7 +41,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private static let _dataRx = CBUUID(string: "e5700002-7bac-429a-b4ce-57ff900f479d")
 
     // Monocle Bluetooth manager
-    private let _monocleBluetooth = NewBluetoothManager(
+    private let _monocleBluetooth = BluetoothManager(
         autoConnectByProximity: true,
         peripheralName: "monocle",
         services: [
@@ -59,7 +59,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     )
 
     // DFU target Bluetooth manager
-    private let _dfuBluetooth = NewBluetoothManager(
+    private let _dfuBluetooth = BluetoothManager(
         autoConnectByProximity: true,   // DFU target will have different ID and so we must just auto-connect
         peripheralName: "DfuTarg",
         services: [

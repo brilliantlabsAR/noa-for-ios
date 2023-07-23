@@ -1,5 +1,5 @@
 //
-//  NewBluetoothManager.swift
+//  BluetoothManager.swift
 //  arGPT
 //
 //  Created by Bart Trzynadlowski on 7/20/23.
@@ -14,7 +14,7 @@ import AVFoundation
 import Combine
 import CoreBluetooth
 
-class NewBluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
+class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     @Published private(set)  var discoveredDevices: [UUID] = []
     @Published private(set)  var isConnected = false
 
