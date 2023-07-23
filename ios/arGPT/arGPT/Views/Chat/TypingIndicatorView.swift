@@ -1,5 +1,5 @@
 //
-//  TypingIndicator.swift
+//  TypingIndicatorView.swift
 //  arGPT
 //
 //  Created by Bart Trzynadlowski on 5/3/23.
@@ -9,7 +9,7 @@
 
 import SwiftUI
 
-struct TypingIndicator: View {
+struct TypingIndicatorView: View {
     @State private var _animatingDotIdx = 3
 
     private let _dotSize: CGFloat = 10
@@ -33,7 +33,7 @@ struct TypingIndicator: View {
         }
         .onAppear {
             Timer.scheduledTimer(withTimeInterval: self._speed, repeats: true) { _ in
-                self._animatingDotIdx = TypingIndicator.selectNextDotRandomly(currentDotIdx: self._animatingDotIdx)
+                self._animatingDotIdx = TypingIndicatorView.selectNextDotRandomly(currentDotIdx: self._animatingDotIdx)
             }
         }
     }
@@ -48,6 +48,6 @@ struct TypingIndicator: View {
 
 struct TypingIndicator_Previews: PreviewProvider {
     static var previews: some View {
-        TypingIndicator(staticDotColor: Color(UIColor.lightGray), animatingDotColor: Color(UIColor.blue))
+        TypingIndicatorView(staticDotColor: Color(UIColor.lightGray), animatingDotColor: Color(UIColor.blue))
     }
 }

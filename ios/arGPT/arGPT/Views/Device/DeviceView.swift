@@ -1,8 +1,12 @@
 //
-//  InitialView.swift
+//  DeviceScreenView.swift
 //  arGPT
 //
 //  Created by Artur Burlakin on 6/29/23.
+//
+//  This is the initial view on a fresh start when Moncole is unpaired and is used for device-
+//  related operations: pairing, firmware update, FPGA update. Specific sheets are used for each
+//  case.
 //
 //  Resources
 //  ---------
@@ -19,7 +23,7 @@ enum DeviceSheetType {
     case fpgaUpdate
 }
 
-struct InitialView: View {
+struct DeviceScreenView: View {
     @Binding var showDeviceSheet: Bool
     @Binding var deviceSheetType: DeviceSheetType
     @Binding var updateProgressPercent: Int
@@ -87,90 +91,12 @@ struct InitialView: View {
     }
 }
 
-struct PairingSheetView: View {
-    @Binding var showDeviceSheet: Bool
-
-    var body: some View {
-        let buttonName = "Searching"
-        HStack {
-            Spacer()
-            Button(role: .cancel) {
-                showDeviceSheet = false
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(.body))
-                    .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
-            }
-        }
-        VStack {
-            Text("Bring your device close.")
-                .font(.system(size: 24, weight: .bold))
-                .multilineTextAlignment(.center)
-                .frame(width: 306, height: 29)
-            
-            Image("Monocle")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 306, height: 160)
-            
-            Button(action: {
-                // No Action needed
-            }) {
-                Text(buttonName)
-                    .font(.system(size: 22, weight: .medium))
-            }
-            .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
-            .padding(.horizontal, 60)
-            .background(Color(red: 242/255, green: 242/255, blue: 247/255))
-            .foregroundColor(Color(red: 142/255, green: 142/255, blue: 147/255))
-            .cornerRadius(15)
-        }
-    }
-}
-
-struct UpdateSheetView: View {
-    private let _component: String
-
-    @Binding var updateProgressPercent: Int
-
-    var body: some View {
-        let buttonName = "Updating: \(updateProgressPercent)%"
-        HStack {
-            Spacer()
-        }
-        VStack {
-            Text("Updating \(_component).")
-                .font(.system(size: 24, weight: .bold))
-                .multilineTextAlignment(.center)
-                .frame(width: 306, height: 29)
-
-            Image("Monocle")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 306, height: 160)
-
-            Button(action: {
-                // No Action needed
-            }) {
-                Text(buttonName)
-                    .font(.system(size: 22, weight: .medium))
-            }
-            .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
-            .padding(.horizontal, 60)
-            .background(Color(red: 242/255, green: 242/255, blue: 247/255))
-            .foregroundColor(Color(red: 142/255, green: 142/255, blue: 147/255))
-            .cornerRadius(15)
-        }
-    }
-
-    init(updating component: String, updateProgressPercent: Binding<Int>) {
-        _component = component
-        self._updateProgressPercent = updateProgressPercent
-    }
-}
-
-struct InitialView_Previews: PreviewProvider {
+struct DeviceScreenView_Previews: PreviewProvider {
     static var previews: some View {
-        InitialView(showDeviceSheet: .constant(true), deviceSheetType: .constant(.fpgaUpdate), updateProgressPercent: .constant(50))
+        DeviceScreenView(
+            showDeviceSheet: .constant(true),
+            deviceSheetType: .constant(.fpgaUpdate),
+            updateProgressPercent: .constant(50)
+        )
     }
 }
