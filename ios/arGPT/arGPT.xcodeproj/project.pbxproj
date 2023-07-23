@@ -19,7 +19,6 @@
 		CC27DC552A0304D600A942A9 /* TypingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27DC542A0304D600A942A9 /* TypingIndicator.swift */; };
 		CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE00A2A09C0BF00756941 /* Settings.bundle */; };
 		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
-		CC3FE0162A0B1C3700756941 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0152A0B1C3700756941 /* BluetoothManager.swift */; };
 		CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE01E2A0DF21700756941 /* AppDelegate.swift */; };
 		CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0202A0DF25100756941 /* SceneDelegate.swift */; };
 		CC3FE0242A0EE66E00756941 /* SpeechToText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0232A0EE66E00756941 /* SpeechToText.swift */; };
@@ -89,7 +88,6 @@
 		CC27DC542A0304D600A942A9 /* TypingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicator.swift; sourceTree = "<group>"; };
 		CC3FE00A2A09C0BF00756941 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		CC3FE00C2A09C8A400756941 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
-		CC3FE0152A0B1C3700756941 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
 		CC3FE0172A0B215700756941 /* arGPT-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "arGPT-Info.plist"; sourceTree = SOURCE_ROOT; };
 		CC3FE01E2A0DF21700756941 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CC3FE0202A0DF25100756941 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -191,7 +189,6 @@
 		CC3FE0142A0B1C1D00756941 /* Bluetooth */ = {
 			isa = PBXGroup;
 			children = (
-				CC3FE0152A0B1C3700756941 /* BluetoothManager.swift */,
 				CC00398A2A6A4F11009E3BAC /* NewBluetoothManager.swift */,
 			);
 			path = Bluetooth;
@@ -519,7 +516,6 @@
 				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,
 				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,
 				CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */,
-				CC3FE0162A0B1C3700756941 /* BluetoothManager.swift in Sources */,
 				CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
