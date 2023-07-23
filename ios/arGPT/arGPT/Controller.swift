@@ -390,7 +390,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             // Instantiate Nordic DFU library object that will handle the firmware update
             print("[Controller] Updating firmware...")
             guard let peripheral = _dfuBluetooth.peripheral else {
-                //TODO: move this into updateFirmware enum
+                //TODO: move this into .performDFU enum
                 print("[Controller] Internal error: Unable to get DFU peripheral")
                 transitionState(to: .disconnected)
                 return
@@ -536,7 +536,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             } else {
                 let str = parts[0].replacingOccurrences(of: "b'", with: "").replacingOccurrences(of: "'", with: "") // strip out b''
                 let idxAfterOK = str.index(str.startIndex, offsetBy: 2)
-                _fpgaVersion = String(parts[0][idxAfterOK...])
+                _fpgaVersion = String(str[idxAfterOK...])
             }
             proceedToNextState = true
         } else if _receivedVersionResponse.contains("Error") {
