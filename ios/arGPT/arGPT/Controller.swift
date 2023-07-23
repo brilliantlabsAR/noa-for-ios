@@ -124,7 +124,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             chunkSize = (((maximumDataLength - 45) / 3) / 4) * 4 * 3    // update string must be 45 characters!
             chunks = image.count / chunkSize + ((image.count % chunkSize) == 0 ? 0 : 1)
             chunk = 0
-            print("[Controller] FPGA update: image=\(image.count) bytes, chunkSize=\(chunkSize), chunks=\(chunks)")
+            print("[Controller] FPGA update: image=\(image.count) bytes, chunkSize=\(chunkSize), chunks=\(chunks), maximumDataLength=\(maximumDataLength)")
         }
 
         public var entireImageTransmitted: Bool {
@@ -143,7 +143,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _filesVersion: String?
 
     private let _requiredFirmwareVersion = "v23.200.1232"
-    private let _requiredFPGAVersion = "v23.200.1232"   // does not match file name but this is the version reported
+    private let _requiredFPGAVersion = "v23.179.1006"
     private var _receivedVersionResponse = ""           // buffer for firmware and FPGA version responses
     private var _firmwareVersion: String?
     private var _fpgaVersion: String?
@@ -348,6 +348,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             transmitFirmwareVersionCheck()
 
         case .waitingForFPGAVersion:
+            _receivedVersionResponse = ""
             transmitFPGAVersionCheck()
 
         case .waitingForARGPTVersion:
@@ -547,7 +548,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             if _fpgaVersion == nil {
                 print("[Controller] Error: Unable to obtain FPGA version")
             } else {
-                print("[Controller] FPGA version: \(_firmwareVersion!)")
+                print("[Controller] FPGA version: \(_fpgaVersion!)")
             }
             updateMonocleOrProceedToRun()
         }
