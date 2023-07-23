@@ -22,7 +22,6 @@
 		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
 		CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE01E2A0DF21700756941 /* AppDelegate.swift */; };
 		CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0202A0DF25100756941 /* SceneDelegate.swift */; };
-		CC3FE0242A0EE66E00756941 /* SpeechToText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0232A0EE66E00756941 /* SpeechToText.swift */; };
 		CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */; };
 		CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */; };
 		CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE0292A0EF81A00756941 /* Question_Movies.m4a */; };
@@ -93,7 +92,6 @@
 		CC3FE0172A0B215700756941 /* arGPT-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "arGPT-Info.plist"; sourceTree = SOURCE_ROOT; };
 		CC3FE01E2A0DF21700756941 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CC3FE0202A0DF25100756941 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		CC3FE0232A0EE66E00756941 /* SpeechToText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechToText.swift; sourceTree = "<group>"; };
 		CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockInputGenerator.swift; sourceTree = "<group>"; };
 		CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_Tootsie.m4a; sourceTree = "<group>"; };
 		CC3FE0292A0EF81A00756941 /* Question_Movies.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_Movies.m4a; sourceTree = "<group>"; };
@@ -209,7 +207,6 @@
 			children = (
 				CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */,
 				CC07BD9A2A1962DC0082999A /* M4AWriter.swift */,
-				CC3FE0232A0EE66E00756941 /* SpeechToText.swift */,
 			);
 			path = Speech;
 			sourceTree = "<group>";
@@ -520,7 +517,6 @@
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
 				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
-				CC3FE0242A0EE66E00756941 /* SpeechToText.swift in Sources */,
 				CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */,
 				CC4E3AC42A00BA4C0058AC20 /* ARGPTApp.swift in Sources */,
 				CCCECE6B2A1EB4B100DBB7CA /* Whisper.swift in Sources */,
