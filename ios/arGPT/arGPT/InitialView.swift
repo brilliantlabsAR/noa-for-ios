@@ -10,12 +10,19 @@
 //    https://yoswift.dev/swiftui/computed-state/
 //
 
-//TODO: remoe unused views (SettingsView)
-
 import SwiftUI
 
+/// Device sheet types
+enum DeviceSheetType {
+    case pairing
+    case firmwareUpdate
+    case fpgaUpdate
+}
+
 struct InitialView: View {
-    @Binding var showPairingView: Bool
+    @Binding var showDeviceSheet: Bool
+    @Binding var deviceSheetType: DeviceSheetType
+    @Binding var updateProgressPercent: Int
 
     var body: some View {
         ZStack {
@@ -32,8 +39,9 @@ struct InitialView: View {
                     Text("arGPT")
                         .font(.system(size: 32, weight: .bold))
                         .position(x: 203,y:-77)
-                    
-                    Text("Let’s pair your device. Take your Monocle out of the case and bring it close.")
+
+                    let message = chooseMessage(basedOn: deviceSheetType)
+                    Text(message)
                         .font(.system(size: 17))
                         .multilineTextAlignment(.center)
                         .frame(width: 346, height: 87)
@@ -43,27 +51,51 @@ struct InitialView: View {
                 .frame(width: 393, height: 351)
                 VStack {
                     Spacer()
-                        .sheet(isPresented: $showPairingView) {
-                            PairingSheetView(showPairingView: $showPairingView)
-                                .presentationDragIndicator(.hidden)
-                                .presentationDetents([.height(370)])
-                                .interactiveDismissDisabled(true)
+                        .sheet(isPresented: $showDeviceSheet) {
+                            switch deviceSheetType {
+                            case .pairing:
+                                PairingSheetView(showDeviceSheet: $showDeviceSheet)
+                                    .presentationDragIndicator(.hidden)
+                                    .presentationDetents([.height(370)])
+                                    .interactiveDismissDisabled(true)
+                            case .firmwareUpdate:
+                                UpdateSheetView(updating: "firmware", updateProgressPercent: $updateProgressPercent)
+                                    .presentationDragIndicator(.hidden)
+                                    .presentationDetents([.height(370)])
+                                    .interactiveDismissDisabled(true)
+                            case .fpgaUpdate:
+                                UpdateSheetView(updating: "FPGA", updateProgressPercent: $updateProgressPercent)
+                                    .presentationDragIndicator(.hidden)
+                                    .presentationDetents([.height(370)])
+                                    .interactiveDismissDisabled(true)
+                            }
                         }
                 }
             }
         }
     }
+
+    private func chooseMessage(basedOn deviceSheetType: DeviceSheetType) -> String {
+        switch deviceSheetType {
+        case .pairing:
+            return "Let’s pair your device. Take your Monocle out of the case and bring it close."
+        case .firmwareUpdate:
+            return "Let's update your Monocle firmware. Keep your Monocle nearby and make sure this app stays open."
+        case .fpgaUpdate:
+            return "Let's update your Monocle's FPGA. Keep your Monocle nearby and make sure this app stays open."
+        }
+    }
 }
 
 struct PairingSheetView: View {
-    @Binding var showPairingView: Bool
+    @Binding var showDeviceSheet: Bool
 
     var body: some View {
         let buttonName = "Searching"
         HStack {
             Spacer()
             Button(role: .cancel) {
-                showPairingView = false
+                showDeviceSheet = false
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(.body))
@@ -95,8 +127,50 @@ struct PairingSheetView: View {
         }
     }
 }
+
+struct UpdateSheetView: View {
+    private let _component: String
+
+    @Binding var updateProgressPercent: Int
+
+    var body: some View {
+        let buttonName = "Updating: \(updateProgressPercent)%"
+        HStack {
+            Spacer()
+        }
+        VStack {
+            Text("Updating \(_component).")
+                .font(.system(size: 24, weight: .bold))
+                .multilineTextAlignment(.center)
+                .frame(width: 306, height: 29)
+
+            Image("Monocle")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 306, height: 160)
+
+            Button(action: {
+                // No Action needed
+            }) {
+                Text(buttonName)
+                    .font(.system(size: 22, weight: .medium))
+            }
+            .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
+            .padding(.horizontal, 60)
+            .background(Color(red: 242/255, green: 242/255, blue: 247/255))
+            .foregroundColor(Color(red: 142/255, green: 142/255, blue: 147/255))
+            .cornerRadius(15)
+        }
+    }
+
+    init(updating component: String, updateProgressPercent: Binding<Int>) {
+        _component = component
+        self._updateProgressPercent = updateProgressPercent
+    }
+}
+
 struct InitialView_Previews: PreviewProvider {
     static var previews: some View {
-        InitialView(showPairingView: .constant(true))
+        InitialView(showDeviceSheet: .constant(true), deviceSheetType: .constant(.fpgaUpdate), updateProgressPercent: .constant(50))
     }
 }

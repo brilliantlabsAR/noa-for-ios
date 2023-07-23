@@ -17,7 +17,6 @@
 		CC200A512A37E396005C67E0 /* graphics.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4F2A37E396005C67E0 /* graphics.py */; };
 		CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */; };
 		CC27DC552A0304D600A942A9 /* TypingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27DC542A0304D600A942A9 /* TypingIndicator.swift */; };
-		CC3FE0092A098DE700756941 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0082A098DE700756941 /* SettingsView.swift */; };
 		CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE00A2A09C0BF00756941 /* Settings.bundle */; };
 		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
 		CC3FE0162A0B1C3700756941 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0152A0B1C3700756941 /* BluetoothManager.swift */; };
@@ -88,7 +87,6 @@
 		CC200A4F2A37E396005C67E0 /* graphics.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = graphics.py; sourceTree = "<group>"; };
 		CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingStringMatcher.swift; sourceTree = "<group>"; };
 		CC27DC542A0304D600A942A9 /* TypingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicator.swift; sourceTree = "<group>"; };
-		CC3FE0082A098DE700756941 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CC3FE00A2A09C0BF00756941 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		CC3FE00C2A09C8A400756941 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		CC3FE0152A0B1C3700756941 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
@@ -184,7 +182,6 @@
 			isa = PBXGroup;
 			children = (
 				CC3FE00C2A09C8A400756941 /* Settings.swift */,
-				CC3FE0082A098DE700756941 /* SettingsView.swift */,
 				CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */,
 				CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */,
 			);
@@ -508,7 +505,6 @@
 				CCBC46262A02101A00871C12 /* Participant.swift in Sources */,
 				CCB2F9622A2568EE00F24F2D /* Controller.swift in Sources */,
 				CCCECE6D2A1EE7C700DBB7CA /* OpenAIError.swift in Sources */,
-				CC3FE0092A098DE700756941 /* SettingsView.swift in Sources */,
 				CC4E3AF12A00BC8A0058AC20 /* MessageContentView.swift in Sources */,
 				CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */,
 				CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */,

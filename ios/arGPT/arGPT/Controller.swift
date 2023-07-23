@@ -212,7 +212,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             // have no way to detect this using CoreBluetooth. The "solution" is to periodically
             // re-transmit the raw REPL code.
             _rawREPLTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] (timer: Timer) in
-                self?.transmitRawREPLCode()
+                if self?._state == .waitingForRawREPL {
+                    self?.transmitRawREPLCode()
+                }
             }
 
             // Update public state
@@ -223,9 +225,11 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         _monocleBluetooth.peripheralDisconnected.sink { [weak self] in
             guard let self = self else { return }
             print("[Controller] Monocle disconnected")
-            if _state != .initiateDFUAndWaitForDFUTarget {
-                // When waiting for DFU target, a disconnect is expected, otherwise it is a
-                // "legitimate" Monocle disconnect
+            if _state != .initiateDFUAndWaitForDFUTarget && _state != .performDFU {
+                // When waiting for DFU target/performing update, a disconnect is expected,
+                // otherwise it is a "legitimate" Monocle disconnect. Note DFU target may connect
+                // before we receive Monocle disconnect event, hence need to check all update
+                // states.
                 transitionState(to: .disconnected)
             }
         }.store(in: &_subscribers)
@@ -481,11 +485,11 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private func updateMonocleOrProceedToRun() {
         if _firmwareVersion != _requiredFirmwareVersion {
             // First, kick off firmware update
-            print("[Controller] Firmware update needed. Current version: \(_firmwareVersion!)")
+            print("[Controller] Firmware update needed. Current version: \(_firmwareVersion ?? "unknown")")
             transitionState(to: .initiateDFUAndWaitForDFUTarget)
         } else if _fpgaVersion != _requiredFPGAVersion {
             // Second, FPGA update
-            print("[Controller] FPGA update needed. Current version: \(_fpgaVersion!)")
+            print("[Controller] FPGA update needed. Current version: \(_fpgaVersion ?? "unknown")")
             print("[Controller] FPGA update not yet implemented!")
             transitionState(to: .waitingForARGPTVersion)
         } else {
@@ -864,5 +868,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         avgSpeedBytesPerSecond: Double
     ) {
         print("[Controller] DFU progress: part=\(part)/\(totalParts), progress=\(progress)%")
+        updateProgressPercent = progress
     }
 }
