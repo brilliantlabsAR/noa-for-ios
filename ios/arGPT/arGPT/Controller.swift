@@ -629,7 +629,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         // Progress
         let progress = min(100, 100 * updateState.chunk * updateState.chunkSize / updateState.image.count)
         let deltaProgress = progress - updateProgressPercent
-        updateProgressPercent = 100 * updateState.chunk * updateState.chunkSize / updateState.image.count
+        updateProgressPercent = progress
 
         // Update state
         updateState.chunk += 1
