@@ -9,18 +9,6 @@
 
 import SwiftUI
 
-/*
-extension View {
-    func inExpandingRectangle() -> some View {
-        ZStack {
-            Rectangle()
-                .fill(Color.clear)
-            self
-        }
-    }
-}
-*/
-
 struct ChatView: View {
     // Data model
     @EnvironmentObject private var _chatMessageStore: ChatMessageStore
@@ -30,48 +18,44 @@ struct ChatView: View {
     @Binding private var _isMonocleConnected: Bool
     @Binding private var _pairedMonocleID: UUID?
 
+    // Bluetooth state
+    @Binding private var _bluetoothEnabled: Bool
+
+    // Allows pairing view to be brought up (replacing this one)
+    @Binding private var _showPairingView: Bool
+
+    // Stores text being input in text field
     @State private var _textInput: String = ""
-    
+
+    // Popup API box state
     @State private var popUpApiBox: Bool = false
+    @State private var popupApiBoxScale: CGFloat = 0   // animation
 
-
-    @State private var scale: CGFloat = 0 // For animation
-    
+    // Chat callbacks
     private let _onTextSubmitted: ((String) -> Void)?
     private let _onClearChatButtonPressed: (() -> Void)?
 
     var body: some View {
         ZStack {
             VStack(alignment: .center) {
+                // Top title bar
                 HStack {
                     Spacer()
                         .frame(width: 70)
-                    
+
+                    // Title
                     Text("arGPT")
                         .font(.system(size: 22, weight: .bold))
                         .frame(maxWidth: .infinity)
                     
-                    Button(action: {}) {
-                        Menu {
-                            Button(action: {
-                                self.popUpApiBox.toggle()
-                            }) {
-                                Label("Change API Key", systemImage: "person.circle")
-                            }
-                            Button(action: {
-                                popUpApiBox = true
-                            }) {
-                                Label("Unpair Monocle", systemImage: "person.circle")
-                                    .foregroundColor(Color.red)
-                            }
-                        }
-                        
-                    label: {
-                        Image(systemName: "gearshape.fill")
-                            .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
-                        }
-                    }
-                    .padding(.trailing)
+                    // Settings menu
+                    SettingsMenuView(
+                        popUpApiBox: $popUpApiBox,
+                        showPairingView: $_showPairingView,
+                        bluetoothEnabled: $_bluetoothEnabled
+                    )
+                        .environmentObject(_settings)
+                        .padding(.trailing)
                 }
                 .padding(.top)
                 .frame(maxWidth: .infinity, alignment: .top)
@@ -109,10 +93,10 @@ struct ChatView: View {
                     if !_isMonocleConnected  {
                         if _pairedMonocleID != nil {
                             // We have a paired Monocle, it's just not connected
-                            Text("No Monocle Connected! \(Image(systemName: "exclamationmark.circle"))")
+                            Text("\(Image(systemName: "exclamationmark.circle")) No Monocle Connected")
                                 .foregroundColor(Color.red)
                         } else {
-                            Text("No Monocle Paired! \(Image(systemName: "exclamationmark.triangle"))")
+                            Text("\(Image(systemName: "exclamationmark.circle")) No Monocle Paired")
                                 .foregroundColor(Color.yellow)
                         }
                     } else if _chatMessageStore.messages.isEmpty {
@@ -157,16 +141,17 @@ struct ChatView: View {
                     .edgesIgnoringSafeArea(.all)
                     .onTapGesture {
                         withAnimation(.easeInOut(duration: 0.2)) {
-                            self.scale = 0
+                            self.popupApiBoxScale = 0
                         }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                             withAnimation(.easeInOut(duration: 0.2)) {
-                                self.scale = 0
+                                self.popupApiBoxScale = 0
                                 self.popUpApiBox = false
                             }
                         }
                     }
-                APIKeyPopupBox(scale: $scale, popUpApiBox: $popUpApiBox)
+                APIKeyPopupBoxView(scale: $popupApiBoxScale, popUpApiBox: $popUpApiBox)
+                    .environmentObject(_settings)
             }
         }
         .onAppear {
@@ -175,83 +160,20 @@ struct ChatView: View {
         }
     }
 
-    public init(isMonocleConnected: Binding<Bool>, pairedMonocleID: Binding<UUID?>, onTextSubmitted: ((String) -> Void)? = nil, onClearChatButtonPressed: (() -> Void)? = nil) {
+    public init(
+        isMonocleConnected: Binding<Bool>,
+        pairedMonocleID: Binding<UUID?>,
+        bluetoothEnabled: Binding<Bool>,
+        showPairingView: Binding<Bool>,
+        onTextSubmitted: ((String) -> Void)? = nil,
+        onClearChatButtonPressed: (() -> Void)? = nil
+    ) {
         __isMonocleConnected = isMonocleConnected
         __pairedMonocleID = pairedMonocleID
+        __bluetoothEnabled = bluetoothEnabled
+        __showPairingView = showPairingView
         _onTextSubmitted = onTextSubmitted
         _onClearChatButtonPressed = onClearChatButtonPressed
-    }
-}
-
-struct APIKeyPopupBox: View {
-    
-    @Binding var scale: CGFloat
-    @Binding var popUpApiBox: Bool
-    @State private var apiCode: String = ""
-
-    var body: some View {
-        VStack {
-            Text("Enter your OpenAI API key")
-                .font(.system(size: 20, weight: .semibold))
-                .padding(.top, 20)
-                .padding(.bottom, 2)
-            
-            Text("If you don’t have a key, press \"Find My Key...\" to be taken to OpenAI.")
-                .font(.system(size: 15, weight: .regular))
-                .multilineTextAlignment(.center)
-                .padding(.bottom, 5)
-
-            TextField("sk-...", text: $apiCode)
-                .padding(.all, 2)
-                .background(Color.gray.opacity(0.2))
-                .padding(.horizontal)
-            
-            Divider().background(Color.gray)
-            
-            HStack {
-                Button(action: {
-                    closeWithAnimation()
-                }) {
-                    Text("Done")
-                        .bold()
-                        .foregroundColor(.blue)
-                        .frame(maxWidth: .infinity)
-                }
-                
-                Divider()
-                    .background(Color.gray)
-                    .padding(.top, -8)
-                
-                Button(action: {
-                    UIApplication.shared.open(URL(string: "http://platform.openai.com")!)
-                }) {
-                    Text("Find My Key...")
-                        .font(.headline)
-                        .foregroundColor(.blue)
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            .frame(height: 40)
-        }
-        .frame(width: 300)
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(20)
-        .shadow(radius: 20)
-        .scaleEffect(scale)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 0.3)) {
-                self.scale = 1
-            }
-        }
-    }
-    
-    func closeWithAnimation() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            self.scale = 0
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                self.popUpApiBox.toggle()
-            }
-        }
     }
 }
 
@@ -268,7 +190,12 @@ struct ChatView_Previews: PreviewProvider {
     }()
 
     static var previews: some View {
-        ChatView(isMonocleConnected: .constant(false), pairedMonocleID: .constant(UUID()))
+        ChatView(
+            isMonocleConnected: .constant(true),
+            pairedMonocleID: .constant(UUID()),
+            bluetoothEnabled: .constant(true),
+            showPairingView: .constant(false)
+        )
             .environmentObject(ChatView_Previews._chatMessageStore)
             .environmentObject(Settings())
     }

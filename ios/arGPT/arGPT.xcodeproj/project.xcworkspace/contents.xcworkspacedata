@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:/Users/bart/projects/ChatGPT-for-Monocle/ios/ChatGPT for Monocle/arGPT.xcodeproj">
+      location = "self:">
    </FileRef>
 </Workspace>

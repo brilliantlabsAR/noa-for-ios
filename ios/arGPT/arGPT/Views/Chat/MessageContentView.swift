@@ -18,7 +18,7 @@ struct MessageContentView: View {
         if _isTyping {
             let staticDotColor = _isUser ? Color(UIColor.lightGray) : Color(UIColor.lightGray)
             let animatingDotColor = _isUser ? Color(UIColor.lightGray) : Color(UIColor.white)
-            TypingIndicator(staticDotColor: staticDotColor, animatingDotColor: animatingDotColor)
+            TypingIndicatorView(staticDotColor: staticDotColor, animatingDotColor: animatingDotColor)
                 .padding(10)
                 .background(_backgroundColor)
                 .cornerRadius(10)

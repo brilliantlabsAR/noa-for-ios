@@ -2,7 +2,7 @@
 //  BluetoothManager.swift
 //  arGPT
 //
-//  Created by Bart Trzynadlowski on 5/9/23.
+//  Created by Bart Trzynadlowski on 7/20/23.
 //
 //  Resources
 //  ---------
@@ -15,25 +15,22 @@ import Combine
 import CoreBluetooth
 
 class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-    @Published public var discoveredDevices: [UUID] = []
-    @Published public var isConnected = false
+    @Published private(set)  var discoveredDevices: [UUID] = []
+    @Published private(set)  var isConnected = false
 
-    /// Monocle connected
-    @Published var peripheralConnected = PassthroughSubject<UUID, Never>()
+    /// Peripheral connected
+    @Published private(set) var peripheralConnected = PassthroughSubject<UUID, Never>()
 
-    /// Monocle disconnected
-    @Published var peripheralDisconnected = PassthroughSubject<Void, Never>()
+    /// Peripheral disconnected
+    @Published private(set) var peripheralDisconnected = PassthroughSubject<Void, Never>()
 
-    /// Data received from Monocle on serial TX characteristic
-    @Published var serialDataReceived = PassthroughSubject<Data, Never>()
-
-    /// Data received from Monocle on data TX characteristic
-    @Published var dataReceived = PassthroughSubject<Data, Never>()
+    /// Data received on a subscribed characteristic
+    @Published private(set) var dataReceived = PassthroughSubject<(characteristic: CBUUID, value: Data), Never>()
 
     /// Sets the device ID to automatically connect to. This is kept separate from
     /// connectedDeviceID to avoid an infinite publishing loop from here -> Settings -> here when
     /// auto-connecting by proximity.
-    public var selectedDeviceID: UUID? {
+    @Published public var selectedDeviceID: UUID? {
         didSet {
             if let connectedPeripheral = _connectedPeripheral {
                 // We have a connected peripheral. See if desired device ID changed and if so,
@@ -49,20 +46,53 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         return _connectedPeripheral?.maximumWriteValueLength(for: .withoutResponse)
     }
 
-    private let _monocleSerialServiceUUID = CBUUID(string: "6e400001-b5a3-f393-e0a9-e50e24dcca9e")
-    private let _serialRxCharacteristicUUID = CBUUID(string: "6e400002-b5a3-f393-e0a9-e50e24dcca9e")
-    private let _serialTxCharacteristicUUID = CBUUID(string: "6e400003-b5a3-f393-e0a9-e50e24dcca9e")
-    private let _monocleDataServiceUUID = CBUUID(string: "e5700001-7bac-429a-b4ce-57ff900f479d")
-    private let _dataRxCharacteristicUUID = CBUUID(string: "e5700002-7bac-429a-b4ce-57ff900f479d")
-    private let _dataTxCharacteristicUUID = CBUUID(string: "e5700003-7bac-429a-b4ce-57ff900f479d")
-    private let _monocleName = "monocle"
-    private let _rssiAutoConnectThreshold: Float = -70
+    /// Enables/disables the Bluetooth connectivity. Disconnects from connected peripheral (but
+    /// does not unpair it) and stops scanning when set to false. When set to true, will try to
+    /// immediately begin scanning.
+    public var enabled: Bool {
+        get {
+            return _enabled
+        }
+
+        set {
+            _enabled = newValue
+            print("[BluetoothManager] \(_enabled ? "Enabled" : "Disabled")")
+            if _enabled && _manager.state == .poweredOn {
+                startScan()
+            } else {
+                // Do not attempt to scan anymore
+                if _manager.state == .poweredOn {
+                    _manager.stopScan()
+                }
+
+                // Disconnect
+                if let connectedPeripheral = _connectedPeripheral {
+                    // This will cause a disconnect that in turn will cause the peripheral to be
+                    // forgotten
+                    _manager.cancelPeripheralConnection(connectedPeripheral)
+                }
+            }
+        }
+    }
+
+    public var peripheral: CBPeripheral? {
+        return _connectedPeripheral
+    }
+
+    private var _enabled = false
+
+    private let _peripheralName: String
+    private let _serviceUUIDs: [CBUUID]
+    private let _receiveCharacteristicUUIDs: [CBUUID]   // characteristics on which we receive data
+    private let _transmitCharacteristicUUIDs: [CBUUID]  // characteristics on which we transmit data
+    private let _characteristicNameByID: [CBUUID: String]
 
     private lazy var _manager: CBCentralManager = {
         return CBCentralManager(delegate: self, queue: .main)
     }()
 
     private let _allowAutoConnectByProximity: Bool
+    private let _rssiAutoConnectThreshold: Float = -70
 
     private var _discoveredPeripherals: [(peripheral: CBPeripheral, timeout: TimeInterval)] = []
     private var _discoveryTimer: Timer?
@@ -78,15 +108,31 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         }
     }
 
-    private var _serialTx: CBCharacteristic?
-    private var _serialRx: CBCharacteristic?
-    private var _dataRx: CBCharacteristic?
-    private var _dataTx: CBCharacteristic?
+    private var _characteristicByID: [CBUUID: CBCharacteristic] = [:]
 
     private var _didSendConnectedEvent = false
 
-    public init(autoConnectByProximity: Bool) {
+    public init(
+        autoConnectByProximity: Bool,
+        peripheralName: String,
+        services: [CBUUID: String],
+        receiveCharacteristics: [CBUUID: String],
+        transmitCharacteristics: [CBUUID: String]
+    ) {
+        _peripheralName = peripheralName
+        _serviceUUIDs = Array(services.keys)
+        _receiveCharacteristicUUIDs = Array(receiveCharacteristics.keys)
+        _transmitCharacteristicUUIDs = Array(transmitCharacteristics.keys)
         _allowAutoConnectByProximity = autoConnectByProximity
+
+        var characteristicNameByID: [CBUUID: String] = [:]
+        for (id, name) in receiveCharacteristics {
+            characteristicNameByID[id] = name
+        }
+        for (id, name) in transmitCharacteristics {
+            characteristicNameByID[id] = name
+        }
+        _characteristicNameByID = characteristicNameByID
 
         super.init()
 
@@ -94,33 +140,33 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         _ = _manager
     }
 
-    public func sendSerialData(_ data: Data) {
-        // Transmit on serial RX
-        guard let rx = _serialRx,
-              let connectedPeripheral = _connectedPeripheral else {
+    public func send(data: Data, on id: CBUUID, response: Bool = false) {
+        guard let characteristic = _characteristicByID[id] else {
+            print("[BluetoothManager] Failed to send because characteristic is not available: UUID=\(id)")
             return
         }
-        writeData(data, for: rx, peripheral: connectedPeripheral)
-        print("[BluetoothManager] Sent \(data.count) bytes on SerialRx")
-    }
 
-    public func sendData(_ data: Data) {
-        // Transmit on data RX
-        guard let rx = _dataRx,
-              let connectedPeripheral = _connectedPeripheral else {
+        guard let connectedPeripheral = _connectedPeripheral else {
+            print("[BluetoothManager] Failed to send because no peripheral is connected")
             return
         }
-        writeData(data, for: rx, peripheral: connectedPeripheral)
+
+        writeData(data, on: characteristic, peripheral: connectedPeripheral, response: response)
+        print("[BluetoothManager] Sent \(data.count) bytes on \(toString(characteristic))")
     }
 
-    public func sendData(text str: String) {
+    public func send(text str: String, on id: CBUUID) {
         if let data = str.data(using: .utf8) {
-            sendData(data)
+            send(data: data, on: id)
         }
     }
 
     private func startScan() {
-        _manager.scanForPeripherals(withServices: [ _monocleSerialServiceUUID, _monocleDataServiceUUID ], options: [ CBCentralManagerScanOptionAllowDuplicatesKey: true ])
+        if _manager.isScanning {
+            print("[BluetoothManager] Internal error: Already scanning")
+        }
+
+        _manager.scanForPeripherals(withServices: _serviceUUIDs, options: [ CBCentralManagerScanOptionAllowDuplicatesKey: true ])
         print("[BluetoothManager] Scan initiated")
 
         // Create a timer to update discoved peripheral list
@@ -134,10 +180,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         precondition(_connectedPeripheral == nil)
         _manager.connect(peripheral)
         _connectedPeripheral = peripheral
-        _serialTx = nil
-        _serialRx = nil
-        _dataTx = nil
-        _dataRx = nil
+        forgetCharacteristics()
 
         // No need to continue scanning
         _manager.stopScan()
@@ -150,20 +193,14 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     private func forgetPeripheral() {
         _connectedPeripheral?.delegate = nil
         _connectedPeripheral = nil
-        _serialTx = nil
-        _serialRx = nil
-        _dataTx = nil
-        _dataRx = nil
+        forgetCharacteristics()
 
         peripheralDisconnected.send()
         _didSendConnectedEvent = false
     }
 
     private func forgetCharacteristics() {
-        _serialTx = nil
-        _serialRx = nil
-        _dataTx = nil
-        _dataRx = nil
+        _characteristicByID = [:]
     }
 
     private func updateDiscoveredPeripherals(with peripheral: CBPeripheral? = nil) {
@@ -211,7 +248,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         forgetCharacteristics()
 
         for service in services {
-            peripheral.discoverCharacteristics([ _serialRxCharacteristicUUID, _serialTxCharacteristicUUID, _dataRxCharacteristicUUID, _dataTxCharacteristicUUID ], for: service)
+            peripheral.discoverCharacteristics(_receiveCharacteristicUUIDs + _transmitCharacteristicUUIDs, for: service)
         }
     }
 
@@ -231,35 +268,21 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
 
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
-                if characteristic.uuid == _serialTxCharacteristicUUID {
-                    _serialTx = characteristic
-                    peripheral.setNotifyValue(true, for: characteristic)    // receive notifications from Monocle
-                    print("[BluetoothManager] Obtained SerialTx")
-                }
+                let id = characteristic.uuid
 
-                if characteristic.uuid == _serialRxCharacteristicUUID {
-                    _serialRx = characteristic
-                    print("[BluetoothManager] Obtained SerialRx")
-
-                    // Once we have serial RX, transmit program to Monocle
-                    //transmitMonocleProgram()
-                }
-
-                if characteristic.uuid == _dataTxCharacteristicUUID {
-                    _dataTx = characteristic
+                if _receiveCharacteristicUUIDs.contains(id) {
+                    _characteristicByID[id] = characteristic
                     peripheral.setNotifyValue(true, for: characteristic)
-                    print("[BluetoothManager] Obtained DataTx")
-                }
-
-                if characteristic.uuid == _dataRxCharacteristicUUID {
-                    _dataRx = characteristic
-                    print("[BluetoothManager] Obtained DataRx")
+                    print("[BluetoothManager] Obtained characteristic: \(toString(characteristic))")
+                } else if _transmitCharacteristicUUIDs.contains(id) {
+                    _characteristicByID[id] = characteristic
+                    print("[BluetoothManager] Obtained characteristic: \(toString(characteristic))")
                 }
             }
         }
 
         // Send connection event when all characteristics obtained
-        let haveAllCharacteristics = _serialTx != nil && _serialRx != nil && _dataTx != nil && _dataRx != nil
+        let haveAllCharacteristics = _characteristicByID.count == Set(_receiveCharacteristicUUIDs + _transmitCharacteristicUUIDs).count // create set because transmit and receive characteristics may be shared
         if haveAllCharacteristics, !_didSendConnectedEvent {
             peripheralConnected.send(peripheral.identifier)
             _didSendConnectedEvent = true
@@ -268,28 +291,18 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
 
     // MARK: Helpers
 
-    private func writeData(_ data: Data, for characteristic: CBCharacteristic, peripheral: CBPeripheral) {
+    private func writeData(_ data: Data, on characteristic: CBCharacteristic, peripheral: CBPeripheral, response: Bool = false) {
         let chunkSize = peripheral.maximumWriteValueLength(for: .withoutResponse)
         var idx = 0
         while idx < data.count {
             let endIdx = min(idx + chunkSize, data.count)
-            peripheral.writeValue(data.subdata(in: idx..<endIdx), for: characteristic, type: .withoutResponse)
+            peripheral.writeValue(data.subdata(in: idx..<endIdx), for: characteristic, type: response ? .withResponse : .withoutResponse)
             idx = endIdx
         }
     }
 
     private func toString(_ characteristic: CBCharacteristic) -> String {
-        if characteristic.uuid == _serialRxCharacteristicUUID {
-            return "SerialRx"
-        } else if characteristic.uuid == _serialTxCharacteristicUUID {
-            return "SerialTx"
-        } else if characteristic.uuid == _dataRxCharacteristicUUID {
-            return "DataRx"
-        } else if characteristic.uuid == _dataTxCharacteristicUUID {
-            return "DataTx"
-        } else {
-            return "UUID=\(characteristic.uuid)"
-        }
+        return _characteristicNameByID[characteristic.uuid] ?? "UUID=\(characteristic.uuid)"
     }
 
     // MARK: CBCentralManagerDelegate
@@ -297,7 +310,9 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            startScan()
+            if enabled {
+                startScan()
+            }
         case .poweredOff:
             // Alert user to turn on Bluetooth
             print("[BluetoothManager] Bluetooth is powered off")
@@ -325,7 +340,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         let name = peripheral.name ?? ""
         print("[BluetoothManager] Discovered peripheral: name=\(name), UUID=\(peripheral.identifier), RSSI=\(RSSI)")
 
-        guard name == _monocleName else {
+        guard name == _peripheralName else {
             updateDiscoveredPeripherals()
             return
         }
@@ -362,7 +377,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
 
         print("[BluetoothManager] Connected to peripheral: name=\(name), UUID=\(peripheral.identifier)")
         peripheral.delegate = self
-        peripheral.discoverServices([ _monocleSerialServiceUUID, _monocleDataServiceUUID ])
+        peripheral.discoverServices(_serviceUUIDs)
     }
 
     public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
@@ -390,11 +405,13 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         if let error = error {
             print("[BluetoothManager] Error: Disconnected from peripheral: \(error.localizedDescription)")
         } else {
-            print("[BluetoothManager] Error: Disconnected from peripheral")
+            print("[BluetoothManager] Disconnected from peripheral")
         }
 
         forgetPeripheral()
-        startScan()
+        if enabled {
+            startScan()
+        }
         updateDiscoveredPeripherals()
     }
 
@@ -426,11 +443,12 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             print("  descr=\(service.description) uuid=\(service.uuid)")
         }
 
-        if invalidatedServices.contains(where: { $0.uuid == _monocleSerialServiceUUID }) || invalidatedServices.contains(where: { $0.uuid == _monocleDataServiceUUID}) {
+        // If any service is invalidated, forget them all and then rediscover. This is probably over-agressive.
+        if invalidatedServices.contains(where: { _serviceUUIDs.contains($0.uuid) }) {
             forgetCharacteristics()
         }
 
-        peripheral.discoverServices( [ _monocleSerialServiceUUID, _monocleDataServiceUUID ])
+        peripheral.discoverServices(_serviceUUIDs)
     }
 
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
@@ -449,13 +467,12 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             return
         }
 
-        if characteristic.uuid == _serialTxCharacteristicUUID {
+        let id = characteristic.uuid
+
+        if _receiveCharacteristicUUIDs.contains(id) {
+            // We have received something
             if let value = characteristic.value {
-                serialDataReceived.send(value)
-            }
-        } else if characteristic.uuid == _dataTxCharacteristicUUID {
-            if let value = characteristic.value {
-                dataReceived.send(value)
+                dataReceived.send((characteristic: id, value: value))
             }
         }
     }
