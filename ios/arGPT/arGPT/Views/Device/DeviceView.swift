@@ -27,58 +27,85 @@ struct DeviceScreenView: View {
     @Binding var showDeviceSheet: Bool
     @Binding var deviceSheetType: DeviceSheetType
     @Binding var updateProgressPercent: Int
-
+    @Environment(\.openURL) var openURL
+    
     var body: some View {
         ZStack {
             VStack {
                 VStack {
-                    let light = Image("BrilliantLabsLogo")
-                        .resizable()
-                    let dark = Image("BrilliantLabsLogo_Dark")
-                        .resizable()
-                    ColorModeAdaptiveImage(light: light, dark: dark)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 100, height: 12)
-                        .position(x: 200, y: -10)
-                    Text("arGPT")
-                        .font(.system(size: 32, weight: .bold))
-                        .position(x: 203,y:-77)
-
-                    let message = chooseMessage(basedOn: deviceSheetType)
-                    Text(message)
-                        .font(.system(size: 17))
-                        .multilineTextAlignment(.center)
-                        .frame(width: 346, height: 87)
-                        .position(x: 200, y: -60)
+                    Group{
+                        let light = Image("BrilliantLabsLogo")
+                            .resizable()
+                        let dark = Image("BrilliantLabsLogo_Dark")
+                            .resizable()
+                        ColorModeAdaptiveImage(light: light, dark: dark)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 100, height: 12)
+                            .position(x: 200, y: 100)
+                        Text("arGPT")
+                            .font(.system(size: 32, weight: .bold))
+                            .position(x: 203,y:25)
+                        let message = chooseMessage(basedOn: deviceSheetType)
+                        Text(message)
+                            .font(.system(size: 15))
+                        //.multilineTextAlignment(.center)
+                            .frame(width: 314, height: 60)
+                            .position(x: 203,y: 25)
+                    }
+                    
+                    VStack {
+                        
+                        let privacyPolicyText = "Be sure to read our [Privacy Policy](https://brilliant.xyz/pages/privacy-policy) as well as [Terms and Conditions](https://brilliant.xyz/pages/terms-conditions) before using arGPT."
+                        Text(.init(privacyPolicyText))
+                            .font(.system(size: 10))
+                            .frame(width: 217)
+                            .multilineTextAlignment(.center)
+                            .accentColor(Color(red: 232/255, green: 46/255, blue: 135/255))
+                            .lineSpacing(10)
+                            .position(x: 200, y: 120)
+                            
+                    }
+                    
                 }
                 .padding(.top)  // needed to avoid hitting unsafe top area (e.g., dynamic island)
-                .frame(width: 393, height: 351)
+                .frame(width: 393, height: 400)
+               // .blur(radius: showDeviceSheet ? 10 : 0)
+                .background(Color(red: 242/255, green: 242/255, blue: 247/255))
+                .ignoresSafeArea(.all)
                 VStack {
-                    Spacer()
-                        .sheet(isPresented: $showDeviceSheet) {
+                    if showDeviceSheet {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 40)
+                                .fill(Color.white)
+                                .padding(10)
+                                .transition(.move(edge: .bottom))
+                                
+                            
                             switch deviceSheetType {
                             case .pairing:
                                 PairingSheetView(showDeviceSheet: $showDeviceSheet)
-                                    .presentationDragIndicator(.hidden)
-                                    .presentationDetents([.height(370)])
-                                    .interactiveDismissDisabled(true)
                             case .firmwareUpdate:
                                 UpdateSheetView(updating: "firmware", updateProgressPercent: $updateProgressPercent)
-                                    .presentationDragIndicator(.hidden)
-                                    .presentationDetents([.height(370)])
-                                    .interactiveDismissDisabled(true)
                             case .fpgaUpdate:
                                 UpdateSheetView(updating: "FPGA", updateProgressPercent: $updateProgressPercent)
-                                    .presentationDragIndicator(.hidden)
-                                    .presentationDetents([.height(370)])
-                                    .interactiveDismissDisabled(true)
                             }
                         }
+                        .zIndex(1)
+                    }
                 }
+                .padding(.bottom, 1)
+                .ignoresSafeArea(.all)
             }
+            .background(Color(red: 242/255, green: 242/255, blue: 247/255).opacity(1))
         }
-    }
 
+    }
+}
+            
+        
+
+
+    
     private func chooseMessage(basedOn deviceSheetType: DeviceSheetType) -> String {
         switch deviceSheetType {
         case .pairing:
@@ -89,13 +116,13 @@ struct DeviceScreenView: View {
             return "Let's update your Monocle's FPGA. Keep your Monocle nearby and make sure this app stays open."
         }
     }
-}
+
 
 struct DeviceScreenView_Previews: PreviewProvider {
     static var previews: some View {
         DeviceScreenView(
             showDeviceSheet: .constant(true),
-            deviceSheetType: .constant(.fpgaUpdate),
+            deviceSheetType: .constant(.pairing),
             updateProgressPercent: .constant(50)
         )
     }

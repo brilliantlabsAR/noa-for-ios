@@ -14,12 +14,22 @@ struct PairingSheetView: View {
         let buttonName = "Searching"
         HStack {
             Spacer()
-            Button(role: .cancel) {
+            Button(action: {
                 showDeviceSheet = false
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(.body))
-                    .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
+            }) {
+                ZStack {
+                    Circle()
+                        .fill(Color(red: 116/255, green: 116/255, blue: 128/255).opacity(0.08))
+                        .frame(width: 22, height: 22)
+                    
+                    Image(systemName: "xmark")
+                        .resizable()
+                        .foregroundColor(Color(red: 116/255, green: 116/255, blue: 128/255))
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 10, height: 10)
+                }
+                .padding(.trailing, 20)
+                .position(x:350 , y: 40)
             }
         }
         VStack {
@@ -32,17 +42,23 @@ struct PairingSheetView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 306, height: 160)
-
+                .padding()
+//            ModelIOView(modelName: "brilliantMonocle")
+//                .aspectRatio(contentMode: .fit)
+//                .frame(width: 306, height: 160)
+//                .padding(.bottom)
+            
             Button(action: {
                 // No Action needed
             }) {
                 Text(buttonName)
                     .font(.system(size: 22, weight: .medium))
+                    .frame(width: 306, height: 50)
             }
-            .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
-            .padding(.horizontal, 60)
+//          .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
+//          .padding(.horizontal, 60)
             .background(Color(red: 242/255, green: 242/255, blue: 247/255))
-            .foregroundColor(Color(red: 142/255, green: 142/255, blue: 147/255))
+            .foregroundColor(Color(red: 141/255, green: 141/255, blue: 147/255))
             .cornerRadius(15)
         }
     }

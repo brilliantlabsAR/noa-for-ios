@@ -59,6 +59,7 @@
 		CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */; };
 		CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */; };
 		CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */; };
+		F8B8D4792A71761700817A24 /* ModelIOView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B8D4782A71761700817A24 /* ModelIOView.swift */; };
 		F8BC4DE52A4DBD680005F6F0 /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DE42A4DBD680005F6F0 /* DeviceView.swift */; };
 /* End PBXBuildFile section */
 
@@ -135,6 +136,7 @@
 		CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuView.swift; sourceTree = "<group>"; };
 		CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyPopupBoxView.swift; sourceTree = "<group>"; };
 		CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorModeAdaptiveImage.swift; sourceTree = "<group>"; };
+		F8B8D4782A71761700817A24 /* ModelIOView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelIOView.swift; sourceTree = "<group>"; };
 		F8BC4DE42A4DBD680005F6F0 /* DeviceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -228,6 +230,7 @@
 				F8BC4DE42A4DBD680005F6F0 /* DeviceView.swift */,
 				CC0039A02A6DA51A009E3BAC /* PairingSheetView.swift */,
 				CC0039A22A6DA54A009E3BAC /* UpdateSheetView.swift */,
+				F8B8D4782A71761700817A24 /* ModelIOView.swift */,
 			);
 			path = Device;
 			sourceTree = "<group>";
@@ -568,6 +571,7 @@
 				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,
 				CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */,
 				CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */,
+				F8B8D4792A71761700817A24 /* ModelIOView.swift in Sources */,
 				CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -93,11 +93,13 @@ struct ChatView: View {
                     if !_isMonocleConnected  {
                         if _pairedMonocleID != nil {
                             // We have a paired Monocle, it's just not connected
-                            Text("\(Image(systemName: "exclamationmark.circle")) No Monocle Connected")
+                            Text(" Not Connected! \(Image(systemName: "exclamationmark.circle"))")
                                 .foregroundColor(Color.red)
+                                .padding(.bottom)
                         } else {
-                            Text("\(Image(systemName: "exclamationmark.circle")) No Monocle Paired")
+                            Text("Monocle Not Paired \(Image(systemName: "exclamationmark.circle"))")
                                 .foregroundColor(Color.yellow)
+                                .padding(.bottom)
                         }
                     } else if _chatMessageStore.messages.isEmpty {
                         // No messages
@@ -191,9 +193,9 @@ struct ChatView_Previews: PreviewProvider {
 
     static var previews: some View {
         ChatView(
-            isMonocleConnected: .constant(true),
+            isMonocleConnected: .constant(false),
             pairedMonocleID: .constant(UUID()),
-            bluetoothEnabled: .constant(true),
+            bluetoothEnabled: .constant(false),
             showPairingView: .constant(false)
         )
             .environmentObject(ChatView_Previews._chatMessageStore)
