@@ -1,49 +1,63 @@
 // MessageContentView.swift
 // arGPT
 // Created by Bart Trzynadlowski on 5/1/23.
+//
+//
+//
+// ChatBubble taken from here: https://prafullkumar77.medium.com/swiftui-creating-a-chat-bubble-like-imessage-using-path-and-shape-67cf23ccbf62
+
 import SwiftUI
 
 struct MessageContentView: View {
     private let _contentMessage: String
     private let _isUser: Bool
     private let _isTyping: Bool
-    private let _backgroundColor: Color
-    private let _fontColor: Color
-
-    var body: some View {
-        if _isTyping {
-            let staticDotColor = _isUser ? Color(UIColor.lightGray) : Color(UIColor.lightGray)
-            let animatingDotColor = _isUser ? Color(UIColor.lightGray) : Color(UIColor.white)
-            TypingIndicatorView(staticDotColor: staticDotColor, animatingDotColor: animatingDotColor)
-                .padding(10)
-                .background(_backgroundColor)
-                .cornerRadius(10)
-        } else {
-            Text(_contentMessage)
-                .padding(10)
-                .foregroundColor(_fontColor)
-                .background(
-                    ChatBubbleShape(direction: _isUser ? .right : .left)
-                        .fill(_backgroundColor)
-                )
-        }
-    }
+    private let _isError: Bool
+    
+    @Environment(\.colorScheme) var colorScheme
 
     public init(message: Message) {
-        let isUser = message.participant.isUser
         _contentMessage = message.content
         _isUser = message.participant.isUser
         _isTyping = message.typingInProgress
-        if message.isError {
-            _backgroundColor = Color(UIColor.systemRed)
+        _isError = message.isError
+    }
+    
+    var body: some View {
+        let backgroundColor: Color
+        let fontColor: Color
+
+        if _isError {
+            backgroundColor = Color(UIColor.systemRed)
         } else {
-            _backgroundColor = isUser ? Color(red: 87/255, green: 199/255, blue: 170/255) : Color(red: 233/255, green: 233/255, blue: 235/255)
+            if colorScheme == .dark {
+                backgroundColor =  _isUser ? Color(red: 116/255, green: 170/255, blue: 156/255) : Color(red: 38/255, green: 38/255, blue: 40/255)
+            } else {
+                backgroundColor =  _isUser ? Color(red: 87/255, green: 199/255, blue: 170/255) : Color(red: 233/255, green: 233/255, blue: 235/255)
+            }
         }
-        _fontColor = isUser ? Color(UIColor.white) : Color(UIColor.black)
+        fontColor = (_isUser || colorScheme == .dark) ? Color(UIColor.white) : Color(UIColor.black)
+        
+        return Group {
+            if _isTyping {
+                let staticDotColor = _isUser ? Color(UIColor.lightGray) : Color(UIColor.lightGray)
+                let animatingDotColor = _isUser ? Color(UIColor.lightGray) : Color(UIColor.white)
+                TypingIndicatorView(staticDotColor: staticDotColor, animatingDotColor: animatingDotColor)
+                    .padding(10)
+                    .background(backgroundColor)
+                    .cornerRadius(10)
+            } else {
+                Text(_contentMessage)
+                    .padding(10)
+                    .foregroundColor(fontColor)
+                    .background(
+                        ChatBubbleShape(direction: _isUser ? .right : .left)
+                            .fill(backgroundColor)
+                    )
+            }
+        }
     }
 }
-
-// Taken from this website https://prafullkumar77.medium.com/swiftui-creating-a-chat-bubble-like-imessage-using-path-and-shape-67cf23ccbf62
 
 struct ChatBubbleShape: Shape {
     enum Direction {

@@ -20,7 +20,9 @@ struct ModelIOView: UIViewRepresentable {
         sceneView.autoenablesDefaultLighting = true
         sceneView.allowsCameraControl = false
         
-        guard let assetUrl = Bundle.main.url(forResource: "3DModels/\(modelName)", withExtension: "stl") else {
+        
+        
+        guard let assetUrl = Bundle.main.url(forResource: "\(modelName)", withExtension: "stl") else {
             print("Failed to find model \(modelName).stl in the app bundle.")
             return sceneView
         }

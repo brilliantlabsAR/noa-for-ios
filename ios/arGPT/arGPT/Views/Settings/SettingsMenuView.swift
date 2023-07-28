@@ -21,7 +21,7 @@ struct SettingsMenuView: View {
             }) {
                 Label("Change API Key", systemImage: "person.circle")
             }
-            Button(action: {
+            Button(role: .destructive, action: {
                 if _settings.pairedDeviceID != nil {
                     // Unpair but do not go back to pairing screen just yet
                     bluetoothEnabled = false   // must stop scanning because we will auto repair otherwise

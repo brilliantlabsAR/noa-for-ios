@@ -28,6 +28,7 @@ struct DeviceScreenView: View {
     @Binding var deviceSheetType: DeviceSheetType
     @Binding var updateProgressPercent: Int
     @Environment(\.openURL) var openURL
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         ZStack {
@@ -70,7 +71,7 @@ struct DeviceScreenView: View {
                 .padding(.top)  // needed to avoid hitting unsafe top area (e.g., dynamic island)
                 .frame(width: 393, height: 400)
                // .blur(radius: showDeviceSheet ? 10 : 0)
-                .background(Color(red: 242/255, green: 242/255, blue: 247/255))
+                .background(colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255) : Color(red: 242/255, green: 242/255, blue: 247/255))
                 .ignoresSafeArea(.all)
                 VStack {
                     if showDeviceSheet {
@@ -79,24 +80,27 @@ struct DeviceScreenView: View {
                                 .fill(Color.white)
                                 .padding(10)
                                 .transition(.move(edge: .bottom))
+                                .animation(.easeInOut(duration: 2.5),value: UUID())
                                 
                             
                             switch deviceSheetType {
                             case .pairing:
                                 PairingSheetView(showDeviceSheet: $showDeviceSheet)
+                                    .foregroundColor(Color.black)
                             case .firmwareUpdate:
                                 UpdateSheetView(updating: "firmware", updateProgressPercent: $updateProgressPercent)
+                                    .foregroundColor(Color.black)
                             case .fpgaUpdate:
                                 UpdateSheetView(updating: "FPGA", updateProgressPercent: $updateProgressPercent)
+                                    .foregroundColor(Color.black)
                             }
                         }
-                        .zIndex(1)
                     }
                 }
                 .padding(.bottom, 1)
                 .ignoresSafeArea(.all)
             }
-            .background(Color(red: 242/255, green: 242/255, blue: 247/255).opacity(1))
+            .background(colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255) : Color(red: 242/255, green: 242/255, blue: 247/255))
         }
 
     }

@@ -34,6 +34,8 @@ struct ChatView: View {
     // Chat callbacks
     private let _onTextSubmitted: ((String) -> Void)?
     private let _onClearChatButtonPressed: (() -> Void)?
+    
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         ZStack {
@@ -127,7 +129,8 @@ struct ChatView: View {
                             Image(systemName: "arrow.up.circle.fill")
                                 .font(.system(.title))
                                 .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
-                                .frame(minHeight: 30, alignment: .center)
+                                .symbolRenderingMode(.multicolor)
+                                .frame(minHeight: 29, alignment: .center)
                         }
                     )
                 }
@@ -135,6 +138,7 @@ struct ChatView: View {
                 .padding(.top, -10)
                 .padding(.horizontal, 20)
             }
+            .background(colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255) : Color(red: 242/255, green: 242/255, blue: 247/255))
             .blur(radius: popUpApiBox ? 1 : 0)
             
             if popUpApiBox {

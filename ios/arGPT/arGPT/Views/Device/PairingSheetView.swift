@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SceneKit
 
 struct PairingSheetView: View {
     @Binding var showDeviceSheet: Bool
@@ -38,15 +39,15 @@ struct PairingSheetView: View {
                 .multilineTextAlignment(.center)
                 .frame(width: 306, height: 29)
 
-            Image("Monocle")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 306, height: 160)
-                .padding()
-//            ModelIOView(modelName: "brilliantMonocle")
+//            Image("Monocle")
+//                .resizable()
 //                .aspectRatio(contentMode: .fit)
 //                .frame(width: 306, height: 160)
-//                .padding(.bottom)
+//                .padding()
+            ModelIOView(modelName: "brilliantMonocle")
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 306, height: 160)
+                .padding(.bottom)
             
             Button(action: {
                 // No Action needed
