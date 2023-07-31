@@ -8,17 +8,15 @@
 import SwiftUI
 
 struct UpdateSheetView: View {
-    private let _component: String
-    
     @Binding var updateProgressPercent: Int
     
     var body: some View {
-        let buttonName = "Updating: \(updateProgressPercent)%"
+        let buttonName = "Keep the app open"
         HStack {
             Spacer()
         }
         VStack {
-            Text("Updating \(_component).")
+            Text("Updating Software \(updateProgressPercent)%")
                 .font(.system(size: 24, weight: .bold))
                 .multilineTextAlignment(.center)
                 .frame(width: 306, height: 29)
@@ -49,8 +47,7 @@ struct UpdateSheetView: View {
 
 
 
-    init(updating component: String, updateProgressPercent: Binding<Int>) {
-        _component = component
+    init(updateProgressPercent: Binding<Int>) {
         self._updateProgressPercent = updateProgressPercent
     }
 }

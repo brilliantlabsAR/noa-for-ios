@@ -81,17 +81,12 @@ struct DeviceScreenView: View {
                                 .padding(10)
                                 .transition(.move(edge: .bottom))
                                 .animation(.easeInOut(duration: 2.5),value: UUID())
-                                
-                            
-                            switch deviceSheetType {
-                            case .pairing:
+
+                            if deviceSheetType == .pairing {
                                 PairingSheetView(showDeviceSheet: $showDeviceSheet)
                                     .foregroundColor(Color.black)
-                            case .firmwareUpdate:
-                                UpdateSheetView(updating: "firmware", updateProgressPercent: $updateProgressPercent)
-                                    .foregroundColor(Color.black)
-                            case .fpgaUpdate:
-                                UpdateSheetView(updating: "FPGA", updateProgressPercent: $updateProgressPercent)
+                            } else {
+                                UpdateSheetView( updateProgressPercent: $updateProgressPercent)
                                     .foregroundColor(Color.black)
                             }
                         }
@@ -104,12 +99,7 @@ struct DeviceScreenView: View {
         }
 
     }
-}
-            
-        
 
-
-    
     private func chooseMessage(basedOn deviceSheetType: DeviceSheetType) -> String {
         switch deviceSheetType {
         case .pairing:
@@ -120,13 +110,13 @@ struct DeviceScreenView: View {
             return "Let's update your Monocle's FPGA. Keep your Monocle nearby and make sure this app stays open."
         }
     }
-
+}
 
 struct DeviceScreenView_Previews: PreviewProvider {
     static var previews: some View {
         DeviceScreenView(
             showDeviceSheet: .constant(true),
-            deviceSheetType: .constant(.pairing),
+            deviceSheetType: .constant(.fpgaUpdate),
             updateProgressPercent: .constant(50)
         )
     }
