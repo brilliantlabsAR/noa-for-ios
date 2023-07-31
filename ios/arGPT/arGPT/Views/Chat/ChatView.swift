@@ -120,6 +120,8 @@ struct ChatView: View {
                         .frame(minHeight: CGFloat(30))
                     
                     // Send button
+                    let textFieldEmpty = _textInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    let sendButtonColor = textFieldEmpty ? Color(UIColor.systemGray) : Color(red: 87/255, green: 199/255, blue: 170/255)
                     Button(
                         action: {
                             _onTextSubmitted?(_textInput)
@@ -128,11 +130,12 @@ struct ChatView: View {
                         label: {
                             Image(systemName: "arrow.up.circle.fill")
                                 .font(.system(.title))
-                                .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
+                                .foregroundColor(sendButtonColor)
                                 .symbolRenderingMode(.multicolor)
                                 .frame(minHeight: 29, alignment: .center)
                         }
                     )
+                    .disabled(textFieldEmpty)
                 }
                 .padding(.bottom, 5)
                 .padding(.top, -10)
