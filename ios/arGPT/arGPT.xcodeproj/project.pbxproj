@@ -61,7 +61,7 @@
 		CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */; };
 		F8A743072A745B4500A51523 /* brilliantMonocle.stl in Resources */ = {isa = PBXBuildFile; fileRef = F8A743062A745B4500A51523 /* brilliantMonocle.stl */; };
 		F8B8D4792A71761700817A24 /* ModelIOView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B8D4782A71761700817A24 /* ModelIOView.swift */; };
-		F8BC4DE52A4DBD680005F6F0 /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DE42A4DBD680005F6F0 /* DeviceView.swift */; };
+		F8BC4DE52A4DBD680005F6F0 /* DeviceScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -139,7 +139,7 @@
 		CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorModeAdaptiveImage.swift; sourceTree = "<group>"; };
 		F8A743062A745B4500A51523 /* brilliantMonocle.stl */ = {isa = PBXFileReference; lastKnownFileType = file; path = brilliantMonocle.stl; sourceTree = "<group>"; };
 		F8B8D4782A71761700817A24 /* ModelIOView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelIOView.swift; sourceTree = "<group>"; };
-		F8BC4DE42A4DBD680005F6F0 /* DeviceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
+		F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceScreenView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -229,7 +229,7 @@
 		CC00399F2A6DA4A2009E3BAC /* Device */ = {
 			isa = PBXGroup;
 			children = (
-				F8BC4DE42A4DBD680005F6F0 /* DeviceView.swift */,
+				F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */,
 				CC0039A02A6DA51A009E3BAC /* PairingSheetView.swift */,
 				CC0039A22A6DA54A009E3BAC /* UpdateSheetView.swift */,
 				F8B8D4782A71761700817A24 /* ModelIOView.swift */,
@@ -549,7 +549,7 @@
 			files = (
 				CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */,
 				CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */,
-				F8BC4DE52A4DBD680005F6F0 /* DeviceView.swift in Sources */,
+				F8BC4DE52A4DBD680005F6F0 /* DeviceScreenView.swift in Sources */,
 				CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
