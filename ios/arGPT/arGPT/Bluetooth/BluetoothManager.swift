@@ -15,8 +15,10 @@ import Combine
 import CoreBluetooth
 
 class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-    @Published private(set)  var discoveredDevices: [UUID] = []
-    @Published private(set)  var isConnected = false
+    /// Nearby peripherals matching our peripheral name sorted in desceding order of RSSI. This is updated only while not connected.
+    @Published private(set) var discoveredDevices = PassthroughSubject<[(deviceID: UUID, rssi: Float)], Never>()
+
+    @Published private(set) var isConnected = false
 
     /// Peripheral connected
     @Published private(set) var peripheralConnected = PassthroughSubject<UUID, Never>()
@@ -41,6 +43,9 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             }
         }
     }
+
+    /// RSSI threshold used for proximity-based auto-pairing. The relative signal strength must be greater than or equal to this value.
+    public var rssiThreshold: Float = -70
 
     public var maximumDataLength: Int? {
         return _connectedPeripheral?.maximumWriteValueLength(for: .withoutResponse)
@@ -75,7 +80,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         }
     }
 
-    public var peripheral: CBPeripheral? {
+    public var connectedPeripheral: CBPeripheral? {
         return _connectedPeripheral
     }
 
@@ -92,9 +97,8 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     }()
 
     private let _allowAutoConnectByProximity: Bool
-    private let _rssiAutoConnectThreshold: Float = -70
 
-    private var _discoveredPeripherals: [(peripheral: CBPeripheral, timeout: TimeInterval)] = []
+    private var _discoveredPeripherals: [(peripheral: CBPeripheral, rssi: Float, timeout: TimeInterval)] = []
     private var _discoveryTimer: Timer?
 
     private var _connectedPeripheral: CBPeripheral? {
@@ -203,26 +207,35 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         _characteristicByID = [:]
     }
 
-    private func updateDiscoveredPeripherals(with peripheral: CBPeripheral? = nil) {
+    private func updateDiscoveredPeripherals(with peripheral: CBPeripheral? = nil, rssi: Float = -.infinity) {
         let numPeripheralsBefore = _discoveredPeripherals.count
+        var didChange = false
 
         // Delete anything that has timed out
         let now = Date.timeIntervalSinceReferenceDate
         _discoveredPeripherals.removeAll { $0.timeout >= now }
+        if numPeripheralsBefore != _discoveredPeripherals.count {
+            didChange = true
+        }
 
         // If we are adding a peripheral, remove dupes first
         if let peripheral = peripheral {
             _discoveredPeripherals.removeAll { $0.peripheral.isEqual(peripheral) }
-            _discoveredPeripherals.append((peripheral: peripheral, timeout: now + 10))  // timeout after 10 seconds
+            _discoveredPeripherals.append((peripheral: peripheral, rssi: rssi, timeout: now + 10))  // timeout after 10 seconds
+            didChange = true
         }
 
         // Update device list and log it
-        if _discoveredPeripherals.count > 0 && (numPeripheralsBefore != _discoveredPeripherals.count || peripheral != nil) {
+        // Publish sorted in descending order by RSSI
+        let devices = _discoveredPeripherals
+            .map { (deviceID: $0.peripheral.identifier, rssi: $0.rssi) }
+            .sorted { $0 .rssi < $1.rssi }
+        discoveredDevices.send(devices)
+        if didChange {
             print("[BluetoothManager] Discovered peripherals:")
-            for (peripheral, _) in _discoveredPeripherals {
-                print("[BluetoothManager]   name=\(peripheral.name ?? "<no name>") id=\(peripheral.identifier)")
+            for (peripheral, rssi, _) in _discoveredPeripherals {
+                print("[BluetoothManager]   name=\(peripheral.name ?? "<no name>") id=\(peripheral.identifier) rssi=\(rssi)")
             }
-            discoveredDevices = _discoveredPeripherals.map { $0.peripheral.identifier }
         }
     }
 
@@ -345,7 +358,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             return
         }
 
-        updateDiscoveredPeripherals(with: peripheral)
+        updateDiscoveredPeripherals(with: peripheral, rssi: RSSI.floatValue)
 
         guard _connectedPeripheral == nil else {
             // Already connected
@@ -356,7 +369,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         var shouldConnect = peripheral.identifier == selectedDeviceID
 
         // Otherwise, auto-connect to first device whose RSSI meets the threshold and auto-connect enabled
-        if _allowAutoConnectByProximity && RSSI.floatValue >= _rssiAutoConnectThreshold {
+        if _allowAutoConnectByProximity && RSSI.floatValue >= rssiThreshold {
             shouldConnect = true
         }
 

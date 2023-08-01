@@ -18,6 +18,7 @@ struct ContentView: View {
     /// Monocle state (as reported by Controller)
     @State private var _isMonocleConnected = false
     @State private var _pairedMonocleID: UUID?
+    @State private var _monocleWithinPairingRange = false   // only updated when no Monocle yet paired
 
     /// Bluetooth state
     @State private var _bluetoothEnabled = false
@@ -42,12 +43,17 @@ struct ContentView: View {
                 DeviceScreenView(
                     showDeviceSheet: $_showDeviceSheet,
                     deviceSheetType: $_deviceSheetType,
-                    updateProgressPercent: $_updateProgressPercent
+                    monocleWithinPairingRange: $_monocleWithinPairingRange,
+                    updateProgressPercent: $_updateProgressPercent,
+                    onConnectPressed: { [weak _controller] in
+                        _controller?.connectToNearest()
+                    }
                 )
                     .onAppear {
                         // Delay a moment before enabling Bluetooth scanning so we actually see
                         // the pairing dialog. Also ensure that by the time this callback fires,
-                        // the user has not just aborted the procedure.
+                        // the user has not just aborted the procedure. Note this is called each
+                        // time view appears.
                         if !_bluetoothEnabled {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                 if _showDeviceSheet {
@@ -85,6 +91,7 @@ struct ContentView: View {
             // Initialize state
             _isMonocleConnected = _controller.isMonocleConnected
             _pairedMonocleID = _controller.pairedMonocleID
+            _monocleWithinPairingRange = _controller.nearestMonocleID != nil
             _bluetoothEnabled = _controller.bluetoothEnabled
 
             // Do we need to bring up device sheet initially? Do so if no Monocle paired or
@@ -99,6 +106,10 @@ struct ContentView: View {
         .onChange(of: _controller.pairedMonocleID) {
             // Sync paired device ID
             _pairedMonocleID = $0
+        }
+        .onChange(of: _controller.nearestMonocleID) {
+            // Sync nearest Monocle device ID
+            _monocleWithinPairingRange = $0 != nil
         }
         .onChange(of: _controller.bluetoothEnabled) {
             // Sync Bluetooth state

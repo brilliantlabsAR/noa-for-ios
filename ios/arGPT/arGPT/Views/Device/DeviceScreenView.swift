@@ -26,9 +26,12 @@ enum DeviceSheetType {
 struct DeviceScreenView: View {
     @Binding var showDeviceSheet: Bool
     @Binding var deviceSheetType: DeviceSheetType
+    @Binding var monocleWithinPairingRange: Bool
     @Binding var updateProgressPercent: Int
     @Environment(\.openURL) var openURL
     @Environment(\.colorScheme) var colorScheme
+
+    private let _onConnectPressed: (() -> Void)?
     
     var body: some View {
         ZStack {
@@ -83,7 +86,11 @@ struct DeviceScreenView: View {
                                 .animation(.easeInOut(duration: 2.5),value: UUID())
 
                             if deviceSheetType == .pairing {
-                                PairingSheetView(showDeviceSheet: $showDeviceSheet)
+                                PairingSheetView(
+                                    showDeviceSheet: $showDeviceSheet,
+                                    monocleWithinPairingRange: $monocleWithinPairingRange,
+                                    onConnectPressed: _onConnectPressed
+                                )
                                     .foregroundColor(Color.black)
                             } else {
                                 UpdateSheetView( updateProgressPercent: $updateProgressPercent)
@@ -97,7 +104,14 @@ struct DeviceScreenView: View {
             }
             .background(colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255) : Color(red: 242/255, green: 242/255, blue: 247/255))
         }
+    }
 
+    init(showDeviceSheet: Binding<Bool>, deviceSheetType: Binding<DeviceSheetType>, monocleWithinPairingRange: Binding<Bool>, updateProgressPercent: Binding<Int>, onConnectPressed: (() -> Void)?) {
+        _showDeviceSheet = showDeviceSheet
+        _deviceSheetType = deviceSheetType
+        _monocleWithinPairingRange = monocleWithinPairingRange
+        _updateProgressPercent = updateProgressPercent
+        _onConnectPressed = onConnectPressed
     }
 
     private func chooseMessage(basedOn deviceSheetType: DeviceSheetType) -> String {
@@ -117,7 +131,9 @@ struct DeviceScreenView_Previews: PreviewProvider {
         DeviceScreenView(
             showDeviceSheet: .constant(true),
             deviceSheetType: .constant(.fpgaUpdate),
-            updateProgressPercent: .constant(50)
+            monocleWithinPairingRange: .constant(true),
+            updateProgressPercent: .constant(50),
+            onConnectPressed: { print("Connect pressed") }
         )
     }
 }

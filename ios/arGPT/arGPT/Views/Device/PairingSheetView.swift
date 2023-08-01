@@ -10,9 +10,12 @@ import SceneKit
 
 struct PairingSheetView: View {
     @Binding var showDeviceSheet: Bool
+    @Binding var monocleWithinPairingRange: Bool
+
+    private let _onConnectPressed: (() -> Void)?
 
     var body: some View {
-        let buttonName = "Searching"
+        let buttonName = monocleWithinPairingRange ? "Monocle. Connect" : "Searching"
         HStack {
             Spacer()
             Button(action: {
@@ -50,7 +53,8 @@ struct PairingSheetView: View {
                 .padding(.bottom)
             
             Button(action: {
-                // No Action needed
+                _onConnectPressed?()
+                showDeviceSheet = false // dismiss view
             }) {
                 Text(buttonName)
                     .font(.system(size: 22, weight: .medium))
@@ -59,8 +63,15 @@ struct PairingSheetView: View {
 //          .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
 //          .padding(.horizontal, 60)
             .background(Color(red: 242/255, green: 242/255, blue: 247/255))
-            .foregroundColor(Color(red: 141/255, green: 141/255, blue: 147/255))
+            .foregroundColor(monocleWithinPairingRange ? .black : Color(red: 141/255, green: 141/255, blue: 147/255))
             .cornerRadius(15)
+            .disabled(!monocleWithinPairingRange)
         }
+    }
+
+    init(showDeviceSheet: Binding<Bool>, monocleWithinPairingRange: Binding<Bool>, onConnectPressed: (() -> Void)?) {
+        _showDeviceSheet = showDeviceSheet
+        _monocleWithinPairingRange = monocleWithinPairingRange
+        _onConnectPressed = onConnectPressed
     }
 }

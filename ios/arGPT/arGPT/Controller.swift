@@ -46,7 +46,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
     // Monocle Bluetooth manager
     private let _monocleBluetooth = BluetoothManager(
-        autoConnectByProximity: true,
+        autoConnectByProximity: false,  // must not auto-connect during pairing sequence; user must have time to click Connect
         peripheralName: "monocle",
         services: [
             CBUUID(string: "6e400001-b5a3-f393-e0a9-e50e24dcca9e"): "Serial",
@@ -188,6 +188,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     @Published private(set) var isMonocleConnected = false
     @Published private(set) var pairedMonocleID: UUID?
 
+    /// Reports nearest Monocle within the required RSSI threshold for pairing. Only updates when unpaired otherwise value may be stale.
+    @Published private(set) var nearestMonocleID: UUID?
+
     /// Use this to enable/disable Bluetooth
     @Published public var bluetoothEnabled = false {
         didSet {
@@ -242,6 +245,20 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             // Update public state
             pairedMonocleID = newPairedDeviceID
         })
+        .store(in: &_subscribers)
+
+        // Changes in nearby list of Monocle devices
+        _monocleBluetooth.discoveredDevices.sink { [weak self] (devices: [(deviceID: UUID, rssi: Float)]) in
+            guard let self = self else { return }
+            // If there is a Monocle that is within pairing distance, broadcast that
+            if let nearestDevice = devices.first {
+                if nearestDevice.rssi >= _monocleBluetooth.rssiThreshold {
+                    nearestMonocleID = nearestDevice.deviceID
+                    return
+                }
+            }
+            nearestMonocleID = nil
+        }
         .store(in: &_subscribers)
 
         // Connection to Monocle
@@ -326,7 +343,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         // DFU target connected
         _dfuBluetooth.peripheralConnected.sink { [weak self] (deviceID: UUID) in
             guard let self = self,
-                  let peripheral = _dfuBluetooth.peripheral else {
+                  let peripheral = _dfuBluetooth.connectedPeripheral else {
                 return
             }
             print("[Controller] DFUTarget connected")
@@ -346,6 +363,15 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _dfuBluetooth.enabled = false
             _dfuBluetooth.enabled = true
         }.store(in: &_subscribers)
+    }
+
+    /// Connect to the nearest device if one exists.
+    public func connectToNearest() {
+        if let nearestMonocleID = nearestMonocleID {
+            // Connect to this ID. This should propagate through immediately to BluetoothManager
+            // and UI.
+            _settings.setPairedDeviceID(nearestMonocleID)
+        }
     }
 
     /// Submit a query from the iOS app directly.
