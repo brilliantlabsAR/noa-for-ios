@@ -16,25 +16,25 @@ struct SettingsMenuView: View {
 
     var body: some View {
         Menu {
+            let isMonoclePaired = _settings.pairedDeviceID != nil
+
             Button(action: {
                 popUpApiBox = true
             }) {
                 Label("Change API Key", systemImage: "person.circle")
             }
-            Button(role: .destructive, action: {
-                if _settings.pairedDeviceID != nil {
-                    // Unpair but do not go back to pairing screen just yet
-                    bluetoothEnabled = false   // must stop scanning because we will auto repair otherwise
+            Button(role: isMonoclePaired ? .destructive : .none, action: {
+                if isMonoclePaired {
+                    // Unpair
                     _settings.setPairedDeviceID(nil)
-                } else {
-                    // Return to pairing screen only on explicit pairing request
-                    showPairingView = true
                 }
+
+                // Always return to pairing screen right after unpairing or when pairing requested
+                showPairingView = true
             }) {
                 // Unpair/pair Monocle
-                if _settings.pairedDeviceID != nil {
+                if isMonoclePaired {
                     Label("Unpair Monocle", systemImage: "person.circle")
-                        .foregroundColor(Color.red)
                 } else {
                     Label("Pair Monocle", systemImage: "person.circle")
                 }
