@@ -4,8 +4,6 @@ import microphone
 import touch
 import states
 
-RECORD_LENGTH = 4.0
-
 state = states.State()
 gfx = graphics.Graphics()
 
@@ -56,7 +54,7 @@ def touch_pad_handler(_):
 
 
 bluetooth.receive_callback(bluetooth_message_handler)
-touch.callback(touch.BOTH, touch_pad_handler)
+touch.callback(touch.EITHER, touch_pad_handler)
 
 while True:
     if state.current_state == state.Init:
@@ -83,21 +81,25 @@ while True:
 
     elif state.current_state == state.StartRecording:
         if state.on_entry():
-            microphone.record(seconds=RECORD_LENGTH, bit_depth=8, sample_rate=8000)
+            microphone.record(seconds=6.0, bit_depth=8, sample_rate=8000)
             bluetooth_send_message(b"ast:")
             gfx.clear_response()
-            gfx.set_prompt("Listening [   ]")
+            gfx.set_prompt("Listening [     ]")
         state.after(1000, state.SendAudio)
 
     elif state.current_state == state.SendAudio:
-        if state.has_been() > 3000:
+        if state.has_been() > 5000:
             gfx.set_prompt("Waiting for openAI")
+        elif state.has_been() > 4000:
+            gfx.set_prompt("Listening [=====]")
+        elif state.has_been() > 3000:
+            gfx.set_prompt("Listening [==== ]")
         elif state.has_been() > 2000:
-            gfx.set_prompt("Listening [===]")
+            gfx.set_prompt("Listening [===  ]")
         elif state.has_been() > 1000:
-            gfx.set_prompt("Listening [== ]")
+            gfx.set_prompt("Listening [==   ]")
         else:
-            gfx.set_prompt("Listening [=  ]")
+            gfx.set_prompt("Listening [=    ]")
 
         samples = (bluetooth.max_length() - 4) // 2
         chunk1 = microphone.read(samples)

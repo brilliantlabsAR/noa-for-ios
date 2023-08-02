@@ -34,9 +34,9 @@ struct SettingsMenuView: View {
             }) {
                 // Unpair/pair Monocle
                 if isMonoclePaired {
-                    Label("Unpair Monocle", systemImage: "person.circle")
+                    Label("Unpair Monocle", systemImage: "wake")
                 } else {
-                    Label("Pair Monocle", systemImage: "person.circle")
+                    Label("Pair Monocle", systemImage: "wake")
                 }
             }
         } label: {

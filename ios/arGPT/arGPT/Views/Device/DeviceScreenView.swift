@@ -49,7 +49,7 @@ struct DeviceScreenView: View {
                         Text("arGPT")
                             .font(.system(size: 32, weight: .bold))
                             .position(x: 203,y:25)
-                        let message = chooseMessage(basedOn: deviceSheetType)
+                        let message = "Let’s set up your Monocle. Take it out of the case, and bring it close."
                         Text(message)
                             .font(.system(size: 15))
                         //.multilineTextAlignment(.center)
@@ -112,17 +112,6 @@ struct DeviceScreenView: View {
         _monocleWithinPairingRange = monocleWithinPairingRange
         _updateProgressPercent = updateProgressPercent
         _onConnectPressed = onConnectPressed
-    }
-
-    private func chooseMessage(basedOn deviceSheetType: DeviceSheetType) -> String {
-        switch deviceSheetType {
-        case .pairing:
-            return "Let’s pair your device. Take your Monocle out of the case and bring it close."
-        case .firmwareUpdate:
-            return "Let's update your Monocle firmware. Keep your Monocle nearby and make sure this app stays open."
-        case .fpgaUpdate:
-            return "Let's update your Monocle's FPGA. Keep your Monocle nearby and make sure this app stays open."
-        }
     }
 }
 
