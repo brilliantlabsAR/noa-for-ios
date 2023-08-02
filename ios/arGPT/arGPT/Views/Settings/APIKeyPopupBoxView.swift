@@ -22,7 +22,7 @@ struct APIKeyPopupBoxView: View {
                 .padding(.top, 20)
                 .padding(.bottom, 2)
 
-            Text("If you don’t have a key, press \"Get Key\" to be taken to OpenAI.")
+            Text("Or press Get Key to create one on the OpenAI website.")
                 .font(.system(size: 15, weight: .regular))
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 5)

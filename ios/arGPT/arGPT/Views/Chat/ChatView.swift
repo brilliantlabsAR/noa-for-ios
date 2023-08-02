@@ -93,19 +93,9 @@ struct ChatView: View {
                 }
                 VStack {
                     if !_isMonocleConnected  {
-                        if _pairedMonocleID != nil {
-                            // We have a paired Monocle, it's just not connected
-                            Text(" Not Connected! \(Image(systemName: "exclamationmark.circle"))")
-                                .foregroundColor(Color.red)
-                                .padding(.bottom)
-                        } else {
-                            Text("Monocle Not Paired \(Image(systemName: "exclamationmark.circle"))")
-                                .foregroundColor(Color.yellow)
-                                .padding(.bottom)
-                        }
-                    } else if _chatMessageStore.messages.isEmpty {
-                        // No messages
-                        Text("Speak through your Monocle.")
+                        Text("Not Connected \(Image(systemName: "exclamationmark.circle"))")
+                            .foregroundColor(Color.red)
+                            .padding(.bottom)
                     } else {
                         Text("")
                     }
@@ -133,6 +123,7 @@ struct ChatView: View {
                                 .foregroundColor(sendButtonColor)
                                 .symbolRenderingMode(.multicolor)
                                 .frame(minHeight: 29, alignment: .center)
+                                .padding(1)
                         }
                     )
                     .disabled(textFieldEmpty)
