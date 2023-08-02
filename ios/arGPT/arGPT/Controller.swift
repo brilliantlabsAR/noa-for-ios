@@ -260,12 +260,17 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         // Changes in nearby list of Monocle devices
         _monocleBluetooth.discoveredDevices.sink { [weak self] (devices: [(deviceID: UUID, rssi: Float)]) in
             guard let self = self else { return }
-            // If there is a Monocle that is within pairing distance, broadcast that
+            // If there is a Monocle that is within pairing distance, broadcast that. We use two
+            // thresholds for hysteresis.
+            let thresholdLow: Float = -85
+            let thresholdHigh: Float = -65
             if let nearestDevice = devices.first {
-                if nearestDevice.rssi >= _monocleBluetooth.rssiThreshold {
+                if nearestDevice.rssi > thresholdHigh {
                     nearestMonocleID = nearestDevice.deviceID
-                    return
+                } else if nearestDevice.rssi < thresholdLow {
+                    nearestMonocleID = nil
                 }
+                return
             }
             nearestMonocleID = nil
         }
