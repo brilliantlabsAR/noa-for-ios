@@ -161,6 +161,8 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _rawREPLTimer: Timer?
     private var _matcher: Util.StreamingStringMatcher?
 
+    private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.200.1232", withExtension: "zip")!
+    private static let _fpgaURL = Bundle.main.url(forResource: "monocle-fpga-v23.179.1006", withExtension: "bin")!
     private let _requiredFirmwareVersion = "v23.200.1232"
     private let _requiredFPGAVersion = "v23.179.1006"
     private var _receivedVersionResponse = ""           // buffer for firmware and FPGA version responses
@@ -222,8 +224,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         bluetoothEnabled = false
 
         // Nordic DFU
-        let url = Bundle.main.url(forResource: "monocle-micropython-v23.200.1232", withExtension: "zip")!
-        let firmware = try! DFUFirmware(urlToZipFile: url)
+        let firmware = try! DFUFirmware(urlToZipFile: Self._firmwareURL)
         _dfuInitiator = DFUServiceInitiator().with(firmware: firmware)
         _dfuInitiator.delegate = self
         _dfuInitiator.logger = self
@@ -852,8 +853,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     private static func loadFPGAImageAsBase64() -> String {
-        let url = Bundle.main.url(forResource: "monocle-fpga-v23.179.1006", withExtension: "bin")!
-        guard let data = try? Data(contentsOf: url) else {
+        guard let data = try? Data(contentsOf: Self._fpgaURL) else {
             fatalError("Unable to load FPGA image from disk")
         }
         return data.base64EncodedString()
