@@ -87,10 +87,15 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private enum State: Equatable {
         case disconnected
 
-        // Startup sequence: raw REPL, check whether updates required, transmit scripts if needed
-        case waitingForRawREPL
-        case waitingForFirmwareVersion
-        case waitingForFPGAVersion
+        // Startup sequence: raw REPL, check whether firmware and FPGA updates required and perform
+        // them. If DFU was performed and Monocle had to reset, we detect that case so that when we
+        // get to the firmware and FPGA update phase, we can compute the correct relative
+        // percentage each contributes. We pass the DFU state along in the enums themselves.
+        case waitingForRawREPL(didFinishDFU: Bool)
+        case waitingForFirmwareVersion(didFinishDFU: Bool)
+        case waitingForFPGAVersion(didFinishDFU: Bool)
+
+        // Continuation of startup sequence: check and update Monocle scripts
         case waitingForARGPTVersion
         case transmittingScripts(scriptTransmissionState: ScriptTransmissionState)
 
@@ -98,11 +103,11 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         case running
 
         // Firmware update states
-        case initiateDFUAndWaitForDFUTarget
-        case performDFU(peripheral: CBPeripheral)
+        case initiateDFUAndWaitForDFUTarget(rescaleUpdatePercentage: Bool)
+        case performDFU(peripheral: CBPeripheral, rescaleUpdatePercentage: Bool)
 
         // FPGA update states
-        case initiateFPGAUpdate(maximumDataLength: Int)
+        case initiateFPGAUpdate(maximumDataLength: Int, rescaleUpdatePercentage: Bool)
         case waitForFPGAErased(updateState: FPGAUpdateState)
         case sendNextFPGAImageChunk(updateState: FPGAUpdateState)
         case writeFPGAAndReset
@@ -121,12 +126,16 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         /// Next chunk to transmit
         var chunk: Int
 
-        init(maximumDataLength: Int) {
+        // Whether we need to rescale the update percentage because of DFU
+        let rescaleUpdatePercentage: Bool
+
+        init(maximumDataLength: Int, rescaleUpdatePercentage: Bool) {
             image = Controller.loadFPGAImageAsBase64()
             chunkSize = (((maximumDataLength - 45) / 3) / 4) * 4 * 3    // update string must be 45 characters!
             chunks = image.count / chunkSize + ((image.count % chunkSize) == 0 ? 0 : 1)
             chunk = 0
-            print("[Controller] FPGA update: image=\(image.count) bytes, chunkSize=\(chunkSize), chunks=\(chunks), maximumDataLength=\(maximumDataLength)")
+            self.rescaleUpdatePercentage = rescaleUpdatePercentage
+            print("[Controller] FPGA update: image=\(image.count) bytes, chunkSize=\(chunkSize), chunks=\(chunks), maximumDataLength=\(maximumDataLength), rescaleUpdatePercentage=\(rescaleUpdatePercentage)")
         }
 
         public var entireImageTransmitted: Bool {
@@ -166,8 +175,8 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private let _requiredFirmwareVersion = "v23.200.1232"
     private let _requiredFPGAVersion = "v23.179.1006"
     private var _receivedVersionResponse = ""           // buffer for firmware and FPGA version responses
-    private var _firmwareVersion: String?
-    private var _fpgaVersion: String?
+    private var _currentFirmwareVersion: String?
+    private var _currentFPGAVersion: String?
 
     private var _audioData = Data()
 
@@ -268,22 +277,27 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
             print("[Controller] Monocle connected")
 
+            // Did we arrive here as a new connection or because a DFU update was finished?
+            var didFinishDFU = false
+            if case .performDFU(_, _) = _state {
+                didFinishDFU = true
+            }
+
             // When Monocle is connected, stop looking for DfuTarg
             _dfuBluetooth.enabled = false
             _dfuController = nil
 
-            // Just connected, we are not currently updating
-            updateState = .notUpdating
-
+            // Save the paired device if we auto-connected. Currently, auto-connecting should not be
+            // possible anymore.
             if self._settings.pairedDeviceID == nil {
-                // We auto-connected and should save the paired device
                 self._settings.setPairedDeviceID(deviceID)
             }
 
+            // Always enter raw REPL mode
             transmitRawREPLCode()
 
             // Wait for confirmation that raw REPL was activated
-            transitionState(to: .waitingForRawREPL)
+            transitionState(to: .waitingForRawREPL(didFinishDFU: didFinishDFU))
 
             // Since firmware v23.181.0720, some sort of Bluetooth race condition has been exposed.
             // If the iOS app is running and then Monocle is powered on, or if Monocle is restarted
@@ -293,7 +307,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             // have no way to detect this using CoreBluetooth. The "solution" is to periodically
             // re-transmit the raw REPL code.
             _rawREPLTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] (timer: Timer) in
-                if self?._state == .waitingForRawREPL {
+                if case .waitingForRawREPL(_) = self?._state {
                     self?.transmitRawREPLCode()
                 }
             }
@@ -348,7 +362,14 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 return
             }
             print("[Controller] DFUTarget connected")
-            transitionState(to: .performDFU(peripheral: peripheral))
+
+            if case let .initiateDFUAndWaitForDFUTarget(rescaleUpdatePercentage: rescaleUpdatePercentage) = _state {
+                transitionState(to: .performDFU(peripheral: peripheral, rescaleUpdatePercentage: rescaleUpdatePercentage))
+            } else {
+                // This can occur if device is stuck in DFU mode and we bring the app up. We cannot
+                // yet know whether an FPGA will follow so let's assume it won't.
+                transitionState(to: .performDFU(peripheral: peripheral, rescaleUpdatePercentage: false))
+            }
         }.store(in: &_subscribers)
 
         // DFU target disconnected (which means update succeeded, in which case device comes back
@@ -402,8 +423,14 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             updateState = .notUpdating
             _dfuController = nil
 
-        case .waitingForRawREPL:
+        case .waitingForRawREPL(didFinishDFU: let didFinishDFU):
             _matcher = nil
+            _currentFirmwareVersion = nil
+            _currentFPGAVersion = nil
+            if !didFinishDFU {
+                // Just connected, we are not currently updating
+                updateState = .notUpdating
+            }
 
         case .waitingForFirmwareVersion:
             _receivedVersionResponse = ""
@@ -426,6 +453,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             // Send ^D to start app
             _monocleBluetooth.send(data: Data([ 0x04 ]), on: Self._serialRx)
 
+            // Not updating anymore
+            updateState = .notUpdating
+
         case .initiateDFUAndWaitForDFUTarget:
             // Kick off firmware update. We will then get a disconnect event when Monocle switches
             // to DFU target mode.
@@ -440,7 +470,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
             print("[Controller] Firmware update initiated")
 
-        case .performDFU(peripheral: let peripheral):
+        case .performDFU(peripheral: let peripheral, rescaleUpdatePercentage: _):
             // We may enter this state at any time (e.g., if app starts up when Monocle is in DFU
             // state due to a previously failed update, etc.). Set the external state.
             updateState = .updatingFirmware
@@ -450,11 +480,11 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             print("[Controller] Updating firmware...")
             _dfuController = _dfuInitiator.start(target: peripheral)
 
-        case .initiateFPGAUpdate(maximumDataLength: let maximumDataLength):
+        case .initiateFPGAUpdate(maximumDataLength: let maximumDataLength, rescaleUpdatePercentage: let rescaleUpdatePercentage):
             updateState = .updatingFPGA
-            updateProgressPercent = 0
+            updateProgressPercent = rescaleUpdatePercentage ? 50 : 0
             _matcher = nil
-            let updateState = FPGAUpdateState(maximumDataLength: maximumDataLength)
+            let updateState = FPGAUpdateState(maximumDataLength: maximumDataLength, rescaleUpdatePercentage: rescaleUpdatePercentage)
             print("[Controller] Updating FPGA...")
             transmitFPGADisableAndErase()
             transitionState(to: .waitForFPGAErased(updateState: updateState))
@@ -478,16 +508,14 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         print("[Controller] Serial data from Monocle: \(str)")
 
         switch _state {
-        case .waitingForRawREPL:
-            _firmwareVersion = nil
-            _fpgaVersion = nil
-            onWaitForRawREPLState(receivedString: str)
+        case .waitingForRawREPL(didFinishDFU: let didFinishDFU):
+            onWaitForRawREPLState(receivedString: str, didFinishDFU: didFinishDFU)
 
-        case .waitingForFirmwareVersion:
-            onWaitForFirmwareVersionString(receivedString: str)
+        case .waitingForFirmwareVersion(didFinishDFU: let didFinishDFU):
+            onWaitForFirmwareVersionString(receivedString: str, didFinishDFU: didFinishDFU)
 
-        case .waitingForFPGAVersion:
-            onWaitForFPGAVersionString(receivedString: str)
+        case .waitingForFPGAVersion(didFinishDFU: let didFinishDFU):
+            onWaitForFPGAVersionString(receivedString: str, didFinishDFU: didFinishDFU)
 
         case .waitingForARGPTVersion:
             onWaitForVersionString(receivedString: str)
@@ -523,7 +551,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
     // MARK: Monocle Firmware, FPGA, and Script Transmission
 
-    private func onWaitForRawREPLState(receivedString str: String) {
+    private func onWaitForRawREPLState(receivedString str: String, didFinishDFU: Bool) {
         if _matcher == nil {
             _matcher = Util.StreamingStringMatcher(lookingFor: "raw REPL; CTRL-B to exit\r\n>")
         }
@@ -536,12 +564,12 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _rawREPLTimer?.invalidate()
             _rawREPLTimer = nil
 
-            // Next, check firmware version
-            transitionState(to: .waitingForFirmwareVersion)
+            // Next, check firmware
+            transitionState(to: .waitingForFirmwareVersion(didFinishDFU: didFinishDFU))
         }
     }
 
-    private func onWaitForFirmwareVersionString(receivedString str: String) {
+    private func onWaitForFirmwareVersionString(receivedString str: String, didFinishDFU: Bool) {
         var proceedToNextState = false
 
         // Sample version string:
@@ -553,28 +581,28 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         if _receivedVersionResponse.contains("\u{4}>") {
             let parts = _receivedVersionResponse.components(separatedBy: .newlines)
             if _receivedVersionResponse.contains("Error") || parts[0].count <= 2 || !parts[0].starts(with: "OK") {
-                _firmwareVersion = nil
+                _currentFirmwareVersion = nil
             } else {
                 let idxAfterOK = parts[0].index(parts[0].startIndex, offsetBy: 2)
-                _firmwareVersion = String(parts[0][idxAfterOK...])
+                _currentFirmwareVersion = String(parts[0][idxAfterOK...])
             }
             proceedToNextState = true
         } else if _receivedVersionResponse.contains("Error") {
-            _firmwareVersion = nil
+            _currentFirmwareVersion = nil
             proceedToNextState = true
         }
 
         if proceedToNextState{
-            if _firmwareVersion == nil {
+            if _currentFirmwareVersion == nil {
                 print("[Controller] Error: Unable to obtain firmware version")
             } else {
-                print("[Controller] Firmware version: \(_firmwareVersion!)")
+                print("[Controller] Firmware version: \(_currentFirmwareVersion!)")
             }
-            transitionState(to: .waitingForFPGAVersion)
+            transitionState(to: .waitingForFPGAVersion(didFinishDFU: didFinishDFU))
         }
     }
 
-    private func onWaitForFPGAVersionString(receivedString str: String) {
+    private func onWaitForFPGAVersionString(receivedString str: String, didFinishDFU: Bool) {
         var proceedToNextState = false
 
         // Sample version string:
@@ -585,39 +613,52 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         if _receivedVersionResponse.contains("\u{4}>") {
             let parts = _receivedVersionResponse.components(separatedBy: .newlines)
             if _receivedVersionResponse.contains("Error") || parts[0].count <= 2 || !parts[0].starts(with: "OK") {
-                _fpgaVersion = nil
+                _currentFPGAVersion = nil
             } else {
                 let str = parts[0].replacingOccurrences(of: "b'", with: "").replacingOccurrences(of: "'", with: "") // strip out b''
                 let idxAfterOK = str.index(str.startIndex, offsetBy: 2)
-                _fpgaVersion = String(str[idxAfterOK...])
+                _currentFPGAVersion = String(str[idxAfterOK...])
             }
             proceedToNextState = true
         } else if _receivedVersionResponse.contains("Error") {
-            _fpgaVersion = nil
+            _currentFPGAVersion = nil
             proceedToNextState = true
         }
 
         if proceedToNextState{
-            if _fpgaVersion == nil {
+            if _currentFPGAVersion == nil {
                 print("[Controller] Error: Unable to obtain FPGA version")
             } else {
-                print("[Controller] FPGA version: \(_fpgaVersion!)")
+                print("[Controller] FPGA version: \(_currentFPGAVersion!)")
             }
-            updateMonocleOrProceedToRun()
+            updateMonocleOrProceedToRun(didFinishDFU: didFinishDFU)
         }
     }
 
-    private func updateMonocleOrProceedToRun() {
-        if _firmwareVersion != _requiredFirmwareVersion {
+    private func updateMonocleOrProceedToRun(didFinishDFU: Bool) {
+        if _currentFirmwareVersion != _requiredFirmwareVersion {
             // First, kick off firmware update
-            print("[Controller] Firmware update needed. Current version: \(_firmwareVersion ?? "unknown")")
-            transitionState(to: .initiateDFUAndWaitForDFUTarget)
-        } else if _fpgaVersion != _requiredFPGAVersion {
+            print("[Controller] Firmware update needed. Current version: \(_currentFirmwareVersion ?? "unknown")")
+
+            // Firmware update percentage depends on whether an FPGA update will follow. If no FPGA
+            // update, 0-100% of update is firmware. Otherwise, firmware accounts for 0-50%.
+            let rescaleFirmwareUpdatePercentage = _currentFPGAVersion != _requiredFPGAVersion
+
+            // Do update
+            transitionState(to: .initiateDFUAndWaitForDFUTarget(rescaleUpdatePercentage: rescaleFirmwareUpdatePercentage))
+        } else if _currentFPGAVersion != _requiredFPGAVersion {
             // Second, FPGA update
-            print("[Controller] FPGA update needed. Current version: \(_fpgaVersion ?? "unknown")")
+            print("[Controller] FPGA update needed. Current version: \(_currentFPGAVersion ?? "unknown")")
+
+            // FPGA update percentage range depends on whether firmware (DFU) happened as part of
+            // this same update cycle. If DFU update occurred, then FPGA is 50-100%. Otherwise, it
+            // is 0-100%.
+            let rescaleFPGAUpdatePercentage = didFinishDFU
+
+            // Do update
             if let maximumDataLength = _monocleBluetooth.maximumDataLength, maximumDataLength > 100 {
                 // Need a reasonable MTU size
-                transitionState(to: .initiateFPGAUpdate(maximumDataLength: maximumDataLength))
+                transitionState(to: .initiateFPGAUpdate(maximumDataLength: maximumDataLength, rescaleUpdatePercentage: rescaleFPGAUpdatePercentage))
             } else {
                 // We don't know the MTU size or it is unreasonably small, cannot update, proceed otherwise
                 let mtuSize = _monocleBluetooth.maximumDataLength == nil ? "unknown" : "\(_monocleBluetooth.maximumDataLength!)"
@@ -653,10 +694,11 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         // Must be exactly 45 bytes as in FPGAUpdateState (44 bytes here, 45th byte is ^D appended to execute)
         let command = "update.Fpga.write(ubinascii.a2b_base64(b'" + chunkData + "'))"
 
-        // Progress
+        // Progress. If we need to rescale (because DFU update preceeded us), then we want to start
+        // at 50% and end at 100%.
         let progress = min(100, 100 * updateState.chunk * updateState.chunkSize / updateState.image.count)
         let deltaProgress = progress - updateProgressPercent
-        updateProgressPercent = progress
+        updateProgressPercent = updateState.rescaleUpdatePercentage ? (50 + (progress / 2)) : progress
 
         // Update state
         updateState.chunk += 1
@@ -1080,6 +1122,10 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         avgSpeedBytesPerSecond: Double
     ) {
         print("[Controller] DFU progress: part=\(part)/\(totalParts), progress=\(progress)%")
-        updateProgressPercent = progress
+        if case let .performDFU(peripheral: _, rescaleUpdatePercentage: rescaleUpdatePercentage) = _state {
+            // If we need to rescale the update percentage (because an FPGA update will follow), we
+            // want to go from 0-50%, so just need to divide by 2.
+            updateProgressPercent = rescaleUpdatePercentage ? (progress / 2) : progress
+        }
     }
 }
