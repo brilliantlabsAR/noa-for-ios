@@ -6,14 +6,47 @@
 //
 
 import SwiftUI
-import SceneKit
+import AVFoundation
+import SwiftUI
+import AVKit
 
 struct PairingSheetView: View {
     @Binding var showDeviceSheet: Bool
     @Binding var monocleWithinPairingRange: Bool
 
     private let _onConnectPressed: (() -> Void)?
+    
+    @State private var triggerUpdate = false
 
+    struct LoopingVideoPlayer: UIViewControllerRepresentable {
+        typealias UIViewControllerType = AVPlayerViewController
+
+        let videoURL: URL
+
+        func makeUIViewController(context: Context) -> AVPlayerViewController {
+            let queuePlayer = AVQueuePlayer()
+            let playerViewController = AVPlayerViewController()
+            playerViewController.player = queuePlayer
+            playerViewController.showsPlaybackControls = false
+
+            let playerItem = AVPlayerItem(url: videoURL)
+            queuePlayer.insert(playerItem, after: nil) // Insert the item into the queue
+            queuePlayer.actionAtItemEnd = .none
+
+            // Loop the video using AVPlayerLooper
+            let looper = AVPlayerLooper(player: queuePlayer, templateItem: playerItem)
+            playerLooperMap[ObjectIdentifier(queuePlayer)] = looper
+
+            // Start the video playback automatically
+            queuePlayer.play()
+
+            return playerViewController
+        }
+        func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+            uiViewController.player?.replaceCurrentItem(with: AVPlayerItem(url: videoURL))
+        }
+    }
+    
     var body: some View {
         let buttonName = monocleWithinPairingRange ? "Monocle. Connect" : "Searching"
         HStack {
@@ -42,16 +75,16 @@ struct PairingSheetView: View {
                 .multilineTextAlignment(.center)
                 .frame(width: 306, height: 29)
 
-//            Image("Monocle")
-//                .resizable()
-//                .aspectRatio(contentMode: .fit)
-//                .frame(width: 306, height: 160)
-//                .padding()
-            ModelIOView(modelName: "brilliantMonocle")
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 306, height: 160)
-                .padding(.bottom)
-            
+            let videoURL = Bundle.main.url(forResource: "SpinningMonocle", withExtension: "mp4")!
+
+            LoopingVideoPlayer(videoURL: videoURL)
+                            .frame(width: 150, height: 150)
+                            .onAppear {
+                                // Trigger update to restart the video
+                                triggerUpdate.toggle()
+                            }
+                            .id(triggerUpdate) // This will re-create the LoopingVideoPlayer on update
+                
             Button(action: {
                 _onConnectPressed?()
                 showDeviceSheet = false // dismiss view
@@ -75,3 +108,5 @@ struct PairingSheetView: View {
         _onConnectPressed = onConnectPressed
     }
 }
+
+var playerLooperMap: [ObjectIdentifier: AVPlayerLooper] = [:]
