@@ -35,7 +35,9 @@ struct DeviceScreenView: View {
     
     var body: some View {
         ZStack {
+            colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255).edgesIgnoringSafeArea(.all) : Color(red: 242/255, green: 242/255, blue: 247/255).edgesIgnoringSafeArea(.all)
             VStack {
+                Spacer()
                 VStack {
                     Group{
                         let light = Image("BrilliantLabsLogo")
@@ -45,20 +47,20 @@ struct DeviceScreenView: View {
                         ColorModeAdaptiveImage(light: light, dark: dark)
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 100, height: 12)
-                            .position(x: 200, y: 100)
+                            .position(x: 200, y: 50)
                         Text("arGPT")
                             .font(.system(size: 32, weight: .bold))
-                            .position(x: 203,y:25)
+                            .position(x: 203,y:-25)
                         let message = "Let’s set up your Monocle. Take it out of the case, and bring it close."
                         Text(message)
                             .font(.system(size: 15))
                         //.multilineTextAlignment(.center)
                             .frame(width: 314, height: 60)
-                            .position(x: 203,y: 25)
+                            .position(x: 203,y: -25)
                     }
                     
                     VStack {
-                        
+                        Spacer()
                         let privacyPolicyText = "Be sure to read our [Privacy Policy](https://brilliant.xyz/pages/privacy-policy) as well as [Terms and Conditions](https://brilliant.xyz/pages/terms-conditions) before using arGPT."
                         Text(.init(privacyPolicyText))
                             .font(.system(size: 10))
@@ -66,22 +68,19 @@ struct DeviceScreenView: View {
                             .multilineTextAlignment(.center)
                             .accentColor(Color(red: 232/255, green: 46/255, blue: 135/255))
                             .lineSpacing(10)
-                            .position(x: 200, y: 120)
                             
                     }
-                    
                 }
                 .padding(.top)  // needed to avoid hitting unsafe top area (e.g., dynamic island)
                 .frame(width: 393, height: 400)
                // .blur(radius: showDeviceSheet ? 10 : 0)
-                .background(colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255) : Color(red: 242/255, green: 242/255, blue: 247/255))
-                .ignoresSafeArea(.all)
                 VStack {
                     if showDeviceSheet {
                         ZStack {
+                            Spacer()
                             RoundedRectangle(cornerRadius: 40)
                                 .fill(Color.white)
-                                .padding(10)
+                                .frame(width: 380, height: 370)
                                 .transition(.move(edge: .bottom))
                                 .animation(.easeInOut(duration: 2.5),value: UUID())
 
@@ -99,10 +98,9 @@ struct DeviceScreenView: View {
                         }
                     }
                 }
-                .padding(.bottom, 1)
-                .ignoresSafeArea(.all)
+                .padding(.bottom, 10)
             }
-            .background(colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255) : Color(red: 242/255, green: 242/255, blue: 247/255))
+            .ignoresSafeArea(.all)
         }
     }
 
@@ -119,7 +117,7 @@ struct DeviceScreenView_Previews: PreviewProvider {
     static var previews: some View {
         DeviceScreenView(
             showDeviceSheet: .constant(true),
-            deviceSheetType: .constant(.fpgaUpdate),
+            deviceSheetType: .constant(.pairing),
             monocleWithinPairingRange: .constant(true),
             updateProgressPercent: .constant(50),
             onConnectPressed: { print("Connect pressed") }
