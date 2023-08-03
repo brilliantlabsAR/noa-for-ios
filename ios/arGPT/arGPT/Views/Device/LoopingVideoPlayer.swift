@@ -1,5 +1,5 @@
 //
-//  ModelIOView.swift
+//  LoopingVideoPlayer.swift
 //  arGPT
 //
 //  Created by Artur Burlakin on 2023-07-26.

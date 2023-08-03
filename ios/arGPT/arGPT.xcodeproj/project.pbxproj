@@ -12,8 +12,7 @@
 		CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC0039952A6C7E57009E3BAC /* NordicDFU */; };
 		CC0039982A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */; };
 		CC00399A2A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC0039992A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin */; };
-		CC0039A12A6DA51A009E3BAC /* PairingSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A02A6DA51A009E3BAC /* PairingSheetView.swift */; };
-		CC0039A32A6DA54A009E3BAC /* UpdateSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A22A6DA54A009E3BAC /* UpdateSheetView.swift */; };
+		CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */; };
 		CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A42A6DA57E009E3BAC /* ContentView.swift */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
@@ -60,7 +59,7 @@
 		CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */; };
 		CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */; };
 		CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */; };
-		F8B8D4792A71761700817A24 /* ModelIOView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B8D4782A71761700817A24 /* ModelIOView.swift */; };
+		F8B8D4792A71761700817A24 /* LoopingVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B8D4782A71761700817A24 /* LoopingVideoPlayer.swift */; };
 		F8BC4DE52A4DBD680005F6F0 /* DeviceScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */; };
 /* End PBXBuildFile section */
 
@@ -86,8 +85,7 @@
 		CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
 		CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.200.1232.zip"; sourceTree = "<group>"; };
 		CC0039992A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga-v23.179.1006.bin"; sourceTree = "<group>"; };
-		CC0039A02A6DA51A009E3BAC /* PairingSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingSheetView.swift; sourceTree = "<group>"; };
-		CC0039A22A6DA54A009E3BAC /* UpdateSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateSheetView.swift; sourceTree = "<group>"; };
+		CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupDeviceView.swift; sourceTree = "<group>"; };
 		CC0039A42A6DA57E009E3BAC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
@@ -138,7 +136,7 @@
 		CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuView.swift; sourceTree = "<group>"; };
 		CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyPopupBoxView.swift; sourceTree = "<group>"; };
 		CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorModeAdaptiveImage.swift; sourceTree = "<group>"; };
-		F8B8D4782A71761700817A24 /* ModelIOView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelIOView.swift; sourceTree = "<group>"; };
+		F8B8D4782A71761700817A24 /* LoopingVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopingVideoPlayer.swift; sourceTree = "<group>"; };
 		F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceScreenView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -238,9 +236,8 @@
 			isa = PBXGroup;
 			children = (
 				F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */,
-				CC0039A02A6DA51A009E3BAC /* PairingSheetView.swift */,
-				CC0039A22A6DA54A009E3BAC /* UpdateSheetView.swift */,
-				F8B8D4782A71761700817A24 /* ModelIOView.swift */,
+				CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */,
+				F8B8D4782A71761700817A24 /* LoopingVideoPlayer.swift */,
 			);
 			path = Device;
 			sourceTree = "<group>";
@@ -570,7 +567,7 @@
 				CC4E3AF12A00BC8A0058AC20 /* MessageContentView.swift in Sources */,
 				CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */,
 				CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */,
-				CC0039A12A6DA51A009E3BAC /* PairingSheetView.swift in Sources */,
+				CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */,
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
 				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
@@ -578,12 +575,11 @@
 				CC4E3AC42A00BA4C0058AC20 /* ARGPTApp.swift in Sources */,
 				CCCECE6B2A1EB4B100DBB7CA /* Whisper.swift in Sources */,
 				CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */,
-				CC0039A32A6DA54A009E3BAC /* UpdateSheetView.swift in Sources */,
 				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,
 				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,
 				CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */,
 				CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */,
-				F8B8D4792A71761700817A24 /* ModelIOView.swift in Sources */,
+				F8B8D4792A71761700817A24 /* LoopingVideoPlayer.swift in Sources */,
 				CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
