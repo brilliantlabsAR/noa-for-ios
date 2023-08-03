@@ -10,6 +10,10 @@ import SwiftUI
 struct UpdateSheetView: View {
     @Binding var updateProgressPercent: Int
     
+    //Video logic
+    @State private var triggerUpdate = false
+    let videoURL = Bundle.main.url(forResource: "SpinningMonocle", withExtension: "mp4")!
+    
     var body: some View {
         let buttonName = "Keep the app open"
         HStack {
@@ -19,16 +23,18 @@ struct UpdateSheetView: View {
             Text("Updating Software \(updateProgressPercent)%")
                 .font(.system(size: 24, weight: .bold))
                 .multilineTextAlignment(.center)
-                .frame(width: 306, height: 29)
-            Image("Monocle")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 306, height: 160)
-                .padding()
-            //            ModelIOView(modelName: "brilliant-monocle")
-            //                .aspectRatio(contentMode: .fit)
-            //                .frame(width: 306, height: 160)
-            //                .padding(.bottom)
+                .padding(.bottom)
+//            Image("Monocle")
+//                .resizable()
+//                .aspectRatio(contentMode: .fit)
+//                .frame(width: 306, height: 160)
+//                .padding()
+            LoopingVideoPlayer(videoURL: videoURL)
+                .frame(width: 150, height: 150)
+                .onAppear {
+                    triggerUpdate.toggle()
+                }
+                .id(triggerUpdate) // This will re-create the LoopingVideoPlayer on update
             
             Button(action: {
                 // No Action needed

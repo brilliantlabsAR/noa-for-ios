@@ -6,46 +6,15 @@
 //
 
 import SwiftUI
-import AVFoundation
-import SwiftUI
-import AVKit
 
 struct PairingSheetView: View {
     @Binding var showDeviceSheet: Bool
     @Binding var monocleWithinPairingRange: Bool
-
     private let _onConnectPressed: (() -> Void)?
     
+    //Video logic
     @State private var triggerUpdate = false
-
-    struct LoopingVideoPlayer: UIViewControllerRepresentable {
-        typealias UIViewControllerType = AVPlayerViewController
-
-        let videoURL: URL
-
-        func makeUIViewController(context: Context) -> AVPlayerViewController {
-            let queuePlayer = AVQueuePlayer()
-            let playerViewController = AVPlayerViewController()
-            playerViewController.player = queuePlayer
-            playerViewController.showsPlaybackControls = false
-
-            let playerItem = AVPlayerItem(url: videoURL)
-            queuePlayer.insert(playerItem, after: nil) // Insert the item into the queue
-            queuePlayer.actionAtItemEnd = .none
-
-            // Loop the video using AVPlayerLooper
-            let looper = AVPlayerLooper(player: queuePlayer, templateItem: playerItem)
-            playerLooperMap[ObjectIdentifier(queuePlayer)] = looper
-
-            // Start the video playback automatically
-            queuePlayer.play()
-
-            return playerViewController
-        }
-        func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
-            uiViewController.player?.replaceCurrentItem(with: AVPlayerItem(url: videoURL))
-        }
-    }
+    let videoURL = Bundle.main.url(forResource: "SpinningMonocle", withExtension: "mp4")!
     
     var body: some View {
         let buttonName = monocleWithinPairingRange ? "Monocle. Connect" : "Searching"
@@ -73,25 +42,27 @@ struct PairingSheetView: View {
             Text("Bring your device close.")
                 .font(.system(size: 24, weight: .bold))
                 .multilineTextAlignment(.center)
-                .frame(width: 306, height: 29)
-
-            let videoURL = Bundle.main.url(forResource: "SpinningMonocle", withExtension: "mp4")!
+                .padding(.bottom)
+//            Image("Monocle")
+//                .resizable()
+//                .aspectRatio(contentMode: .fit)
+//                .frame(width: 306, height: 160)
+//                .padding()
 
             LoopingVideoPlayer(videoURL: videoURL)
-                            .frame(width: 150, height: 150)
-                            .onAppear {
-                                // Trigger update to restart the video
-                                triggerUpdate.toggle()
-                            }
-                            .id(triggerUpdate) // This will re-create the LoopingVideoPlayer on update
+                .frame(width: 150, height: 150)
+                .onAppear {
+                    triggerUpdate.toggle()
+                }
+                .id(triggerUpdate) // This will re-create the LoopingVideoPlayer on update
                 
             Button(action: {
                 _onConnectPressed?()
                 showDeviceSheet = false // dismiss view
             }) {
-                Text(buttonName)
-                    .font(.system(size: 22, weight: .medium))
-                    .frame(width: 306, height: 50)
+            Text(buttonName)
+                .font(.system(size: 22, weight: .medium))
+                .frame(width: 306, height: 50)
             }
 //          .padding(EdgeInsets(top: 20, leading: 40, bottom: 20, trailing: 40))
 //          .padding(.horizontal, 60)
@@ -109,4 +80,4 @@ struct PairingSheetView: View {
     }
 }
 
-var playerLooperMap: [ObjectIdentifier: AVPlayerLooper] = [:]
+
