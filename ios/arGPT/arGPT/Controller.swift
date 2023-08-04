@@ -25,7 +25,7 @@
 //    also look into how we would deal with responses coming across as multiple transfers if we had
 //    an async implementation. Probably need to observe new lines / terminating sequences like '>'.
 //
-
+ 
 import AVFoundation
 import Combine
 import CoreBluetooth
