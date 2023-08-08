@@ -135,7 +135,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             chunks = image.count / chunkSize + ((image.count % chunkSize) == 0 ? 0 : 1)
             chunk = 0
             self.rescaleUpdatePercentage = rescaleUpdatePercentage
-            print("[Controller] FPGA update: image=\(image.count) bytes, chunkSize=\(chunkSize), chunks=\(chunks), maximumDataLength=\(maximumDataLength), rescaleUpdatePercentage=\(rescaleUpdatePercentage)")
+            print("[Controller] FPGA update: image=\(image.count) bytes, chunkSize=\(chunkSize), chunks=\(chunks), maximumDataLength=\(maximumDataLength)")
         }
 
         public var entireImageTransmitted: Bool {
@@ -170,9 +170,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _rawREPLTimer: Timer?
     private var _matcher: Util.StreamingStringMatcher?
 
-    private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.200.1232", withExtension: "zip")!
+    private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.219.1551", withExtension: "zip")!
     private static let _fpgaURL = Bundle.main.url(forResource: "monocle-fpga-v23.179.1006", withExtension: "bin")!
-    private let _requiredFirmwareVersion = "v23.200.1232"
+    private let _requiredFirmwareVersion = "v23.219.1551"
     private let _requiredFPGAVersion = "v23.179.1006"
     private var _receivedVersionResponse = ""           // buffer for firmware and FPGA version responses
     private var _currentFirmwareVersion: String?
