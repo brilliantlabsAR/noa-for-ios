@@ -49,19 +49,19 @@ struct ContentView: View {
                         _controller?.connectToNearest()
                     }
                 )
-                    .onAppear {
-                        // Delay a moment before enabling Bluetooth scanning so we actually see
-                        // the pairing dialog. Also ensure that by the time this callback fires,
-                        // the user has not just aborted the procedure. Note this is called each
-                        // time view appears.
-                        if !_bluetoothEnabled {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                if _showDeviceSheet {
-                                    _bluetoothEnabled = true
-                                }
+                .onAppear {
+                    // Delay a moment before enabling Bluetooth scanning so we actually see
+                    // the pairing dialog. Also ensure that by the time this callback fires,
+                    // the user has not just aborted the procedure. Note this is called each
+                    // time view appears.
+                    if !_bluetoothEnabled {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            if _showDeviceSheet {
+                                _bluetoothEnabled = true
                             }
                         }
                     }
+                }
             } else {
                 ChatView(
                     isMonocleConnected: $_isMonocleConnected,
