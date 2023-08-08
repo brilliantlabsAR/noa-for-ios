@@ -32,6 +32,9 @@ struct ContentView: View {
     /// Update percentage
     @State private var _updateProgressPercent: Int = 0
 
+    /// Translation mode state
+    @State private var _mode: Controller.Mode = .assistant
+
     var body: some View {
         VStack {
             // Initial view includes pairing and updating
@@ -68,6 +71,7 @@ struct ContentView: View {
                     pairedMonocleID: $_pairedMonocleID,
                     bluetoothEnabled: $_bluetoothEnabled,
                     showPairingView: $_showDeviceSheet,
+                    mode: $_mode,
                     onTextSubmitted: { [weak _controller] (query: String) in
                         _controller?.submitQuery(query: query)
                     },
@@ -146,6 +150,10 @@ struct ContentView: View {
         }
         .onChange(of: _controller.updateProgressPercent) {
             _updateProgressPercent = $0
+        }
+        .onChange(of: _mode) {
+            // Settings menu may change mode
+            _controller.mode = $0
         }
     }
 

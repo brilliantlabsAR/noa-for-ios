@@ -221,6 +221,13 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     @Published private(set) var updateState = UpdateState.notUpdating
     @Published private(set) var updateProgressPercent: Int = 0
 
+    public enum Mode {
+        case assistant
+        case translator
+    }
+
+    public var mode = Mode.assistant
+
     // MARK: Public Methods
 
     init(settings: Settings, messages: ChatMessageStore) {
@@ -917,7 +924,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }
     }
 
-    // MARK: User ChatGPT Query Flow
+    // MARK: User Query Flow
 
     // Step 1: Voice received from Monocle and converted to M4A
     private func onVoiceReceived(voiceSample: AVAudioPCMBuffer) {
@@ -934,22 +941,28 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }
     }
 
-    // Step 2: Transcribe speech to text using Whisper and send transcription UUID to Monocle
+    // Step 2a: Transcribe speech to text using Whisper and send transcription UUID to Monocle
     private func transcribe(audioFile fileData: Data) {
         print("[Controller] Transcribing voice...")
 
-        _whisper.transcribe(mode: .transcription, fileData: fileData, format: .m4a, apiKey: _settings.apiKey) { [weak self] (query: String, error: OpenAIError?) in
+        _whisper.transcribe(mode: mode == .assistant ? .transcription : .translation, fileData: fileData, format: .m4a, apiKey: _settings.apiKey) { [weak self] (query: String, error: OpenAIError?) in
             guard let self = self else { return }
             if let error = error {
                 printErrorToChat(error.description, as: .user)
             } else {
-                // Store query and send ID to Monocle. We need to do this because we cannot perform
-                // back-to-back network requests in background mode. Monocle will reply back with
-                // the ID, allowing us to perform a ChatGPT request.
-                let id = UUID()
-                _pendingQueryByID[id] = query
-                _monocleBluetooth.send(text: "pin:" + id.uuidString, on: Self._dataRx)
-                print("[Controller] Sent transcription ID to Monocle: \(id)")
+                if mode == .assistant {
+                    // Store query and send ID to Monocle. We need to do this because we cannot perform
+                    // back-to-back network requests in background mode. Monocle will reply back with
+                    // the ID, allowing us to perform a ChatGPT request.
+                    let id = UUID()
+                    _pendingQueryByID[id] = query
+                    _monocleBluetooth.send(text: "pin:" + id.uuidString, on: Self._dataRx)
+                    print("[Controller] Sent transcription ID to Monocle: \(id)")
+                } else {
+                    // Translation mode: No more network requests to do. Display translation.
+                    printToChat(query, as: .chatGPT)
+                    print("[Controller] Translation received: \(query)")
+                }
             }
         }
     }

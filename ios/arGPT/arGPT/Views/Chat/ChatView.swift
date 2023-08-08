@@ -24,6 +24,9 @@ struct ChatView: View {
     // Allows pairing view to be brought up (replacing this one)
     @Binding private var _showPairingView: Bool
 
+    // Which AI mode we are in
+    @Binding private var _mode: Controller.Mode
+
     // Stores text being input in text field
     @State private var _textInput: String = ""
 
@@ -54,7 +57,8 @@ struct ChatView: View {
                     SettingsMenuView(
                         popUpApiBox: $popUpApiBox,
                         showPairingView: $_showPairingView,
-                        bluetoothEnabled: $_bluetoothEnabled
+                        bluetoothEnabled: $_bluetoothEnabled,
+                        mode: $_mode
                     )
                         .environmentObject(_settings)
                         .padding(.trailing)
@@ -165,6 +169,7 @@ struct ChatView: View {
         pairedMonocleID: Binding<UUID?>,
         bluetoothEnabled: Binding<Bool>,
         showPairingView: Binding<Bool>,
+        mode: Binding<Controller.Mode>,
         onTextSubmitted: ((String) -> Void)? = nil,
         onClearChatButtonPressed: (() -> Void)? = nil
     ) {
@@ -172,6 +177,7 @@ struct ChatView: View {
         __pairedMonocleID = pairedMonocleID
         __bluetoothEnabled = bluetoothEnabled
         __showPairingView = showPairingView
+        __mode = mode
         _onTextSubmitted = onTextSubmitted
         _onClearChatButtonPressed = onClearChatButtonPressed
     }
@@ -194,7 +200,8 @@ struct ChatView_Previews: PreviewProvider {
             isMonocleConnected: .constant(false),
             pairedMonocleID: .constant(UUID()),
             bluetoothEnabled: .constant(false),
-            showPairingView: .constant(false)
+            showPairingView: .constant(false),
+            mode: .constant(.assistant)
         )
             .environmentObject(ChatView_Previews._chatMessageStore)
             .environmentObject(Settings())

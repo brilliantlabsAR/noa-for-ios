@@ -13,16 +13,28 @@ struct SettingsMenuView: View {
     @Binding var popUpApiBox: Bool
     @Binding var showPairingView: Bool
     @Binding var bluetoothEnabled: Bool
+    @Binding var mode: Controller.Mode
 
     var body: some View {
         Menu {
             let isMonoclePaired = _settings.pairedDeviceID != nil
 
             Button(action: {
+                mode = mode == .assistant ? .translator : .assistant
+            }) {
+                if mode == .assistant {
+                    Label("Enable Translation", systemImage: "person.line.dotted.person")
+                } else {
+                    Label("Disable Translation", systemImage: "person.line.dotted.person.fill")
+                }
+            }
+
+            Button(action: {
                 popUpApiBox = true
             }) {
                 Label("Change API Key", systemImage: "person.circle")
             }
+
             Button(role: isMonoclePaired ? .destructive : .none, action: {
                 if isMonoclePaired {
                     // Unpair
@@ -51,7 +63,8 @@ struct SettingsMenuView_Previews: PreviewProvider {
         SettingsMenuView(
             popUpApiBox: .constant(false),
             showPairingView: .constant(false),
-            bluetoothEnabled: .constant(true)
+            bluetoothEnabled: .constant(true),
+            mode: .constant(.assistant)
         )
             .environmentObject(Settings())
     }
