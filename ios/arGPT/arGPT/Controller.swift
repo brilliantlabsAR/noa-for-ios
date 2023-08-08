@@ -599,15 +599,15 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         _currentFPGAVersion = nil
 
         // Sample version string:
-        // 0000: 4f 4b 76 32 33 2e 31 37 39 2e 31 30 30 36 0d 0a  OKv23.179.1006..
-        // 0010: 04 04 3e                                         ..>
-        // As before, wait for 04 3e.
-
+        //      0000: 4f 4b 62 27 76 32 33 2e 31 37 39 2e 31 30 30 36  OKb'v23.179.1006
+        //      0010: 27 0d 0a 04 04 3e                                '....>
+        // As before, we wait for 04 3e.
         _receivedVersionResponse += str
         if _receivedVersionResponse.contains("\u{4}>") {
             let parts = _receivedVersionResponse.components(separatedBy: .newlines)
             if !_receivedVersionResponse.contains("Error") && parts[0].count >= 3 && parts[0].starts(with: "OK") {
-                _currentFPGAVersion = String(parts[0].dropFirst(2))
+                let str = parts[0].replacingOccurrences(of: "b'", with: "").replacingOccurrences(of: "'", with: "") // strip out b''
+                _currentFPGAVersion = String(str.dropFirst(2))  // remove 'OK'
             }
 
             print("[Controller] FPGA version: \(_currentFPGAVersion ?? "unknown")")
@@ -773,8 +773,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     private func transmitFPGAVersionCheck() {
-        // Check FPGA version
-        transmitPythonCommand("import fpga;print(fpga.version()['application_version']);del(fpga)")
+        // Check FPGA version. We use this rather than the nicer fpga.version() interface for
+        // compatibility with older firmware versions.
+        transmitPythonCommand("import fpga;print(fpga.read(2,12));del(fpga)")
     }
 
     private func transmitInitiateFirmwareUpdateCommand() {
