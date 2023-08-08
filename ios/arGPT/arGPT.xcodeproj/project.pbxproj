@@ -14,6 +14,7 @@
 		CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A42A6DA57E009E3BAC /* ContentView.swift */; };
 		CC02BBA42A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */; };
 		CC02BBA62A81DB8B00A8AA59 /* monocle-fpga-revC.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */; };
+		CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
 		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
@@ -87,6 +88,7 @@
 		CC0039A42A6DA57E009E3BAC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.219.1551.zip"; sourceTree = "<group>"; };
 		CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga-revC.bin"; sourceTree = "<group>"; };
+		CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Statement_Chinese.m4a; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
 		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
@@ -270,6 +272,7 @@
 		CC3FE0272A0EF80300756941 /* Test Voice Assets */ = {
 			isa = PBXGroup;
 			children = (
+				CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */,
 				CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */,
 				CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */,
 				CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */,
@@ -513,6 +516,7 @@
 				CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */,
 				CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */,
 				CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */,
+				CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */,
 				CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */,
 				CC200A512A37E396005C67E0 /* graphics.py in Resources */,
 				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,

@@ -938,7 +938,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private func transcribe(audioFile fileData: Data) {
         print("[Controller] Transcribing voice...")
 
-        _whisper.transcribe(fileData: fileData, format: .m4a, apiKey: _settings.apiKey) { [weak self] (query: String, error: OpenAIError?) in
+        _whisper.transcribe(mode: .transcription, fileData: fileData, format: .m4a, apiKey: _settings.apiKey) { [weak self] (query: String, error: OpenAIError?) in
             guard let self = self else { return }
             if let error = error {
                 printErrorToChat(error.description, as: .user)

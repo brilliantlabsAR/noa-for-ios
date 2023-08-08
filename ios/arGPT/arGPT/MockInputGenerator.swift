@@ -9,12 +9,16 @@ import AVFoundation
 
 class MockInputGenerator {
     private let _voiceSampleFilenames = [
-        "Question_CPU",
-        "Question_History",
-        "Question_Lizards",
-        "Question_Movies",
-        "Question_Nutrition",
-        "Question_Tootsie"
+        "Question_CPU.wav",
+        "Question_History.wav",
+        "Question_Lizards.wav",
+        "Question_Movies.wav",
+        "Question_Nutrition.wav",
+        "Question_Tootsie.wav"
+    ]
+
+    private let _nonEnglishVoiceSampleFilenames = [
+        "Statement_Chinese.m4a"
     ]
 
     private let _queries = [
@@ -26,9 +30,10 @@ class MockInputGenerator {
         "How many licks does it take to get to the tootsie center of a Tootsie Pop?"
     ]
 
-    public func randomVoiceSample() -> AVAudioPCMBuffer? {
-        let filename = _voiceSampleFilenames[Int.random(in: 0..<_voiceSampleFilenames.count)]
-        let url = Bundle.main.url(forResource: filename, withExtension: "wav")!
+    public func randomVoiceSample(english: Bool = true) -> AVAudioPCMBuffer? {
+        let filenames = english ? _voiceSampleFilenames : _nonEnglishVoiceSampleFilenames
+        let filename = filenames[Int.random(in: 0..<filenames.count)]
+        let url = Bundle.main.url(forResource: filename, withExtension: nil)!
         guard let audioFile = try? AVAudioFile(forReading: url) else {
             print("[MockInputGenerator] Error: Failed to read audio file: \(url.absoluteString)")
             return nil
@@ -47,9 +52,10 @@ class MockInputGenerator {
         }
     }
 
-    public func loadRandomVoiceFile() -> Data? {
-        let filename = _voiceSampleFilenames[Int.random(in: 0..<_voiceSampleFilenames.count)]
-        let url = Bundle.main.url(forResource: filename, withExtension: "wav")!
+    public func loadRandomVoiceFile(english: Bool = true) -> Data? {
+        let filenames = english ? _voiceSampleFilenames : _nonEnglishVoiceSampleFilenames
+        let filename = filenames[Int.random(in: 0..<filenames.count)]
+        let url = Bundle.main.url(forResource: filename, withExtension: nil)!
         let data = try? Data(contentsOf: url)
         return data
     }
