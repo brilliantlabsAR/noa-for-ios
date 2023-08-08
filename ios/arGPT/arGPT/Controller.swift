@@ -170,13 +170,18 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _rawREPLTimer: Timer?
     private var _matcher: Util.StreamingStringMatcher?
 
+    private struct FPGAVersion {
+        var applicationVersion: String
+        var chipRevision: String
+    }
+
     private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.219.1551", withExtension: "zip")!
     private static let _fpgaURL = Bundle.main.url(forResource: "monocle-fpga-v23.179.1006", withExtension: "bin")!
     private let _requiredFirmwareVersion = "v23.219.1551"
     private let _requiredFPGAVersion = "v23.179.1006"
     private var _receivedVersionResponse = ""           // buffer for firmware and FPGA version responses
     private var _currentFirmwareVersion: String?
-    private var _currentFPGAVersion: String?
+    private var _currentFPGAVersionData: FPGAVersion?
 
     private var _audioData = Data()
 
@@ -431,7 +436,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         case .waitingForRawREPL(didFinishDFU: let didFinishDFU):
             _matcher = nil
             _currentFirmwareVersion = nil
-            _currentFPGAVersion = nil
+            _currentFPGAVersionData = nil
             if !didFinishDFU {
                 // Just connected, we are not currently updating
                 updateState = .notUpdating
@@ -588,8 +593,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             if _receivedVersionResponse.contains("Error") || parts[0].count <= 2 || !parts[0].starts(with: "OK") {
                 _currentFirmwareVersion = nil
             } else {
-                let idxAfterOK = parts[0].index(parts[0].startIndex, offsetBy: 2)
-                _currentFirmwareVersion = String(parts[0][idxAfterOK...])
+                _currentFirmwareVersion = String(parts[0].dropFirst(2))
             }
             proceedToNextState = true
         } else if _receivedVersionResponse.contains("Error") {
@@ -611,49 +615,53 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         var proceedToNextState = false
 
         // Sample version string:
-        //      0000: 4f 4b 62 27 76 32 33 2e 31 37 39 2e 31 30 30 36  OKb'v23.179.1006
-        //      0010: 27 0d 0a 04 04 3e                                '....>
-        // As before, we wait for 04 3e.
+        // 0000: 4f 4b 76 32 33 2e 31 37 39 2e 31 30 30 36 0d 0a  OKv23.179.1006..
+        // 0010: 72 65 76 43 0d 0a 04 04 3e                       revC....>
+        // As before, wait for 04 3e.
         _receivedVersionResponse += str
         if _receivedVersionResponse.contains("\u{4}>") {
-            let parts = _receivedVersionResponse.components(separatedBy: .newlines)
-            if _receivedVersionResponse.contains("Error") || parts[0].count <= 2 || !parts[0].starts(with: "OK") {
-                _currentFPGAVersion = nil
+            var parts = _receivedVersionResponse.split(separator: "\r\n", omittingEmptySubsequences: true)
+            if _receivedVersionResponse.contains("Error") || parts.count < 3 || !_receivedVersionResponse.starts(with: "OK") {
+                _currentFPGAVersionData = nil
             } else {
-                let str = parts[0].replacingOccurrences(of: "b'", with: "").replacingOccurrences(of: "'", with: "") // strip out b''
-                let idxAfterOK = str.index(str.startIndex, offsetBy: 2)
-                _currentFPGAVersion = String(str[idxAfterOK...])
+                // Strip off leading 'OK'
+                parts[0] = parts[0].dropFirst(2)
+
+                // Store version
+                _currentFPGAVersionData = FPGAVersion(applicationVersion: String(parts[0]), chipRevision: String(parts[1]))
             }
             proceedToNextState = true
         } else if _receivedVersionResponse.contains("Error") {
-            _currentFPGAVersion = nil
+            _currentFPGAVersionData = nil
             proceedToNextState = true
         }
 
         if proceedToNextState{
-            if _currentFPGAVersion == nil {
+            if _currentFPGAVersionData == nil {
                 print("[Controller] Error: Unable to obtain FPGA version")
             } else {
-                print("[Controller] FPGA version: \(_currentFPGAVersion!)")
+                print("[Controller] FPGA version: \(_currentFPGAVersionData!)")
             }
             updateMonocleOrProceedToRun(didFinishDFU: didFinishDFU)
         }
     }
 
     private func updateMonocleOrProceedToRun(didFinishDFU: Bool) {
+        let fpgaVersion = _currentFPGAVersionData?.applicationVersion ?? "unknown"
+
         if _currentFirmwareVersion != _requiredFirmwareVersion {
             // First, kick off firmware update
             print("[Controller] Firmware update needed. Current version: \(_currentFirmwareVersion ?? "unknown")")
 
             // Firmware update percentage depends on whether an FPGA update will follow. If no FPGA
             // update, 0-100% of update is firmware. Otherwise, firmware accounts for 0-50%.
-            let rescaleFirmwareUpdatePercentage = _currentFPGAVersion != _requiredFPGAVersion
+            let rescaleFirmwareUpdatePercentage = fpgaVersion != _requiredFPGAVersion
 
             // Do update
             transitionState(to: .initiateDFUAndWaitForDFUTarget(rescaleUpdatePercentage: rescaleFirmwareUpdatePercentage))
-        } else if _currentFPGAVersion != _requiredFPGAVersion {
+        } else if fpgaVersion != _requiredFPGAVersion {
             // Second, FPGA update
-            print("[Controller] FPGA update needed. Current version: \(_currentFPGAVersion ?? "unknown")")
+            print("[Controller] FPGA update needed. Current version: \(fpgaVersion)")
 
             // FPGA update percentage range depends on whether firmware (DFU) happened as part of
             // this same update cycle. If DFU update occurred, then FPGA is 50-100%. Otherwise, it
@@ -798,7 +806,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
     private func transmitFPGAVersionCheck() {
         // Check FPGA version
-        transmitPythonCommand("import fpga;print(fpga.read(2,12));del(fpga)")
+        transmitPythonCommand("import fpga;print(fpga.version()['application_version']);print(fpga.version()['chip_revision']);del(fpga)")
     }
 
     private func transmitInitiateFirmwareUpdateCommand() {
