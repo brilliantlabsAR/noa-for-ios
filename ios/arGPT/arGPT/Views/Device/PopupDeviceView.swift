@@ -26,25 +26,30 @@ struct PopupDeviceView: View {
             VStack {
                 HStack {
                     Spacer()
-                    
-                    Button(action: {
-                        showDeviceSheet = false
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color(red: 116/255, green: 116/255, blue: 128/255).opacity(0.08))
-                                .frame(width: 22, height: 22)
-                            
-                            Image(systemName: "xmark")
-                                .resizable()
-                                .foregroundColor(Color(red: 116/255, green: 116/255, blue: 128/255))
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 10, height: 10)
+
+                    if deviceSheetType == .pairing {
+                        // Only the pairing sheet may be dismissed. Updates cannot be interrupted
+                        // and the app would be in an undefined state if the device sheet was
+                        // hidden while an update was in progress.
+                        Button(action: {
+                            showDeviceSheet = false
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color(red: 116/255, green: 116/255, blue: 128/255).opacity(0.08))
+                                    .frame(width: 22, height: 22)
+
+                                Image(systemName: "xmark")
+                                    .resizable()
+                                    .foregroundColor(Color(red: 116/255, green: 116/255, blue: 128/255))
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 10, height: 10)
+                            }
+
                         }
-                        
+                        .padding(.top, 35)
+                        .padding(.trailing, 35)
                     }
-                    .padding(.top, 35)
-                    .padding(.trailing, 35)
                 }
                 Spacer()
             }
@@ -69,24 +74,28 @@ struct PopupDeviceView: View {
                             }
                             .id(triggerUpdate)
                     )
+
+                let buttonEnabled = monocleWithinPairingRange && deviceSheetType == .pairing
                 
                 Button(action: {
-                    _onConnectPressed?()
-                    showDeviceSheet = false // dismiss view
-                    }) {
-                        Text(deviceSheetType == .pairing
-                             ? (monocleWithinPairingRange
-                                ? "Monocle. Connect"
-                                : "Searching")
-                             : "Keep the app open")
-                            .font(.system(size: 22, weight: .medium))
-                            .frame(width: 306, height: 50)
+                    if buttonEnabled {
+                        _onConnectPressed?()
+                        showDeviceSheet = false // dismiss view
                     }
-                    .background(Color(red: 242/255, green: 242/255, blue: 247/255))
-                    .foregroundColor(monocleWithinPairingRange ? .black : Color(red: 141/255, green: 141/255, blue: 147/255))
-                    .cornerRadius(15)
-                    .disabled(!monocleWithinPairingRange || deviceSheetType != .pairing)
-                    .padding(.bottom, 40)
+                }) {
+                    Text(deviceSheetType == .pairing
+                         ? (monocleWithinPairingRange
+                            ? "Monocle. Connect"
+                            : "Searching")
+                         : "Keep the app open")
+                        .font(.system(size: 22, weight: .medium))
+                        .frame(width: 306, height: 50)
+                }
+                .background(Color(red: 242/255, green: 242/255, blue: 247/255))
+                .foregroundColor(buttonEnabled ? .black : Color(red: 141/255, green: 141/255, blue: 147/255))
+                .cornerRadius(15)
+                .disabled(!buttonEnabled)
+                .padding(.bottom, 40)
             }
         }
     }
