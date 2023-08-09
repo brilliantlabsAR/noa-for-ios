@@ -929,20 +929,23 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     // Step 1: Voice received from Monocle and converted to M4A
     private func onVoiceReceived(voiceSample: AVAudioPCMBuffer) {
         print("[Controller] Voice received. Converting to M4A...")
-        printTypingIndicatorToChat(as: .user)
+
+        // When in translation mode, we don't perform user transcription
+        printTypingIndicatorToChat(as: mode == .assistant ? .user : .chatGPT)
 
         // Convert to M4A, then pass to speech transcription
         _m4aWriter.write(buffer: voiceSample) { [weak self] (fileData: Data?) in
-            guard let fileData = fileData else {
+            guard let self = self,
+                  let fileData = fileData else {
                 self?.printErrorToChat("Unable to process audio!", as: .user)
                 return
             }
-            self?.transcribe(audioFile: fileData)
+            transcribe(audioFile: fileData, mode: mode)
         }
     }
 
     // Step 2a: Transcribe speech to text using Whisper and send transcription UUID to Monocle
-    private func transcribe(audioFile fileData: Data) {
+    private func transcribe(audioFile fileData: Data, mode: Controller.Mode) {
         print("[Controller] Transcribing voice...")
 
         _whisper.transcribe(mode: mode == .assistant ? .transcription : .translation, fileData: fileData, format: .m4a, apiKey: _settings.apiKey) { [weak self] (query: String, error: OpenAIError?) in
