@@ -22,20 +22,12 @@ def bluetooth_message_handler(message):
         if message.startswith("pin:"):
             bluetooth_send_message(b"pon:" + message[4:])
             state.after(0, state.WaitForResponse)
-        elif message.startswith("err:"):
-            gfx.error_flag = True
-            gfx.append_response(message[4:].decode("utf-8"))
-            state.after(0, state.PrintResponse)
+        elif message.startswith("res:") or message.startswith("err:"):
+            print_response(message)
 
     elif state.current_state == state.WaitForResponse:
-        if message.startswith("res:"):
-            gfx.error_flag = False
-            gfx.append_response(message[4:].decode("utf-8"))
-            state.after(0, state.PrintResponse)
-        elif message.startswith("err:"):
-            gfx.error_flag = True
-            gfx.append_response(message[4:].decode("utf-8"))
-            state.after(0, state.PrintResponse)
+        if message.startswith("res:") or message.startswith("err:"):
+            print_response(message)
 
     elif state.current_state == state.PrintResponse:
         gfx.append_response(message[4:].decode("utf-8"))
@@ -52,6 +44,11 @@ def touch_pad_handler(_):
     elif state.current_state == state.AskToCancel:
         state.after(0, state.WaitForTap)
 
+
+def print_response(message):
+    gfx.error_flag = message.startswith("err:")
+    gfx.append_response(message[4:].decode("utf-8"))
+    state.after(0, state.PrintResponse)
 
 bluetooth.receive_callback(bluetooth_message_handler)
 touch.callback(touch.EITHER, touch_pad_handler)
