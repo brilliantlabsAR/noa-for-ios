@@ -49,7 +49,7 @@ struct ChatView: View {
                         .frame(width: 70)
 
                     // Title
-                    Text("arGPT")
+                    Text("Noa")
                         .font(.system(size: 22, weight: .bold))
                         .frame(maxWidth: .infinity)
                     

@@ -748,7 +748,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "arGPT-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = arGPT;
+				INFOPLIST_KEY_CFBundleDisplayName = Noa;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connection to your Monocle device.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Transcribe voice queries from Monocle.";
@@ -761,7 +761,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpt;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.noa;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -784,7 +784,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "arGPT-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = arGPT;
+				INFOPLIST_KEY_CFBundleDisplayName = Noa;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connection to your Monocle device.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Transcribe voice queries from Monocle.";
@@ -797,7 +797,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpt;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.noa;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

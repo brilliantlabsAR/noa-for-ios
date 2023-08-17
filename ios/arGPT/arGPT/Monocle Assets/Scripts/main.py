@@ -60,7 +60,7 @@ while True:
     elif state.current_state == state.Welcome:
         if state.on_entry():
             gfx.append_response(
-                """Welcome to arGPT for Monocle.\nStart the arGPT iOS or Android app."""
+                """Welcome to Noa for Monocle.\nStart the Noa iOS or Android app."""
             )
         if bluetooth.connected():
             state.after(5000, state.Connected)
