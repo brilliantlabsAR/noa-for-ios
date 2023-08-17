@@ -15,25 +15,20 @@ struct SettingsMenuView: View {
     @Binding var bluetoothEnabled: Bool
     @Binding var mode: Controller.Mode
 
+    @State private var _translateEnabled = false
+
     var body: some View {
         Menu {
             let isMonoclePaired = _settings.pairedDeviceID != nil
-
-            Button(action: {
-                mode = mode == .assistant ? .translator : .assistant
-            }) {
-                if mode == .assistant {
-                    Label("Enable Translation", systemImage: "person.line.dotted.person")
-                } else {
-                    Label("Disable Translation", systemImage: "person.line.dotted.person.fill")
-                }
-            }
 
             Button(action: {
                 popUpApiBox = true
             }) {
                 Label("Change API Key", systemImage: "person.circle")
             }
+
+            Toggle("Translate", isOn: $_translateEnabled)
+                .toggleStyle(.button)
 
             Button(role: isMonoclePaired ? .destructive : .none, action: {
                 if isMonoclePaired {
@@ -54,6 +49,12 @@ struct SettingsMenuView: View {
         } label: {
             Image(systemName: "gearshape.fill")
                 .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
+        }
+        .onAppear {
+            _translateEnabled = mode == .translator
+        }
+        .onChange(of: _translateEnabled) {
+            mode = $0 ? .translator : .assistant
         }
     }
 }
