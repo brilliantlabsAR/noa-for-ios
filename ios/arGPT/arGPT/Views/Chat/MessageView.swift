@@ -12,14 +12,14 @@ struct MessageView: View {
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 15) {
-            if !_currentMessage.participant.isUser {
-                if _currentMessage.participant.hasImage {
-                }
-            } else {
-                // If this is the user, push the content all the way to the right
+            if _currentMessage.participant != .assistant {
+                // User bubble pushed all the way to right, translator will be centered
                 Spacer()
             }
             MessageContentView(message: _currentMessage)
+            if _currentMessage.participant == .translator {
+                Spacer()
+            }
         }
     }
 
@@ -30,7 +30,7 @@ struct MessageView: View {
 
 struct MessageView_Previews: PreviewProvider {
     static var previews: some View {
-        MessageView(currentMessage: Message(content: "Hello from ChatGPT", typingInProgress: false, participant: Participant.chatGPT))
+        MessageView(currentMessage: Message(content: "Hello from ChatGPT", typingInProgress: false, participant: Participant.assistant))
 
     }
 }

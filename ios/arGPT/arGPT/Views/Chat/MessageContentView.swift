@@ -9,49 +9,66 @@
 import SwiftUI
 
 struct MessageContentView: View {
-    private let _contentMessage: String
-    private let _isUser: Bool
-    private let _isTyping: Bool
-    private let _isError: Bool
-    
+    private let _message: Message
+
     @Environment(\.colorScheme) var colorScheme
 
     public init(message: Message) {
-        _contentMessage = message.content
-        _isUser = message.participant.isUser
-        _isTyping = message.typingInProgress
-        _isError = message.isError
+        _message = message
+    }
+
+    private var backgroundColor: Color {
+        if _message.isError {
+            return Color(UIColor.systemRed)
+        }
+
+        if _message.participant == .translator {
+            return Color(red: 89/255, green: 93/255, blue: 177/255)
+        }
+
+        if colorScheme == .dark {
+            if _message.participant == .user {
+                return Color(red: 116/255, green: 170/255, blue: 156/255)
+            } else  {
+                return Color(red: 38/255, green: 38/255, blue: 40/255)
+            }
+        } else {
+            if _message.participant == .user {
+                return Color(red: 87/255, green: 199/255, blue: 170/255)
+            } else {
+                return Color(red: 233/255, green: 233/255, blue: 235/255)
+            }
+        }
+    }
+
+    private var chatBubbleDirection: ChatBubbleShape.Direction {
+        switch _message.participant {
+        case .assistant:
+            return .left
+        case .user:
+            return .right
+        default:
+            return .center
+        }
     }
     
     var body: some View {
-        let backgroundColor: Color
-        let fontColor: Color
-
-        if _isError {
-            backgroundColor = Color(UIColor.systemRed)
-        } else {
-            if colorScheme == .dark {
-                backgroundColor =  _isUser ? Color(red: 116/255, green: 170/255, blue: 156/255) : Color(red: 38/255, green: 38/255, blue: 40/255)
-            } else {
-                backgroundColor =  _isUser ? Color(red: 87/255, green: 199/255, blue: 170/255) : Color(red: 233/255, green: 233/255, blue: 235/255)
-            }
-        }
-        fontColor = (_isUser || colorScheme == .dark) ? Color(UIColor.white) : Color(UIColor.black)
+        let fontColor: Color = (_message.participant != .assistant || colorScheme == .dark) ? Color(UIColor.white) : Color(UIColor.black)
         
         return Group {
-            if _isTyping {
-                let staticDotColor = _isUser ? Color(UIColor.lightGray) : Color(UIColor.lightGray)
-                let animatingDotColor = _isUser ? Color(UIColor.lightGray) : Color(UIColor.white)
+            if _message.typingInProgress {
+                let staticDotColor = _message.participant == .user ? Color(UIColor.lightGray) : Color(UIColor.lightGray)
+                let animatingDotColor = _message.participant == .user ? Color(UIColor.lightGray) : Color(UIColor.white)
                 TypingIndicatorView(staticDotColor: staticDotColor, animatingDotColor: animatingDotColor)
                     .padding(10)
                     .background(backgroundColor)
                     .cornerRadius(10)
             } else {
-                Text(_contentMessage)
+                Text(_message.content)
                     .padding(10)
                     .foregroundColor(fontColor)
                     .background(
-                        ChatBubbleShape(direction: _isUser ? .right : .left)
+                        ChatBubbleShape(direction: chatBubbleDirection)
                             .fill(backgroundColor)
                     )
             }
@@ -63,14 +80,22 @@ struct ChatBubbleShape: Shape {
     enum Direction {
         case left
         case right
+        case center
     }
     
     let direction: Direction
     
     func path(in rect: CGRect) -> Path {
-        return (direction == .left) ? getLeftBubblePath(in: rect) : getRightBubblePath(in: rect)
+        switch direction {
+        case .left:
+            return getLeftBubblePath(in: rect)
+        case .right:
+            return getRightBubblePath(in: rect)
+        case .center:
+            return getBubbleNoTailPath(in: rect)
+        }
     }
-    
+
     private func getLeftBubblePath(in rect: CGRect) -> Path {
             let width = rect.width
             let height = rect.height
@@ -132,7 +157,34 @@ struct ChatBubbleShape: Shape {
                 p.addCurve(to: CGPoint(x: width - 25, y: height),
                            control1: CGPoint(x: width - 16, y: height),
                            control2: CGPoint(x: width - 20, y: height))
-                
+            }
+            return path
+        }
+
+        private func getBubbleNoTailPath(in rect: CGRect) -> Path {
+            let width = rect.width
+            let height = rect.height
+            let path = Path { p in
+                p.move(to: CGPoint(x: 25, y: height))
+                p.addLine(to: CGPoint(x:  20, y: height))
+                p.addCurve(to: CGPoint(x: 0, y: height - 20),
+                           control1: CGPoint(x: 8, y: height),
+                           control2: CGPoint(x: 0, y: height - 8))
+
+                p.addLine(to: CGPoint(x: 0, y: 20))
+                p.addCurve(to: CGPoint(x: 20, y: 0),
+                           control1: CGPoint(x: 0, y: 8),
+                           control2: CGPoint(x: 8, y: 0))
+
+                p.addLine(to: CGPoint(x: width - 21, y: 0))
+                p.addCurve(to: CGPoint(x: width - 0, y: 20),
+                           control1: CGPoint(x: width - 12 + 4, y: 0),
+                           control2: CGPoint(x: width - 0, y: 8))
+
+                p.addLine(to: CGPoint(x: width - 0, y: height - 20))
+                p.addCurve(to: CGPoint(x: width - 21, y: height),
+                           control1: CGPoint(x: width - 0, y: height - 20 + 12),
+                           control2: CGPoint(x: width - 0 - 8, y: height))
             }
             return path
         }
@@ -141,7 +193,7 @@ struct ChatBubbleShape: Shape {
 
 struct MessageContentView_Previews: PreviewProvider {
     static var previews: some View {
-        let msg = Message(content: "Hello from ChatGPT", typingInProgress: false, participant: Participant.chatGPT)
+        let msg = Message(content: "Hello from ChatGPT", typingInProgress: false, participant: .translator)
 //        let msg = Message(content: "ignored", typingInProgress: true, participant: Participant.chatGPT)
         MessageContentView(message: msg)
     }

@@ -931,7 +931,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         print("[Controller] Voice received. Converting to M4A...")
 
         // When in translation mode, we don't perform user transcription
-        printTypingIndicatorToChat(as: mode == .assistant ? .user : .chatGPT)
+        printTypingIndicatorToChat(as: mode == .assistant ? .user : .translator)
 
         // Convert to M4A, then pass to speech transcription
         _m4aWriter.write(buffer: voiceSample) { [weak self] (fileData: Data?) in
@@ -963,7 +963,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                     print("[Controller] Sent transcription ID to Monocle: \(id)")
                 } else {
                     // Translation mode: No more network requests to do. Display translation.
-                    printToChat(query, as: .chatGPT)
+                    printToChat(query, as: .translator)
                     print("[Controller] Translation received: \(query)")
                 }
             }
@@ -987,12 +987,12 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         printToChat(query, as: .user)
 
         // Send to ChatGPT
-        printTypingIndicatorToChat(as: .chatGPT)
+        printTypingIndicatorToChat(as: .assistant)
         _chatGPT.send(query: query, apiKey: _settings.apiKey, model: _settings.model) { [weak self] (response: String, error: OpenAIError?) in
             if let error = error {
-                self?.printErrorToChat(error.description, as: .chatGPT)
+                self?.printErrorToChat(error.description, as: .assistant)
             } else {
-                self?.printToChat(response, as: .chatGPT)
+                self?.printToChat(response, as: .assistant)
                 print("[Controller] Received response from ChatGPT for \(id): \(response)")
             }
         }
@@ -1016,7 +1016,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private func printToChat(_ message: String, as participant: Participant) {
         _messages.putMessage(Message(content: message, participant: participant))
 
-        if !participant.isUser {
+        if participant != .user {
             // Send AI response to Monocle
             sendTextToMonocleInChunks(text: message, isError: false)
         }

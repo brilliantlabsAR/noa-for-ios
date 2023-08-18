@@ -27,8 +27,10 @@ struct SettingsMenuView: View {
                 Label("Change API Key", systemImage: "person.circle")
             }
 
-            Toggle("Translate", isOn: $_translateEnabled)
-                .toggleStyle(.button)
+            Toggle(isOn: $_translateEnabled) {
+                Label("Translate", systemImage: "globe")
+            }
+            .toggleStyle(.button)
 
             Button(role: isMonoclePaired ? .destructive : .none, action: {
                 if isMonoclePaired {
