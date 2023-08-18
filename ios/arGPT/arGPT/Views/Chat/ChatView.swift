@@ -74,6 +74,9 @@ struct ChatView: View {
                         // Use enumerated array so that we can ID each element, allowing us to scroll to the bottom. Adding an
                         // EmptyView() at the end of the list with an ID does not seem to work.
                         ForEach(Array(_chatMessageStore.messages.enumerated()), id: \.element) { i, element in
+                            if _chatMessageStore.minutesElapsed(from: i - 1, to: i) >= 10 {
+                                TimestampView(timestamp: element.timestamp)
+                            }
                             MessageView(currentMessage: element).id(i)
                         }
                         .listRowSeparator(.hidden)

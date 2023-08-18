@@ -21,6 +21,7 @@
 		CC200A502A37E396005C67E0 /* states.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4E2A37E396005C67E0 /* states.py */; };
 		CC200A512A37E396005C67E0 /* graphics.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4F2A37E396005C67E0 /* graphics.py */; };
 		CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */; };
+		CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC202CBF2A9036C400A71EE4 /* TimestampView.swift */; };
 		CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */; };
 		CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE00A2A09C0BF00756941 /* Settings.bundle */; };
 		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
@@ -95,6 +96,7 @@
 		CC200A4E2A37E396005C67E0 /* states.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = states.py; sourceTree = "<group>"; };
 		CC200A4F2A37E396005C67E0 /* graphics.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = graphics.py; sourceTree = "<group>"; };
 		CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingStringMatcher.swift; sourceTree = "<group>"; };
+		CC202CBF2A9036C400A71EE4 /* TimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampView.swift; sourceTree = "<group>"; };
 		CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorView.swift; sourceTree = "<group>"; };
 		CC3FE00A2A09C0BF00756941 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		CC3FE00C2A09C8A400756941 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -221,6 +223,7 @@
 				CC4E3AF22A00C4180058AC20 /* MessageView.swift */,
 				CC4E3AF02A00BC8A0058AC20 /* MessageContentView.swift */,
 				CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */,
+				CC202CBF2A9036C400A71EE4 /* TimestampView.swift */,
 			);
 			path = Chat;
 			sourceTree = "<group>";
@@ -573,6 +576,7 @@
 				CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */,
 				CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */,
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
+				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
 				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
 				CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */,

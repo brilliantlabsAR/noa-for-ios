@@ -25,4 +25,14 @@ class ChatMessageStore: ObservableObject {
         messages.removeAll()
         didChange.send()
     }
+
+    public func minutesElapsed(from fromIndex: Int, to toIndex: Int) -> Double {
+        if fromIndex < 0 {
+            return .infinity
+        } else if toIndex >= messages.count {
+            return 0
+        }
+        let delta = messages[fromIndex].timestamp.distance(to: messages[toIndex].timestamp)
+        return delta / 60
+    }
 }

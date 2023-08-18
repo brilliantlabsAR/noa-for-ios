@@ -12,6 +12,7 @@ struct Message: Hashable {
     public var typingInProgress = false // if true, content may be ignored and typing indicator will be shown
     public var isError = false          // if true, content must be printed and contains an error message
     public var participant: Participant
+    public var timestamp: Date = Date.now
 
     private let _instanceID = UUID()
 
