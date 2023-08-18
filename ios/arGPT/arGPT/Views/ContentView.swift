@@ -33,7 +33,7 @@ struct ContentView: View {
     @State private var _updateProgressPercent: Int = 0
 
     /// Translation mode state
-    @State private var _mode: Controller.Mode = .assistant
+    @State private var _mode: ChatGPT.Mode = .assistant
 
     var body: some View {
         VStack {

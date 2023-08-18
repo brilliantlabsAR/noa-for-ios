@@ -221,12 +221,14 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     @Published private(set) var updateState = UpdateState.notUpdating
     @Published private(set) var updateProgressPercent: Int = 0
 
-    public enum Mode {
-        case assistant
-        case translator
+    public var mode = ChatGPT.Mode.assistant {
+        didSet {
+            if mode != oldValue {
+                // Changed modes, clear context
+                _chatGPT.clearHistory()
+            }
+        }
     }
-
-    public var mode = Mode.assistant
 
     // MARK: Public Methods
 
@@ -945,7 +947,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     // Step 2a: Transcribe speech to text using Whisper and send transcription UUID to Monocle
-    private func transcribe(audioFile fileData: Data, mode: Controller.Mode) {
+    private func transcribe(audioFile fileData: Data, mode: ChatGPT.Mode) {
         print("[Controller] Transcribing voice...")
 
         _whisper.transcribe(mode: mode == .assistant ? .transcription : .translation, fileData: fileData, format: .m4a, apiKey: _settings.apiKey) { [weak self] (query: String, error: OpenAIError?) in
@@ -987,12 +989,13 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         printToChat(query, as: .user)
 
         // Send to ChatGPT
-        printTypingIndicatorToChat(as: .assistant)
-        _chatGPT.send(query: query, apiKey: _settings.apiKey, model: _settings.model) { [weak self] (response: String, error: OpenAIError?) in
+        let responder = mode == .assistant ? Participant.assistant : Participant.translator
+        printTypingIndicatorToChat(as: responder)
+        _chatGPT.send(mode: mode, query: query, apiKey: _settings.apiKey, model: _settings.model) { [weak self] (response: String, error: OpenAIError?) in
             if let error = error {
-                self?.printErrorToChat(error.description, as: .assistant)
+                self?.printErrorToChat(error.description, as: responder)
             } else {
-                self?.printToChat(response, as: .assistant)
+                self?.printToChat(response, as: responder)
                 print("[Controller] Received response from ChatGPT for \(id): \(response)")
             }
         }

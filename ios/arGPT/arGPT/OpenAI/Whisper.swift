@@ -57,7 +57,7 @@
 import UIKit
 
 class Whisper: NSObject {
-    public enum Configuration {
+    public enum NetworkConfiguration {
         case normal
         case backgroundData
         case backgroundUpload
@@ -77,7 +77,7 @@ class Whisper: NSObject {
     private var _completionByTask: [Int: (String, OpenAIError?) -> Void] = [:]
     private var _tempFileURL: URL?
 
-    public init(configuration: Configuration) {
+    public init(configuration: NetworkConfiguration) {
         super.init()
 
         switch configuration {

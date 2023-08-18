@@ -8,10 +8,15 @@
 import UIKit
 
 public class ChatGPT: NSObject {
-    public enum Configuration {
+    public enum NetworkConfiguration {
         case normal
         case backgroundData
         case backgroundUpload
+    }
+
+    public enum Mode {
+        case assistant
+        case translator
     }
 
     private static let _maxTokens = 4000    // 4096 for gpt-3.5-turbo and larger for gpt-4, but we use a conservative number to avoid hitting that limit
@@ -20,17 +25,20 @@ public class ChatGPT: NSObject {
     private var _completionByTask: [Int: (String, OpenAIError?) -> Void] = [:]
     private var _tempFileURL: URL?
 
+    private static let _assistantPrompt = "You are a smart assistant that answers all user queries, questions, and statements with a single sentence."
+    private static let _translatorPrompt = "You are a smart assistant that translates user input to English. Translate as faithfully as you can and do not add any other commentary."
+
     private var _payload: [String: Any] = [
         "model": "gpt-3.5-turbo",
         "messages": [
             [
                 "role": "system",
-                "content": "You are a smart assistant that answers all user queries, questions, and statements with a single sentence."
+                "content": ""   // remember to set
             ]
         ]
     ]
 
-    public init(configuration: Configuration) {
+    public init(configuration: NetworkConfiguration) {
         super.init()
 
         switch configuration {
@@ -59,16 +67,18 @@ public class ChatGPT: NSObject {
            messages.count > 1 {
             messages.removeSubrange(1..<messages.count)
             _payload["messages"] = messages
+            print("[ChatGPT] Cleared history")
         }
     }
 
-    public func send(query: String, apiKey: String, model: String, completion: @escaping (String, OpenAIError?) -> Void) {
+    public func send(mode: Mode, query: String, apiKey: String, model: String, completion: @escaping (String, OpenAIError?) -> Void) {
         let requestHeader = [
             "Authorization": "Bearer \(apiKey)",
             "Content-Type": "application/json"
         ]
 
         _payload["model"] = model
+        setSystemPrompt(for: mode)
 
         appendUserQueryToChatSession(query: query)
 
@@ -94,6 +104,14 @@ public class ChatGPT: NSObject {
 
         // Begin
         task.resume()
+    }
+
+    private func setSystemPrompt(for mode: Mode) {
+        if var messages = _payload["messages"] as? [[String: String]],
+           messages.count >= 1 {
+            messages[0]["content"] = mode == .assistant ? Self._assistantPrompt : Self._translatorPrompt
+            _payload["messages"] = messages
+        }
     }
 
     private func appendUserQueryToChatSession(query: String) {
