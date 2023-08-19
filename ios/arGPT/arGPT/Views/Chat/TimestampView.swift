@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct TimestampView: View {
-    @Environment(\.colorScheme) var colorScheme
-
     @State var timestamp: Date
 
     private var timestampString: String {
