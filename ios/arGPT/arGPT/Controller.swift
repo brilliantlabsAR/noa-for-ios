@@ -126,7 +126,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         /// Next chunk to transmit
         var chunk: Int
 
-        // Whether we need to rescale the update percentage because of DFU
+        /// Whether we need to rescale the update percentage because of DFU
         let rescaleUpdatePercentage: Bool
 
         init(maximumDataLength: Int, rescaleUpdatePercentage: Bool) {
@@ -135,7 +135,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             chunks = image.count / chunkSize + ((image.count % chunkSize) == 0 ? 0 : 1)
             chunk = 0
             self.rescaleUpdatePercentage = rescaleUpdatePercentage
-            print("[Controller] FPGA update: image=\(image.count) bytes, chunkSize=\(chunkSize), chunks=\(chunks), maximumDataLength=\(maximumDataLength), rescaleUpdatePercentage=\(rescaleUpdatePercentage)")
+            print("[Controller] FPGA update: image=\(image.count) bytes, chunkSize=\(chunkSize), chunks=\(chunks), maximumDataLength=\(maximumDataLength)")
         }
 
         public var entireImageTransmitted: Bool {
@@ -170,9 +170,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _rawREPLTimer: Timer?
     private var _matcher: Util.StreamingStringMatcher?
 
-    private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.200.1232", withExtension: "zip")!
-    private static let _fpgaURL = Bundle.main.url(forResource: "monocle-fpga-v23.179.1006", withExtension: "bin")!
-    private let _requiredFirmwareVersion = "v23.200.1232"
+    private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.219.1551", withExtension: "zip")!
+    private static let _fpgaURL = Bundle.main.url(forResource: "monocle-fpga-revC", withExtension: "bin")!
+    private let _requiredFirmwareVersion = "v23.219.1551"
     private let _requiredFPGAVersion = "v23.179.1006"
     private var _receivedVersionResponse = ""           // buffer for firmware and FPGA version responses
     private var _currentFirmwareVersion: String?
@@ -220,6 +220,15 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
     @Published private(set) var updateState = UpdateState.notUpdating
     @Published private(set) var updateProgressPercent: Int = 0
+
+    public var mode = ChatGPT.Mode.assistant {
+        didSet {
+            if mode != oldValue {
+                // Changed modes, clear context
+                _chatGPT.clearHistory()
+            }
+        }
+    }
 
     // MARK: Public Methods
 
@@ -575,7 +584,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     private func onWaitForFirmwareVersionString(receivedString str: String, didFinishDFU: Bool) {
-        var proceedToNextState = false
+        _currentFirmwareVersion = nil
 
         // Sample version string:
         //      0000: 4f 4b 76 32 33 2e 31 38 31 2e 30 37 32 30 0d 0a  OKv23.181.0720..
@@ -585,30 +594,18 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         _receivedVersionResponse += str
         if _receivedVersionResponse.contains("\u{4}>") {
             let parts = _receivedVersionResponse.components(separatedBy: .newlines)
-            if _receivedVersionResponse.contains("Error") || parts[0].count <= 2 || !parts[0].starts(with: "OK") {
-                _currentFirmwareVersion = nil
-            } else {
-                let idxAfterOK = parts[0].index(parts[0].startIndex, offsetBy: 2)
-                _currentFirmwareVersion = String(parts[0][idxAfterOK...])
+            if !_receivedVersionResponse.contains("Error") && parts[0].count >= 3 && parts[0].starts(with: "OK") {
+                _currentFirmwareVersion = String(parts[0].dropFirst(2))
             }
-            proceedToNextState = true
-        } else if _receivedVersionResponse.contains("Error") {
-            _currentFirmwareVersion = nil
-            proceedToNextState = true
-        }
 
-        if proceedToNextState{
-            if _currentFirmwareVersion == nil {
-                print("[Controller] Error: Unable to obtain firmware version")
-            } else {
-                print("[Controller] Firmware version: \(_currentFirmwareVersion!)")
-            }
+            print("[Controller] Firmware version: \(_currentFirmwareVersion ?? "unknown")")
+
             transitionState(to: .waitingForFPGAVersion(didFinishDFU: didFinishDFU))
         }
     }
 
     private func onWaitForFPGAVersionString(receivedString str: String, didFinishDFU: Bool) {
-        var proceedToNextState = false
+        _currentFPGAVersion = nil
 
         // Sample version string:
         //      0000: 4f 4b 62 27 76 32 33 2e 31 37 39 2e 31 30 30 36  OKb'v23.179.1006
@@ -617,25 +614,13 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         _receivedVersionResponse += str
         if _receivedVersionResponse.contains("\u{4}>") {
             let parts = _receivedVersionResponse.components(separatedBy: .newlines)
-            if _receivedVersionResponse.contains("Error") || parts[0].count <= 2 || !parts[0].starts(with: "OK") {
-                _currentFPGAVersion = nil
-            } else {
+            if !_receivedVersionResponse.contains("Error") && parts[0].count >= 3 && parts[0].starts(with: "OK") {
                 let str = parts[0].replacingOccurrences(of: "b'", with: "").replacingOccurrences(of: "'", with: "") // strip out b''
-                let idxAfterOK = str.index(str.startIndex, offsetBy: 2)
-                _currentFPGAVersion = String(str[idxAfterOK...])
+                _currentFPGAVersion = String(str.dropFirst(2))  // remove 'OK'
             }
-            proceedToNextState = true
-        } else if _receivedVersionResponse.contains("Error") {
-            _currentFPGAVersion = nil
-            proceedToNextState = true
-        }
 
-        if proceedToNextState{
-            if _currentFPGAVersion == nil {
-                print("[Controller] Error: Unable to obtain FPGA version")
-            } else {
-                print("[Controller] FPGA version: \(_currentFPGAVersion!)")
-            }
+            print("[Controller] FPGA version: \(_currentFPGAVersion ?? "unknown")")
+
             updateMonocleOrProceedToRun(didFinishDFU: didFinishDFU)
         }
     }
@@ -797,7 +782,8 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     private func transmitFPGAVersionCheck() {
-        // Check FPGA version
+        // Check FPGA version. We use this rather than the nicer fpga.version() interface for
+        // compatibility with older firmware versions.
         transmitPythonCommand("import fpga;print(fpga.read(2,12));del(fpga)")
     }
 
@@ -900,7 +886,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     private static func loadFPGAImageAsBase64() -> String {
-        guard let data = try? Data(contentsOf: Self._fpgaURL) else {
+        guard let data = try? Data(contentsOf: _fpgaURL) else {
             fatalError("Unable to load FPGA image from disk")
         }
         return data.base64EncodedString()
@@ -940,39 +926,48 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }
     }
 
-    // MARK: User ChatGPT Query Flow
+    // MARK: User Query Flow
 
     // Step 1: Voice received from Monocle and converted to M4A
     private func onVoiceReceived(voiceSample: AVAudioPCMBuffer) {
         print("[Controller] Voice received. Converting to M4A...")
-        printTypingIndicatorToChat(as: .user)
+
+        // When in translation mode, we don't perform user transcription
+        printTypingIndicatorToChat(as: mode == .assistant ? .user : .translator)
 
         // Convert to M4A, then pass to speech transcription
         _m4aWriter.write(buffer: voiceSample) { [weak self] (fileData: Data?) in
-            guard let fileData = fileData else {
+            guard let self = self,
+                  let fileData = fileData else {
                 self?.printErrorToChat("Unable to process audio!", as: .user)
                 return
             }
-            self?.transcribe(audioFile: fileData)
+            transcribe(audioFile: fileData, mode: mode)
         }
     }
 
-    // Step 2: Transcribe speech to text using Whisper and send transcription UUID to Monocle
-    private func transcribe(audioFile fileData: Data) {
+    // Step 2a: Transcribe speech to text using Whisper and send transcription UUID to Monocle
+    private func transcribe(audioFile fileData: Data, mode: ChatGPT.Mode) {
         print("[Controller] Transcribing voice...")
 
-        _whisper.transcribe(fileData: fileData, format: .m4a, apiKey: _settings.apiKey) { [weak self] (query: String, error: OpenAIError?) in
+        _whisper.transcribe(mode: mode == .assistant ? .transcription : .translation, fileData: fileData, format: .m4a, apiKey: _settings.apiKey) { [weak self] (query: String, error: OpenAIError?) in
             guard let self = self else { return }
             if let error = error {
                 printErrorToChat(error.description, as: .user)
             } else {
-                // Store query and send ID to Monocle. We need to do this because we cannot perform
-                // back-to-back network requests in background mode. Monocle will reply back with
-                // the ID, allowing us to perform a ChatGPT request.
-                let id = UUID()
-                _pendingQueryByID[id] = query
-                _monocleBluetooth.send(text: "pin:" + id.uuidString, on: Self._dataRx)
-                print("[Controller] Sent transcription ID to Monocle: \(id)")
+                if mode == .assistant {
+                    // Store query and send ID to Monocle. We need to do this because we cannot perform
+                    // back-to-back network requests in background mode. Monocle will reply back with
+                    // the ID, allowing us to perform a ChatGPT request.
+                    let id = UUID()
+                    _pendingQueryByID[id] = query
+                    _monocleBluetooth.send(text: "pin:" + id.uuidString, on: Self._dataRx)
+                    print("[Controller] Sent transcription ID to Monocle: \(id)")
+                } else {
+                    // Translation mode: No more network requests to do. Display translation.
+                    printToChat(query, as: .translator)
+                    print("[Controller] Translation received: \(query)")
+                }
             }
         }
     }
@@ -994,12 +989,13 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         printToChat(query, as: .user)
 
         // Send to ChatGPT
-        printTypingIndicatorToChat(as: .chatGPT)
-        _chatGPT.send(query: query, apiKey: _settings.apiKey, model: _settings.model) { [weak self] (response: String, error: OpenAIError?) in
+        let responder = mode == .assistant ? Participant.assistant : Participant.translator
+        printTypingIndicatorToChat(as: responder)
+        _chatGPT.send(mode: mode, query: query, apiKey: _settings.apiKey, model: _settings.model) { [weak self] (response: String, error: OpenAIError?) in
             if let error = error {
-                self?.printErrorToChat(error.description, as: .chatGPT)
+                self?.printErrorToChat(error.description, as: responder)
             } else {
-                self?.printToChat(response, as: .chatGPT)
+                self?.printToChat(response, as: responder)
                 print("[Controller] Received response from ChatGPT for \(id): \(response)")
             }
         }
@@ -1023,7 +1019,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private func printToChat(_ message: String, as participant: Participant) {
         _messages.putMessage(Message(content: message, participant: participant))
 
-        if !participant.isUser {
+        if participant != .user {
             // Send AI response to Monocle
             sendTextToMonocleInChunks(text: message, isError: false)
         }

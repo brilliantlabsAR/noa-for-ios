@@ -13,6 +13,9 @@ struct SettingsMenuView: View {
     @Binding var popUpApiBox: Bool
     @Binding var showPairingView: Bool
     @Binding var bluetoothEnabled: Bool
+    @Binding var mode: ChatGPT.Mode
+
+    @State private var _translateEnabled = false
 
     var body: some View {
         Menu {
@@ -23,6 +26,12 @@ struct SettingsMenuView: View {
             }) {
                 Label("Change API Key", systemImage: "person.circle")
             }
+
+            Toggle(isOn: $_translateEnabled) {
+                Label("Translate", systemImage: "globe")
+            }
+            .toggleStyle(.button)
+
             Button(role: isMonoclePaired ? .destructive : .none, action: {
                 if isMonoclePaired {
                     // Unpair
@@ -43,6 +52,12 @@ struct SettingsMenuView: View {
             Image(systemName: "gearshape.fill")
                 .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
         }
+        .onAppear {
+            _translateEnabled = mode == .translator
+        }
+        .onChange(of: _translateEnabled) {
+            mode = $0 ? .translator : .assistant
+        }
     }
 }
 
@@ -51,7 +66,8 @@ struct SettingsMenuView_Previews: PreviewProvider {
         SettingsMenuView(
             popUpApiBox: .constant(false),
             showPairingView: .constant(false),
-            bluetoothEnabled: .constant(true)
+            bluetoothEnabled: .constant(true),
+            mode: .constant(.assistant)
         )
             .environmentObject(Settings())
     }

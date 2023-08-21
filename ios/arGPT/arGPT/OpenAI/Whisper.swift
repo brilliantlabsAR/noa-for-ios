@@ -57,10 +57,15 @@
 import UIKit
 
 class Whisper: NSObject {
-    public enum Configuration {
+    public enum NetworkConfiguration {
         case normal
         case backgroundData
         case backgroundUpload
+    }
+
+    public enum Mode {
+        case transcription
+        case translation
     }
 
     public enum AudioFormat: String {
@@ -72,7 +77,7 @@ class Whisper: NSObject {
     private var _completionByTask: [Int: (String, OpenAIError?) -> Void] = [:]
     private var _tempFileURL: URL?
 
-    public init(configuration: Configuration) {
+    public init(configuration: NetworkConfiguration) {
         super.init()
 
         switch configuration {
@@ -95,10 +100,12 @@ class Whisper: NSObject {
         }
     }
 
-    public func transcribe(fileData: Data, format: AudioFormat, apiKey: String, completion: @escaping (String, OpenAIError?) -> Void) {
+    public func transcribe(mode: Mode, fileData: Data, format: AudioFormat, apiKey: String, completion: @escaping (String, OpenAIError?) -> Void) {
         let boundary = UUID().uuidString
 
-        let url = URL(string: "https://api.openai.com/v1/audio/transcriptions")!
+        let function = mode == .transcription ? "transcriptions" : "translations"
+        let url = URL(string: "https://api.openai.com/v1/audio/\(function)")!
+        print(url)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
@@ -114,12 +121,21 @@ class Whisper: NSObject {
         formData.append("whisper-1".data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
 
-        // Form parameter "language": en
-        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"language\"\r\n".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-        formData.append("en".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
+        if mode == .transcription {
+            // Form parameter "language": en
+            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
+            formData.append("Content-Disposition:form-data;name=\"language\"\r\n".data(using: .utf8)!)
+            formData.append("\r\n".data(using: .utf8)!)
+            formData.append("en".data(using: .utf8)!)
+            formData.append("\r\n".data(using: .utf8)!)
+        } else {
+            // Form parameter "prompt", required to make translation work
+            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
+            formData.append("Content-Disposition:form-data;name=\"prompt\"\r\n".data(using: .utf8)!)
+            formData.append("\r\n".data(using: .utf8)!)
+            formData.append("Translate to English".data(using: .utf8)!) // can seemingly be anything, even just "translate"
+            formData.append("\r\n".data(using: .utf8)!)
+        }
 
         // File data and form parameter "file"
         formData.append("--\(boundary)\r\n".data(using: .utf8)!)

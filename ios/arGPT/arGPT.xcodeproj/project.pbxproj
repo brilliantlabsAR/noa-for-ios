@@ -10,16 +10,18 @@
 		352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 352D27F72A7B01820019EFDB /* SpinningMonocle.mp4 */; };
 		CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */; };
 		CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC0039952A6C7E57009E3BAC /* NordicDFU */; };
-		CC0039982A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */; };
-		CC00399A2A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC0039992A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin */; };
 		CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */; };
 		CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A42A6DA57E009E3BAC /* ContentView.swift */; };
+		CC02BBA42A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */; };
+		CC02BBA62A81DB8B00A8AA59 /* monocle-fpga-revC.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */; };
+		CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
 		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
 		CC200A502A37E396005C67E0 /* states.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4E2A37E396005C67E0 /* states.py */; };
 		CC200A512A37E396005C67E0 /* graphics.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4F2A37E396005C67E0 /* graphics.py */; };
 		CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */; };
+		CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC202CBF2A9036C400A71EE4 /* TimestampView.swift */; };
 		CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */; };
 		CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE00A2A09C0BF00756941 /* Settings.bundle */; };
 		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
@@ -83,16 +85,18 @@
 /* Begin PBXFileReference section */
 		352D27F72A7B01820019EFDB /* SpinningMonocle.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = SpinningMonocle.mp4; sourceTree = "<group>"; };
 		CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
-		CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.200.1232.zip"; sourceTree = "<group>"; };
-		CC0039992A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga-v23.179.1006.bin"; sourceTree = "<group>"; };
 		CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupDeviceView.swift; sourceTree = "<group>"; };
 		CC0039A42A6DA57E009E3BAC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.219.1551.zip"; sourceTree = "<group>"; };
+		CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga-revC.bin"; sourceTree = "<group>"; };
+		CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Statement_Chinese.m4a; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
 		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
 		CC200A4E2A37E396005C67E0 /* states.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = states.py; sourceTree = "<group>"; };
 		CC200A4F2A37E396005C67E0 /* graphics.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = graphics.py; sourceTree = "<group>"; };
 		CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingStringMatcher.swift; sourceTree = "<group>"; };
+		CC202CBF2A9036C400A71EE4 /* TimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampView.swift; sourceTree = "<group>"; };
 		CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorView.swift; sourceTree = "<group>"; };
 		CC3FE00A2A09C0BF00756941 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		CC3FE00C2A09C8A400756941 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -187,7 +191,7 @@
 		CC00398D2A6B7F5A009E3BAC /* Firmware */ = {
 			isa = PBXGroup;
 			children = (
-				CC0039972A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip */,
+				CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */,
 			);
 			path = Firmware;
 			sourceTree = "<group>";
@@ -195,7 +199,7 @@
 		CC00399B2A6D0D14009E3BAC /* FPGA */ = {
 			isa = PBXGroup;
 			children = (
-				CC0039992A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin */,
+				CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */,
 			);
 			path = FPGA;
 			sourceTree = "<group>";
@@ -219,6 +223,7 @@
 				CC4E3AF22A00C4180058AC20 /* MessageView.swift */,
 				CC4E3AF02A00BC8A0058AC20 /* MessageContentView.swift */,
 				CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */,
+				CC202CBF2A9036C400A71EE4 /* TimestampView.swift */,
 			);
 			path = Chat;
 			sourceTree = "<group>";
@@ -270,6 +275,7 @@
 		CC3FE0272A0EF80300756941 /* Test Voice Assets */ = {
 			isa = PBXGroup;
 			children = (
+				CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */,
 				CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */,
 				CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */,
 				CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */,
@@ -513,14 +519,15 @@
 				CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */,
 				CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */,
 				CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */,
-				CC0039982A6C7E7D009E3BAC /* monocle-micropython-v23.200.1232.zip in Resources */,
+				CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */,
 				CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */,
 				CC200A512A37E396005C67E0 /* graphics.py in Resources */,
 				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,
 				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
+				CC02BBA62A81DB8B00A8AA59 /* monocle-fpga-revC.bin in Resources */,
 				CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */,
 				CC200A502A37E396005C67E0 /* states.py in Resources */,
-				CC00399A2A6CEC9F009E3BAC /* monocle-fpga-v23.179.1006.bin in Resources */,
+				CC02BBA42A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip in Resources */,
 				CC200A4D2A37E38C005C67E0 /* main.py in Resources */,
 				CCCECE762A1EF36C00DBB7CA /* Question_Nutrition.wav in Resources */,
 				CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */,
@@ -569,6 +576,7 @@
 				CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */,
 				CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */,
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
+				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
 				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
 				CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */,
@@ -740,11 +748,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"arGPT/Preview Content\"";
-				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				DEVELOPMENT_TEAM = 7T2874S592;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "arGPT-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = arGPT;
+				INFOPLIST_KEY_CFBundleDisplayName = Noa;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connection to your Monocle device.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Transcribe voice queries from Monocle.";
@@ -757,7 +765,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpt;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.noa;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -776,11 +784,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"arGPT/Preview Content\"";
-				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				DEVELOPMENT_TEAM = 7T2874S592;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "arGPT-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = arGPT;
+				INFOPLIST_KEY_CFBundleDisplayName = Noa;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connection to your Monocle device.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Transcribe voice queries from Monocle.";
@@ -793,7 +801,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpt;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.noa;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

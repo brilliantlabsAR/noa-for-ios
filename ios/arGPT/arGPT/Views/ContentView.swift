@@ -32,6 +32,9 @@ struct ContentView: View {
     /// Update percentage
     @State private var _updateProgressPercent: Int = 0
 
+    /// Translation mode state
+    @State private var _mode: ChatGPT.Mode = .assistant
+
     var body: some View {
         VStack {
             // Initial view includes pairing and updating
@@ -49,25 +52,26 @@ struct ContentView: View {
                         _controller?.connectToNearest()
                     }
                 )
-                    .onAppear {
-                        // Delay a moment before enabling Bluetooth scanning so we actually see
-                        // the pairing dialog. Also ensure that by the time this callback fires,
-                        // the user has not just aborted the procedure. Note this is called each
-                        // time view appears.
-                        if !_bluetoothEnabled {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                if _showDeviceSheet {
-                                    _bluetoothEnabled = true
-                                }
+                .onAppear {
+                    // Delay a moment before enabling Bluetooth scanning so we actually see
+                    // the pairing dialog. Also ensure that by the time this callback fires,
+                    // the user has not just aborted the procedure. Note this is called each
+                    // time view appears.
+                    if !_bluetoothEnabled {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            if _showDeviceSheet {
+                                _bluetoothEnabled = true
                             }
                         }
                     }
+                }
             } else {
                 ChatView(
                     isMonocleConnected: $_isMonocleConnected,
                     pairedMonocleID: $_pairedMonocleID,
                     bluetoothEnabled: $_bluetoothEnabled,
                     showPairingView: $_showDeviceSheet,
+                    mode: $_mode,
                     onTextSubmitted: { [weak _controller] (query: String) in
                         _controller?.submitQuery(query: query)
                     },
@@ -146,6 +150,10 @@ struct ContentView: View {
         }
         .onChange(of: _controller.updateProgressPercent) {
             _updateProgressPercent = $0
+        }
+        .onChange(of: _mode) {
+            // Settings menu may change mode
+            _controller.mode = $0
         }
     }
 

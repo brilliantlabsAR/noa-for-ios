@@ -47,7 +47,7 @@ struct DeviceScreenView: View {
                         .frame(width: 100, height: 12)
                         .padding(.top, 80)
                     
-                    Text("arGPT")
+                    Text("Noa")
                         .font(.system(size: 32, weight: .bold))
                         .padding(.top, -7)
                     
@@ -59,7 +59,7 @@ struct DeviceScreenView: View {
                     
                     Spacer()
 
-                    let privacyPolicyText = "Be sure to read our [Privacy Policy](https://brilliant.xyz/pages/privacy-policy) as well as [Terms and Conditions](https://brilliant.xyz/pages/terms-conditions) before using arGPT."
+                    let privacyPolicyText = "Be sure to read our [Privacy Policy](https://brilliant.xyz/pages/privacy-policy) as well as [Terms and Conditions](https://brilliant.xyz/pages/terms-conditions) before using Noa."
                     Text(.init(privacyPolicyText))
                         .font(.system(size: 10))
                         .frame(width: 217)

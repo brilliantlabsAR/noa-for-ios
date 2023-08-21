@@ -7,15 +7,15 @@
 
 import Foundation
 
-struct Participant {
+struct Participant: Equatable {
     public var name: String
     public var imageName: String
-    public var isUser: Bool = false
 
     public var hasImage: Bool {
         return !imageName.isEmpty
     }
 
-    public static let user = Participant(name: "Me", imageName: "MonocleIcon", isUser: true)
-    public static let chatGPT = Participant(name: "ChatGPT", imageName: "ChatGPTIcon", isUser: false)
+    public static let user = Participant(name: "Me", imageName: "MonocleIcon")
+    public static let assistant = Participant(name: "Assistant", imageName: "ChatGPTIcon")
+    public static let translator = Participant(name: "Translator", imageName: "ChatGPTIcon")
 }

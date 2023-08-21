@@ -24,6 +24,9 @@ struct ChatView: View {
     // Allows pairing view to be brought up (replacing this one)
     @Binding private var _showPairingView: Bool
 
+    // Which AI mode we are in
+    @Binding private var _mode: ChatGPT.Mode
+
     // Stores text being input in text field
     @State private var _textInput: String = ""
 
@@ -46,7 +49,7 @@ struct ChatView: View {
                         .frame(width: 70)
 
                     // Title
-                    Text("arGPT")
+                    Text("Noa")
                         .font(.system(size: 22, weight: .bold))
                         .frame(maxWidth: .infinity)
                     
@@ -54,7 +57,8 @@ struct ChatView: View {
                     SettingsMenuView(
                         popUpApiBox: $popUpApiBox,
                         showPairingView: $_showPairingView,
-                        bluetoothEnabled: $_bluetoothEnabled
+                        bluetoothEnabled: $_bluetoothEnabled,
+                        mode: $_mode
                     )
                         .environmentObject(_settings)
                         .padding(.trailing)
@@ -70,6 +74,9 @@ struct ChatView: View {
                         // Use enumerated array so that we can ID each element, allowing us to scroll to the bottom. Adding an
                         // EmptyView() at the end of the list with an ID does not seem to work.
                         ForEach(Array(_chatMessageStore.messages.enumerated()), id: \.element) { i, element in
+                            if _chatMessageStore.minutesElapsed(from: i - 1, to: i) >= 10 {
+                                TimestampView(timestamp: element.timestamp)
+                            }
                             MessageView(currentMessage: element).id(i)
                         }
                         .listRowSeparator(.hidden)
@@ -165,6 +172,7 @@ struct ChatView: View {
         pairedMonocleID: Binding<UUID?>,
         bluetoothEnabled: Binding<Bool>,
         showPairingView: Binding<Bool>,
+        mode: Binding<ChatGPT.Mode>,
         onTextSubmitted: ((String) -> Void)? = nil,
         onClearChatButtonPressed: (() -> Void)? = nil
     ) {
@@ -172,6 +180,7 @@ struct ChatView: View {
         __pairedMonocleID = pairedMonocleID
         __bluetoothEnabled = bluetoothEnabled
         __showPairingView = showPairingView
+        __mode = mode
         _onTextSubmitted = onTextSubmitted
         _onClearChatButtonPressed = onClearChatButtonPressed
     }
@@ -181,10 +190,10 @@ struct ChatView_Previews: PreviewProvider {
     private static var _chatMessageStore: ChatMessageStore = {
         let store = ChatMessageStore()
         store.putMessage(Message(content: "Hello", participant: Participant.user))
-        store.putMessage(Message(content: "Message 2", participant: Participant.chatGPT))
+        store.putMessage(Message(content: "Message 2", participant: Participant.assistant))
         store.putMessage(Message(content: "Message 3", isError: true, participant: Participant.user))
         for i in 0..<100 {
-            store.putMessage(Message(content: "A reply from ChatGPT... I am going to write a whole lot of text here. The objective is to wrap the line and ensure that multiple lines display properly! Let's see what happens.\nSingle newline.\n\nTwo newlines.", typingInProgress: false, participant: Participant.chatGPT))
+            store.putMessage(Message(content: "A reply from ChatGPT... I am going to write a whole lot of text here. The objective is to wrap the line and ensure that multiple lines display properly! Let's see what happens.\nSingle newline.\n\nTwo newlines.", typingInProgress: false, participant: Participant.assistant))
         }
         return store
     }()
@@ -194,7 +203,8 @@ struct ChatView_Previews: PreviewProvider {
             isMonocleConnected: .constant(false),
             pairedMonocleID: .constant(UUID()),
             bluetoothEnabled: .constant(false),
-            showPairingView: .constant(false)
+            showPairingView: .constant(false),
+            mode: .constant(.assistant)
         )
             .environmentObject(ChatView_Previews._chatMessageStore)
             .environmentObject(Settings())
