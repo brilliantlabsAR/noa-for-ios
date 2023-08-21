@@ -20,7 +20,7 @@ Getting started is easy:
 
 ## For Developers
 
-We encourage developers to extent *arGPT for iOS* or to use it as a template project for their own Monocle apps. This section provides a brief overview of the program structure.
+We encourage developers to extend *arGPT for iOS* or to use it as a template project for their own Monocle apps. This section provides a brief overview of the program structure.
 
 ### Key iOS App Source Files
 
