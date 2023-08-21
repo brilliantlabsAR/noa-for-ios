@@ -1,0 +1,964 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 352D27F72A7B01820019EFDB /* SpinningMonocle.mp4 */; };
+		CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */; };
+		CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC0039952A6C7E57009E3BAC /* NordicDFU */; };
+		CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */; };
+		CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A42A6DA57E009E3BAC /* ContentView.swift */; };
+		CC02BBA42A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */; };
+		CC02BBA62A81DB8B00A8AA59 /* monocle-fpga-revC.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */; };
+		CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */; };
+		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
+		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
+		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
+		CC200A502A37E396005C67E0 /* states.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4E2A37E396005C67E0 /* states.py */; };
+		CC200A512A37E396005C67E0 /* graphics.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4F2A37E396005C67E0 /* graphics.py */; };
+		CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */; };
+		CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC202CBF2A9036C400A71EE4 /* TimestampView.swift */; };
+		CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */; };
+		CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE00A2A09C0BF00756941 /* Settings.bundle */; };
+		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
+		CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE01E2A0DF21700756941 /* AppDelegate.swift */; };
+		CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0202A0DF25100756941 /* SceneDelegate.swift */; };
+		CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */; };
+		CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */; };
+		CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE0292A0EF81A00756941 /* Question_Movies.m4a */; };
+		CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE02A2A0EF81A00756941 /* Question_Lizards.m4a */; };
+		CC3FE0312A0EF81A00756941 /* Question_History.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE02B2A0EF81A00756941 /* Question_History.m4a */; };
+		CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */; };
+		CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */; };
+		CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0352A0F12F700756941 /* ChatGPT.swift */; };
+		CC4E3AC82A00BA4C0058AC20 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */; };
+		CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CC4E3ACA2A00BA4D0058AC20 /* Preview Assets.xcassets */; };
+		CC4E3AD52A00BA4D0058AC20 /* NoaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AD42A00BA4D0058AC20 /* NoaTests.swift */; };
+		CC4E3ADF2A00BA4D0058AC20 /* NoaUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3ADE2A00BA4D0058AC20 /* NoaUITests.swift */; };
+		CC4E3AE12A00BA4D0058AC20 /* NoaUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AE02A00BA4D0058AC20 /* NoaUITestsLaunchTests.swift */; };
+		CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AEE2A00BBE90058AC20 /* Message.swift */; };
+		CC4E3AF12A00BC8A0058AC20 /* MessageContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF02A00BC8A0058AC20 /* MessageContentView.swift */; };
+		CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF22A00C4180058AC20 /* MessageView.swift */; };
+		CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */; };
+		CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF62A01AA350058AC20 /* ChatView.swift */; };
+		CCB2F9622A2568EE00F24F2D /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* Controller.swift */; };
+		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
+		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
+		CCBC46262A02101A00871C12 /* Participant.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCBC46252A02101A00871C12 /* Participant.swift */; };
+		CCCECE6B2A1EB4B100DBB7CA /* Whisper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */; };
+		CCCECE6D2A1EE7C700DBB7CA /* OpenAIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6C2A1EE7C700DBB7CA /* OpenAIError.swift */; };
+		CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */; };
+		CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */; };
+		CCCECE762A1EF36C00DBB7CA /* Question_Nutrition.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE702A1EF36C00DBB7CA /* Question_Nutrition.wav */; };
+		CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */; };
+		CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */; };
+		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
+		CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD4B9012A93EB47004E3ADD /* NoaApp.swift */; };
+		CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */; };
+		CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */; };
+		CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */; };
+		F8B8D4792A71761700817A24 /* LoopingVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B8D4782A71761700817A24 /* LoopingVideoPlayer.swift */; };
+		F8BC4DE52A4DBD680005F6F0 /* DeviceScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		CC4E3AD12A00BA4D0058AC20 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CC4E3AB82A00BA4C0058AC20 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC4E3ABF2A00BA4C0058AC20;
+			remoteInfo = "ChatGPT for Monocle";
+		};
+		CC4E3ADB2A00BA4D0058AC20 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CC4E3AB82A00BA4C0058AC20 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC4E3ABF2A00BA4C0058AC20;
+			remoteInfo = "ChatGPT for Monocle";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		352D27F72A7B01820019EFDB /* SpinningMonocle.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = SpinningMonocle.mp4; sourceTree = "<group>"; };
+		CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
+		CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupDeviceView.swift; sourceTree = "<group>"; };
+		CC0039A42A6DA57E009E3BAC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.219.1551.zip"; sourceTree = "<group>"; };
+		CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga-revC.bin"; sourceTree = "<group>"; };
+		CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Statement_Chinese.m4a; sourceTree = "<group>"; };
+		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
+		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
+		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
+		CC200A4E2A37E396005C67E0 /* states.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = states.py; sourceTree = "<group>"; };
+		CC200A4F2A37E396005C67E0 /* graphics.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = graphics.py; sourceTree = "<group>"; };
+		CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingStringMatcher.swift; sourceTree = "<group>"; };
+		CC202CBF2A9036C400A71EE4 /* TimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampView.swift; sourceTree = "<group>"; };
+		CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorView.swift; sourceTree = "<group>"; };
+		CC3FE00A2A09C0BF00756941 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		CC3FE00C2A09C8A400756941 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		CC3FE0172A0B215700756941 /* Noa-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Noa-Info.plist"; sourceTree = SOURCE_ROOT; };
+		CC3FE01E2A0DF21700756941 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		CC3FE0202A0DF25100756941 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockInputGenerator.swift; sourceTree = "<group>"; };
+		CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_Tootsie.m4a; sourceTree = "<group>"; };
+		CC3FE0292A0EF81A00756941 /* Question_Movies.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_Movies.m4a; sourceTree = "<group>"; };
+		CC3FE02A2A0EF81A00756941 /* Question_Lizards.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_Lizards.m4a; sourceTree = "<group>"; };
+		CC3FE02B2A0EF81A00756941 /* Question_History.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_History.m4a; sourceTree = "<group>"; };
+		CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_Nutrition.m4a; sourceTree = "<group>"; };
+		CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_CPU.m4a; sourceTree = "<group>"; };
+		CC3FE0352A0F12F700756941 /* ChatGPT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatGPT.swift; sourceTree = "<group>"; };
+		CC4E3AC02A00BA4C0058AC20 /* Noa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Noa.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CC4E3ACA2A00BA4D0058AC20 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		CC4E3AD02A00BA4D0058AC20 /* NoaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NoaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC4E3AD42A00BA4D0058AC20 /* NoaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaTests.swift; sourceTree = "<group>"; };
+		CC4E3ADA2A00BA4D0058AC20 /* NoaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NoaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC4E3ADE2A00BA4D0058AC20 /* NoaUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaUITests.swift; sourceTree = "<group>"; };
+		CC4E3AE02A00BA4D0058AC20 /* NoaUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		CC4E3AEE2A00BBE90058AC20 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		CC4E3AF02A00BC8A0058AC20 /* MessageContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageContentView.swift; sourceTree = "<group>"; };
+		CC4E3AF22A00C4180058AC20 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
+		CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageStore.swift; sourceTree = "<group>"; };
+		CC4E3AF62A01AA350058AC20 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		CCB2F9612A2568EE00F24F2D /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
+		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
+		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
+		CCBC46252A02101A00871C12 /* Participant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Participant.swift; sourceTree = "<group>"; };
+		CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Whisper.swift; sourceTree = "<group>"; };
+		CCCECE6C2A1EE7C700DBB7CA /* OpenAIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIError.swift; sourceTree = "<group>"; };
+		CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_History.wav; sourceTree = "<group>"; };
+		CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Movies.wav; sourceTree = "<group>"; };
+		CCCECE702A1EF36C00DBB7CA /* Question_Nutrition.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Nutrition.wav; sourceTree = "<group>"; };
+		CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Tootsie.wav; sourceTree = "<group>"; };
+		CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_CPU.wav; sourceTree = "<group>"; };
+		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
+		CCD4B9012A93EB47004E3ADD /* NoaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaApp.swift; sourceTree = "<group>"; };
+		CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuView.swift; sourceTree = "<group>"; };
+		CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyPopupBoxView.swift; sourceTree = "<group>"; };
+		CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorModeAdaptiveImage.swift; sourceTree = "<group>"; };
+		F8B8D4782A71761700817A24 /* LoopingVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopingVideoPlayer.swift; sourceTree = "<group>"; };
+		F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceScreenView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		CC4E3ABD2A00BA4C0058AC20 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC4E3ACD2A00BA4D0058AC20 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC4E3AD72A00BA4D0058AC20 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		352D27F62A7B01480019EFDB /* UI Assets */ = {
+			isa = PBXGroup;
+			children = (
+				352D27F72A7B01820019EFDB /* SpinningMonocle.mp4 */,
+			);
+			path = "UI Assets";
+			sourceTree = "<group>";
+		};
+		CC00398C2A6B7F4E009E3BAC /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				CC200A4F2A37E396005C67E0 /* graphics.py */,
+				CC200A4E2A37E396005C67E0 /* states.py */,
+				CC200A4C2A37E38C005C67E0 /* main.py */,
+			);
+			path = Scripts;
+			sourceTree = "<group>";
+		};
+		CC00398D2A6B7F5A009E3BAC /* Firmware */ = {
+			isa = PBXGroup;
+			children = (
+				CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */,
+			);
+			path = Firmware;
+			sourceTree = "<group>";
+		};
+		CC00399B2A6D0D14009E3BAC /* FPGA */ = {
+			isa = PBXGroup;
+			children = (
+				CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */,
+			);
+			path = FPGA;
+			sourceTree = "<group>";
+		};
+		CC00399C2A6DA398009E3BAC /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				CC00399F2A6DA4A2009E3BAC /* Device */,
+				CC00399D2A6DA3CB009E3BAC /* Chat */,
+				CC00399E2A6DA3DF009E3BAC /* Settings */,
+				CC0039A42A6DA57E009E3BAC /* ContentView.swift */,
+				CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		CC00399D2A6DA3CB009E3BAC /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				CC4E3AF62A01AA350058AC20 /* ChatView.swift */,
+				CC4E3AF22A00C4180058AC20 /* MessageView.swift */,
+				CC4E3AF02A00BC8A0058AC20 /* MessageContentView.swift */,
+				CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */,
+				CC202CBF2A9036C400A71EE4 /* TimestampView.swift */,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
+		CC00399E2A6DA3DF009E3BAC /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */,
+				CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		CC00399F2A6DA4A2009E3BAC /* Device */ = {
+			isa = PBXGroup;
+			children = (
+				F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */,
+				CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */,
+				F8B8D4782A71761700817A24 /* LoopingVideoPlayer.swift */,
+			);
+			path = Device;
+			sourceTree = "<group>";
+		};
+		CC3FE0072A098DBC00756941 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				CC3FE00C2A09C8A400756941 /* Settings.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		CC3FE0142A0B1C1D00756941 /* Bluetooth */ = {
+			isa = PBXGroup;
+			children = (
+				CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */,
+			);
+			path = Bluetooth;
+			sourceTree = "<group>";
+		};
+		CC3FE0222A0EE64B00756941 /* Speech */ = {
+			isa = PBXGroup;
+			children = (
+				CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */,
+				CC07BD9A2A1962DC0082999A /* M4AWriter.swift */,
+			);
+			path = Speech;
+			sourceTree = "<group>";
+		};
+		CC3FE0272A0EF80300756941 /* Test Voice Assets */ = {
+			isa = PBXGroup;
+			children = (
+				CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */,
+				CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */,
+				CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */,
+				CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */,
+				CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */,
+				CCCECE702A1EF36C00DBB7CA /* Question_Nutrition.wav */,
+				CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */,
+				CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */,
+				CC3FE02B2A0EF81A00756941 /* Question_History.m4a */,
+				CC3FE02A2A0EF81A00756941 /* Question_Lizards.m4a */,
+				CC3FE0292A0EF81A00756941 /* Question_Movies.m4a */,
+				CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */,
+				CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */,
+			);
+			path = "Test Voice Assets";
+			sourceTree = "<group>";
+		};
+		CC3FE0342A0F12C800756941 /* OpenAI */ = {
+			isa = PBXGroup;
+			children = (
+				CC3FE0352A0F12F700756941 /* ChatGPT.swift */,
+				CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */,
+				CCCECE6C2A1EE7C700DBB7CA /* OpenAIError.swift */,
+			);
+			path = OpenAI;
+			sourceTree = "<group>";
+		};
+		CC4E3AB72A00BA4C0058AC20 = {
+			isa = PBXGroup;
+			children = (
+				CC4E3AC22A00BA4C0058AC20 /* Noa */,
+				CC4E3AD32A00BA4D0058AC20 /* NoaTests */,
+				CC4E3ADD2A00BA4D0058AC20 /* NoaUITests */,
+				CC4E3AC12A00BA4C0058AC20 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CC4E3AC12A00BA4C0058AC20 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CC4E3AC02A00BA4C0058AC20 /* Noa.app */,
+				CC4E3AD02A00BA4D0058AC20 /* NoaTests.xctest */,
+				CC4E3ADA2A00BA4D0058AC20 /* NoaUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CC4E3AC22A00BA4C0058AC20 /* Noa */ = {
+			isa = PBXGroup;
+			children = (
+				CCB2F9642A2598E900F24F2D /* Util */,
+				CC3FE0342A0F12C800756941 /* OpenAI */,
+				CC3FE0222A0EE64B00756941 /* Speech */,
+				CC3FE0142A0B1C1D00756941 /* Bluetooth */,
+				CC3FE0072A098DBC00756941 /* Settings */,
+				CC4E3AED2A00BBB00058AC20 /* Chat */,
+				CC00399C2A6DA398009E3BAC /* Views */,
+				CCD4B9012A93EB47004E3ADD /* NoaApp.swift */,
+				CCB2F9612A2568EE00F24F2D /* Controller.swift */,
+				CC3FE01E2A0DF21700756941 /* AppDelegate.swift */,
+				CC3FE0202A0DF25100756941 /* SceneDelegate.swift */,
+				CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */,
+				CC3FE00A2A09C0BF00756941 /* Settings.bundle */,
+				CC3FE0172A0B215700756941 /* Noa-Info.plist */,
+				CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */,
+				352D27F62A7B01480019EFDB /* UI Assets */,
+				CC3FE0272A0EF80300756941 /* Test Voice Assets */,
+				CCB2F9632A25812B00F24F2D /* Monocle Assets */,
+				CC4E3AC92A00BA4D0058AC20 /* Preview Content */,
+			);
+			path = Noa;
+			sourceTree = "<group>";
+		};
+		CC4E3AC92A00BA4D0058AC20 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				CC4E3ACA2A00BA4D0058AC20 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		CC4E3AD32A00BA4D0058AC20 /* NoaTests */ = {
+			isa = PBXGroup;
+			children = (
+				CC4E3AD42A00BA4D0058AC20 /* NoaTests.swift */,
+			);
+			path = NoaTests;
+			sourceTree = "<group>";
+		};
+		CC4E3ADD2A00BA4D0058AC20 /* NoaUITests */ = {
+			isa = PBXGroup;
+			children = (
+				CC4E3ADE2A00BA4D0058AC20 /* NoaUITests.swift */,
+				CC4E3AE02A00BA4D0058AC20 /* NoaUITestsLaunchTests.swift */,
+			);
+			path = NoaUITests;
+			sourceTree = "<group>";
+		};
+		CC4E3AED2A00BBB00058AC20 /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				CC4E3AEE2A00BBE90058AC20 /* Message.swift */,
+				CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */,
+				CCBC46252A02101A00871C12 /* Participant.swift */,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
+		CCB2F9632A25812B00F24F2D /* Monocle Assets */ = {
+			isa = PBXGroup;
+			children = (
+				CC00398D2A6B7F5A009E3BAC /* Firmware */,
+				CC00399B2A6D0D14009E3BAC /* FPGA */,
+				CC00398C2A6B7F4E009E3BAC /* Scripts */,
+			);
+			path = "Monocle Assets";
+			sourceTree = "<group>";
+		};
+		CCB2F9642A2598E900F24F2D /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */,
+				CCB2F9652A2598F600F24F2D /* HexDump.swift */,
+				CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */,
+			);
+			path = Util;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CC4E3ABF2A00BA4C0058AC20 /* Noa */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC4E3AE42A00BA4D0058AC20 /* Build configuration list for PBXNativeTarget "Noa" */;
+			buildPhases = (
+				CC4E3ABC2A00BA4C0058AC20 /* Sources */,
+				CC4E3ABD2A00BA4C0058AC20 /* Frameworks */,
+				CC4E3ABE2A00BA4C0058AC20 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Noa;
+			packageProductDependencies = (
+				CC0039952A6C7E57009E3BAC /* NordicDFU */,
+			);
+			productName = "ChatGPT for Monocle";
+			productReference = CC4E3AC02A00BA4C0058AC20 /* Noa.app */;
+			productType = "com.apple.product-type.application";
+		};
+		CC4E3ACF2A00BA4D0058AC20 /* NoaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC4E3AE72A00BA4D0058AC20 /* Build configuration list for PBXNativeTarget "NoaTests" */;
+			buildPhases = (
+				CC4E3ACC2A00BA4D0058AC20 /* Sources */,
+				CC4E3ACD2A00BA4D0058AC20 /* Frameworks */,
+				CC4E3ACE2A00BA4D0058AC20 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CC4E3AD22A00BA4D0058AC20 /* PBXTargetDependency */,
+			);
+			name = NoaTests;
+			productName = "ChatGPT for MonocleTests";
+			productReference = CC4E3AD02A00BA4D0058AC20 /* NoaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		CC4E3AD92A00BA4D0058AC20 /* NoaUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC4E3AEA2A00BA4D0058AC20 /* Build configuration list for PBXNativeTarget "NoaUITests" */;
+			buildPhases = (
+				CC4E3AD62A00BA4D0058AC20 /* Sources */,
+				CC4E3AD72A00BA4D0058AC20 /* Frameworks */,
+				CC4E3AD82A00BA4D0058AC20 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CC4E3ADC2A00BA4D0058AC20 /* PBXTargetDependency */,
+			);
+			name = NoaUITests;
+			productName = "ChatGPT for MonocleUITests";
+			productReference = CC4E3ADA2A00BA4D0058AC20 /* NoaUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CC4E3AB82A00BA4C0058AC20 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1420;
+				LastUpgradeCheck = 1420;
+				TargetAttributes = {
+					CC4E3ABF2A00BA4C0058AC20 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					CC4E3ACF2A00BA4D0058AC20 = {
+						CreatedOnToolsVersion = 14.2;
+						TestTargetID = CC4E3ABF2A00BA4C0058AC20;
+					};
+					CC4E3AD92A00BA4D0058AC20 = {
+						CreatedOnToolsVersion = 14.2;
+						TestTargetID = CC4E3ABF2A00BA4C0058AC20;
+					};
+				};
+			};
+			buildConfigurationList = CC4E3ABB2A00BA4C0058AC20 /* Build configuration list for PBXProject "Noa" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = CC4E3AB72A00BA4C0058AC20;
+			packageReferences = (
+				CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
+			);
+			productRefGroup = CC4E3AC12A00BA4C0058AC20 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CC4E3ABF2A00BA4C0058AC20 /* Noa */,
+				CC4E3ACF2A00BA4D0058AC20 /* NoaTests */,
+				CC4E3AD92A00BA4D0058AC20 /* NoaUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CC4E3ABE2A00BA4C0058AC20 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC3FE0312A0EF81A00756941 /* Question_History.m4a in Resources */,
+				CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */,
+				352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */,
+				CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */,
+				CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */,
+				CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */,
+				CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */,
+				CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */,
+				CC200A512A37E396005C67E0 /* graphics.py in Resources */,
+				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,
+				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
+				CC02BBA62A81DB8B00A8AA59 /* monocle-fpga-revC.bin in Resources */,
+				CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */,
+				CC200A502A37E396005C67E0 /* states.py in Resources */,
+				CC02BBA42A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip in Resources */,
+				CC200A4D2A37E38C005C67E0 /* main.py in Resources */,
+				CCCECE762A1EF36C00DBB7CA /* Question_Nutrition.wav in Resources */,
+				CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */,
+				CC4E3AC82A00BA4C0058AC20 /* Assets.xcassets in Resources */,
+				CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */,
+				CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */,
+				CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC4E3ACE2A00BA4D0058AC20 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC4E3AD82A00BA4D0058AC20 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CC4E3ABC2A00BA4C0058AC20 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */,
+				CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */,
+				F8BC4DE52A4DBD680005F6F0 /* DeviceScreenView.swift in Sources */,
+				CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */,
+				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
+				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
+				CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */,
+				CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */,
+				CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */,
+				CCBC46262A02101A00871C12 /* Participant.swift in Sources */,
+				CCB2F9622A2568EE00F24F2D /* Controller.swift in Sources */,
+				CCCECE6D2A1EE7C700DBB7CA /* OpenAIError.swift in Sources */,
+				CC4E3AF12A00BC8A0058AC20 /* MessageContentView.swift in Sources */,
+				CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */,
+				CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */,
+				CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */,
+				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
+				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
+				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
+				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
+				CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */,
+				CCCECE6B2A1EB4B100DBB7CA /* Whisper.swift in Sources */,
+				CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */,
+				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,
+				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,
+				CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */,
+				CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */,
+				F8B8D4792A71761700817A24 /* LoopingVideoPlayer.swift in Sources */,
+				CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */,
+				CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC4E3ACC2A00BA4D0058AC20 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC4E3AD52A00BA4D0058AC20 /* NoaTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC4E3AD62A00BA4D0058AC20 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC4E3AE12A00BA4D0058AC20 /* NoaUITestsLaunchTests.swift in Sources */,
+				CC4E3ADF2A00BA4D0058AC20 /* NoaUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		CC4E3AD22A00BA4D0058AC20 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC4E3ABF2A00BA4C0058AC20 /* Noa */;
+			targetProxy = CC4E3AD12A00BA4D0058AC20 /* PBXContainerItemProxy */;
+		};
+		CC4E3ADC2A00BA4D0058AC20 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC4E3ABF2A00BA4C0058AC20 /* Noa */;
+			targetProxy = CC4E3ADB2A00BA4D0058AC20 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		CC4E3AE22A00BA4D0058AC20 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		CC4E3AE32A00BA4D0058AC20 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				"CURRENT_PROJECT_VERSION[sdk=*]" = 1.0.0;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		CC4E3AE52A00BA4D0058AC20 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Noa/Preview Content\"";
+				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Noa-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Noa;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connection to your Monocle device.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Transcribe voice queries from Monocle.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpt;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		CC4E3AE62A00BA4D0058AC20 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Noa/Preview Content\"";
+				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Noa-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Noa;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connection to your Monocle device.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Transcribe voice queries from Monocle.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpt;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		CC4E3AE82A00BA4D0058AC20 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpttests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Noa.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Noa";
+			};
+			name = Debug;
+		};
+		CC4E3AE92A00BA4D0058AC20 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpttests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Noa.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Noa";
+			};
+			name = Release;
+		};
+		CC4E3AEB2A00BA4D0058AC20 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argptuitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = arGPT;
+			};
+			name = Debug;
+		};
+		CC4E3AEC2A00BA4D0058AC20 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argptuitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = arGPT;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CC4E3ABB2A00BA4C0058AC20 /* Build configuration list for PBXProject "Noa" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CC4E3AE22A00BA4D0058AC20 /* Debug */,
+				CC4E3AE32A00BA4D0058AC20 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CC4E3AE42A00BA4D0058AC20 /* Build configuration list for PBXNativeTarget "Noa" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CC4E3AE52A00BA4D0058AC20 /* Debug */,
+				CC4E3AE62A00BA4D0058AC20 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CC4E3AE72A00BA4D0058AC20 /* Build configuration list for PBXNativeTarget "NoaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CC4E3AE82A00BA4D0058AC20 /* Debug */,
+				CC4E3AE92A00BA4D0058AC20 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CC4E3AEA2A00BA4D0058AC20 /* Build configuration list for PBXNativeTarget "NoaUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CC4E3AEB2A00BA4D0058AC20 /* Debug */,
+				CC4E3AEC2A00BA4D0058AC20 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CC0039952A6C7E57009E3BAC /* NordicDFU */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
+			productName = NordicDFU;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = CC4E3AB82A00BA4C0058AC20 /* Project object */;
+}
