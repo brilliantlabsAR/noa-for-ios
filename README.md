@@ -85,7 +85,7 @@ The `running` state is where most of the work happens. Monocle communicates with
 
 ### Translation Support
 
-*Noa* supports translation from any language supported by Whisper to English. Enable this in the settings menu. When speaking through Monocle, Whsiper is used to perform this translation automatically without involving ChatGPT. When using the iOS app to type statements, ChatGPT *is* employed. `Controller` operates in two modes, *assistant* and *translator*. The mode is passed to the ChatGPT module, which uses a different system prompt for each to accomplish the desired task.
+*Noa* supports translation from any language supported by Whisper to English. Enable this in the settings menu. When speaking through Monocle, Whisper is used to perform this translation automatically without involving ChatGPT. When using the iOS app to type statements, ChatGPT *is* employed. `Controller` operates in two modes, *assistant* and *translator*. The mode is passed to the ChatGPT module, which uses a different system prompt for each to accomplish the desired task.
 
 ### Python Script Versioning
 
