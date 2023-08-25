@@ -183,6 +183,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private let _m4aWriter = M4AWriter()
     private let _whisper = Whisper(configuration: .backgroundData)
     private let _chatGPT = ChatGPT(configuration: .backgroundData)
+    private let _dallE = DallE(configuration: .backgroundData)
 
     private var _pendingQueryByID: [UUID: String] = [:]
 
@@ -399,6 +400,17 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _dfuBluetooth.enabled = false
             _dfuBluetooth.enabled = true
         }.store(in: &_subscribers)
+
+        /// Test Dall-E
+
+        let imageURL = Bundle.main.url(forResource: "Tahoe", withExtension: "bin")!
+        let maskURL = Bundle.main.url(forResource: "Tahoe_Mask", withExtension: "bin")!
+        let imageData = try! Data(contentsOf: imageURL)
+        let maskData = try! Data(contentsOf: maskURL)
+        _dallE.renderEdit(imageFileData: imageData, maskFileData: maskData, prompt: "Alien landscape", apiKey: _settings.apiKey) { (imageURL: String, error: OpenAIError?) in
+            print("Result image = \(imageURL)")
+        }
+
     }
 
     /// Connect to the nearest device if one exists.

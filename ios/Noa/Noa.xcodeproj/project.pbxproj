@@ -45,6 +45,9 @@
 		CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF22A00C4180058AC20 /* MessageView.swift */; };
 		CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */; };
 		CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF62A01AA350058AC20 /* ChatView.swift */; };
+		CC68515A2A9933F8004EA777 /* DallE.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851592A9933F8004EA777 /* DallE.swift */; };
+		CC6851632A99553E004EA777 /* Tahoe_Mask.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC6851612A99553E004EA777 /* Tahoe_Mask.bin */; };
+		CC6851642A99553E004EA777 /* Tahoe.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC6851622A99553E004EA777 /* Tahoe.bin */; };
 		CCB2F9622A2568EE00F24F2D /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* Controller.swift */; };
 		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
 		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
@@ -124,6 +127,9 @@
 		CC4E3AF22A00C4180058AC20 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
 		CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageStore.swift; sourceTree = "<group>"; };
 		CC4E3AF62A01AA350058AC20 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		CC6851592A9933F8004EA777 /* DallE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DallE.swift; sourceTree = "<group>"; };
+		CC6851612A99553E004EA777 /* Tahoe_Mask.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = Tahoe_Mask.bin; sourceTree = "<group>"; };
+		CC6851622A99553E004EA777 /* Tahoe.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = Tahoe.bin; sourceTree = "<group>"; };
 		CCB2F9612A2568EE00F24F2D /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
 		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
 		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
@@ -272,30 +278,20 @@
 			path = Speech;
 			sourceTree = "<group>";
 		};
-		CC3FE0272A0EF80300756941 /* Test Voice Assets */ = {
+		CC3FE0272A0EF80300756941 /* Test Assets */ = {
 			isa = PBXGroup;
 			children = (
-				CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */,
-				CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */,
-				CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */,
-				CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */,
-				CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */,
-				CCCECE702A1EF36C00DBB7CA /* Question_Nutrition.wav */,
-				CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */,
-				CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */,
-				CC3FE02B2A0EF81A00756941 /* Question_History.m4a */,
-				CC3FE02A2A0EF81A00756941 /* Question_Lizards.m4a */,
-				CC3FE0292A0EF81A00756941 /* Question_Movies.m4a */,
-				CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */,
-				CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */,
+				CC6851582A9933AB004EA777 /* Images */,
+				CC6851572A9933A3004EA777 /* Voice */,
 			);
-			path = "Test Voice Assets";
+			path = "Test Assets";
 			sourceTree = "<group>";
 		};
 		CC3FE0342A0F12C800756941 /* OpenAI */ = {
 			isa = PBXGroup;
 			children = (
 				CC3FE0352A0F12F700756941 /* ChatGPT.swift */,
+				CC6851592A9933F8004EA777 /* DallE.swift */,
 				CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */,
 				CCCECE6C2A1EE7C700DBB7CA /* OpenAIError.swift */,
 			);
@@ -341,7 +337,7 @@
 				CC3FE0172A0B215700756941 /* Noa-Info.plist */,
 				CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */,
 				352D27F62A7B01480019EFDB /* UI Assets */,
-				CC3FE0272A0EF80300756941 /* Test Voice Assets */,
+				CC3FE0272A0EF80300756941 /* Test Assets */,
 				CCB2F9632A25812B00F24F2D /* Monocle Assets */,
 				CC4E3AC92A00BA4D0058AC20 /* Preview Content */,
 			);
@@ -381,6 +377,35 @@
 				CCBC46252A02101A00871C12 /* Participant.swift */,
 			);
 			path = Chat;
+			sourceTree = "<group>";
+		};
+		CC6851572A9933A3004EA777 /* Voice */ = {
+			isa = PBXGroup;
+			children = (
+				CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */,
+				CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */,
+				CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */,
+				CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */,
+				CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */,
+				CCCECE702A1EF36C00DBB7CA /* Question_Nutrition.wav */,
+				CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */,
+				CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */,
+				CC3FE02B2A0EF81A00756941 /* Question_History.m4a */,
+				CC3FE02A2A0EF81A00756941 /* Question_Lizards.m4a */,
+				CC3FE0292A0EF81A00756941 /* Question_Movies.m4a */,
+				CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */,
+				CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */,
+			);
+			path = Voice;
+			sourceTree = "<group>";
+		};
+		CC6851582A9933AB004EA777 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				CC6851612A99553E004EA777 /* Tahoe_Mask.bin */,
+				CC6851622A99553E004EA777 /* Tahoe.bin */,
+			);
+			path = Images;
 			sourceTree = "<group>";
 		};
 		CCB2F9632A25812B00F24F2D /* Monocle Assets */ = {
@@ -513,6 +538,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CC6851632A99553E004EA777 /* Tahoe_Mask.bin in Resources */,
 				CC3FE0312A0EF81A00756941 /* Question_History.m4a in Resources */,
 				CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */,
 				352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */,
@@ -521,6 +547,7 @@
 				CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */,
 				CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */,
 				CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */,
+				CC6851642A99553E004EA777 /* Tahoe.bin in Resources */,
 				CC200A512A37E396005C67E0 /* graphics.py in Resources */,
 				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,
 				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
@@ -564,6 +591,7 @@
 				F8BC4DE52A4DBD680005F6F0 /* DeviceScreenView.swift in Sources */,
 				CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
+				CC68515A2A9933F8004EA777 /* DallE.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
 				CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */,
 				CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */,
@@ -748,7 +776,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Noa/Preview Content\"";
-				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				DEVELOPMENT_TEAM = 7T2874S592;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Noa-Info.plist";
