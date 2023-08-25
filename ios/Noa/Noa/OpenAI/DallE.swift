@@ -41,9 +41,18 @@ class DallE: NSObject {
         }
     }
 
-    public func renderEdit(imageFileData: Data, maskFileData: Data, prompt: String, apiKey: String, completion: @escaping (String, OpenAIError?) -> Void) {
-        let boundary = UUID().uuidString
+    public func renderEdit(jpegFileData: Data, maskPNGFileData: Data?, prompt: String, apiKey: String, completion: @escaping (String, OpenAIError?) -> Void) {
+        // Convert JPEG to PNG and, if no mask supplied, mask off entire image by clearing the
+        // alpha channel so that the entire image is redrawn
+        guard let pngImageData = convertJPEGToPNG(jpegFileData: jpegFileData, clearAlphaChannel: maskPNGFileData == nil) else {
+            DispatchQueue.main.async {
+                completion("", OpenAIError.dataFormatError(message: "Unable to convert JPEG image to PNG data"))
+            }
+            return
+        }
 
+        // Prepare URL request
+        let boundary = UUID().uuidString
         let url = URL(string: "https://api.openai.com/v1/images/edits")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -53,19 +62,22 @@ class DallE: NSObject {
         // Form data
         var formData = Data()
 
-        // Form parameter "image"
+        // Form parameter "image" -- if mask is not supplied, alpha channel is mask (alpha=0 is
+        // where image will be modified)
         formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
         formData.append("Content-Disposition:form-data;name=\"image\";filename=\"image.png\"\r\n".data(using: .utf8)!)
         formData.append("Content-Type:image/png\r\n\r\n".data(using: .utf8)!)
-        formData.append(imageFileData)
+        formData.append(pngImageData)
         formData.append("\r\n".data(using: .utf8)!)
 
         // Form parameter "mask"
-        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"mask\";filename=\"mask.png\"\r\n".data(using: .utf8)!)
-        formData.append("Content-Type:image/png\r\n\r\n".data(using: .utf8)!)
-        formData.append(maskFileData)
-        formData.append("\r\n".data(using: .utf8)!)
+        if let maskPNGFileData = maskPNGFileData {
+            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
+            formData.append("Content-Disposition:form-data;name=\"mask\";filename=\"mask.png\"\r\n".data(using: .utf8)!)
+            formData.append("Content-Type:image/png\r\n\r\n".data(using: .utf8)!)
+            formData.append(maskPNGFileData)
+            formData.append("\r\n".data(using: .utf8)!)
+        }
 
         // Form parameter "prompt"
         formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
@@ -111,6 +123,52 @@ class DallE: NSObject {
         task.resume()
     }
 
+    private func convertJPEGToPNG(jpegFileData: Data, clearAlphaChannel: Bool) -> Data? {
+        if let jpegImage = UIImage(data: jpegFileData),
+           let pixelBuffer = jpegImage.toPixelBuffer() {
+            if clearAlphaChannel {
+                clearAlpha(pixelBuffer)
+            }
+            if let maskedImage = UIImage(pixelBuffer: pixelBuffer) {
+                if let pngData = maskedImage.pngData() {
+                    return pngData
+                } else {
+                    print("[DallE] Error: Failed to produce PNG encoded image")
+                }
+            } else {
+                print("[DallE] Error: Failed to convert pixel buffer to UIImage")
+            }
+        } else {
+            print("[DallE] Error: Unable to convert JPEG image data to a pixel buffer")
+        }
+        return nil
+    }
+
+    private func clearAlpha(_ pixelBuffer: CVPixelBuffer) {
+        let format = CVPixelBufferGetPixelFormatType(pixelBuffer)
+        guard format == kCVPixelFormatType_32ABGR || format == kCVPixelFormatType_32ARGB else {
+            print("[DallE] Error: Pixel buffer must be ARGB or ABGR format")
+            return
+        }
+        CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        let byteStride = CVPixelBufferGetBytesPerRow(pixelBuffer)
+        let pixelsWide = CVPixelBufferGetWidth(pixelBuffer)
+        let pixelsHigh = CVPixelBufferGetHeight(pixelBuffer)
+        let offsetToNextLine = byteStride - pixelsWide * 4
+        if let address = CVPixelBufferGetBaseAddress(pixelBuffer) {
+            var bytes = address.assumingMemoryBound(to: UInt8.self)
+            var idx = 0
+            for _ in 0..<pixelsHigh {
+                for _ in 0..<pixelsWide {
+                    bytes[idx] = 0  // first byte is alpha, make pixel clear
+                    idx += 4
+                }
+                idx += offsetToNextLine
+            }
+        }
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
+    }
+
     private func extractContent(from data: Data) -> (OpenAIError?, String?) {
         do {
             let jsonString = String(decoding: data, as: UTF8.self)
@@ -132,7 +190,9 @@ class DallE: NSObject {
                         }
                     }
                     return (OpenAIError.apiError(message: errorMessage), nil)
-                } else if let imageURL = response["url"] as? String {
+                } else if let dataObject = response["data"] as? [[String: String]],
+                    dataObject.count > 0,
+                    let imageURL = dataObject[0]["url"] {
                     return (nil, imageURL)
                 }
             }

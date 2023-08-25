@@ -12,8 +12,8 @@ public enum OpenAIError: Error {
     case responsePayloadParseError
     case clientSideNetworkError(error: Error?)
     case apiError(message: String)
+    case dataFormatError(message: String)
 }
-
 
 extension OpenAIError: CustomStringConvertible {
     public var description: String {
@@ -30,6 +30,8 @@ extension OpenAIError: CustomStringConvertible {
             return message
         case .urlAuthenticationFailed:
             return "OpenAI API URL authentication failed."
+        case .dataFormatError(let message):
+            return message
         }
     }
 }

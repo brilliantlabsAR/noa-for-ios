@@ -25,7 +25,7 @@
 //    also look into how we would deal with responses coming across as multiple transfers if we had
 //    an async implementation. Probably need to observe new lines / terminating sequences like '>'.
 //
- 
+
 import AVFoundation
 import Combine
 import CoreBluetooth
@@ -402,16 +402,14 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }.store(in: &_subscribers)
 
         /// Test Dall-E
-
-        let imageURL = Bundle.main.url(forResource: "Tahoe", withExtension: "bin")!
-        let maskURL = Bundle.main.url(forResource: "Tahoe_Mask", withExtension: "bin")!
+        let imageURL = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
         let imageData = try! Data(contentsOf: imageURL)
-        let maskData = try! Data(contentsOf: maskURL)
-        _dallE.renderEdit(imageFileData: imageData, maskFileData: maskData, prompt: "Alien landscape", apiKey: _settings.apiKey) { (imageURL: String, error: OpenAIError?) in
+        _dallE.renderEdit(jpegFileData: imageData, maskPNGFileData: nil, prompt: "Flying saucers", apiKey: _settings.apiKey) { (imageURL: String, error: OpenAIError?) in
             print("Result image = \(imageURL)")
         }
-
     }
+
+    
 
     /// Connect to the nearest device if one exists.
     public func connectToNearest() {

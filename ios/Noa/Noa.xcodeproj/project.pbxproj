@@ -46,8 +46,8 @@
 		CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */; };
 		CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF62A01AA350058AC20 /* ChatView.swift */; };
 		CC68515A2A9933F8004EA777 /* DallE.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851592A9933F8004EA777 /* DallE.swift */; };
-		CC6851632A99553E004EA777 /* Tahoe_Mask.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC6851612A99553E004EA777 /* Tahoe_Mask.bin */; };
-		CC6851642A99553E004EA777 /* Tahoe.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC6851622A99553E004EA777 /* Tahoe.bin */; };
+		CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */; };
+		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
 		CCB2F9622A2568EE00F24F2D /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* Controller.swift */; };
 		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
 		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
@@ -128,8 +128,8 @@
 		CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageStore.swift; sourceTree = "<group>"; };
 		CC4E3AF62A01AA350058AC20 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		CC6851592A9933F8004EA777 /* DallE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DallE.swift; sourceTree = "<group>"; };
-		CC6851612A99553E004EA777 /* Tahoe_Mask.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = Tahoe_Mask.bin; sourceTree = "<group>"; };
-		CC6851622A99553E004EA777 /* Tahoe.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = Tahoe.bin; sourceTree = "<group>"; };
+		CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
+		CC6851672A9964C2004EA777 /* Tahoe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tahoe.jpg; sourceTree = "<group>"; };
 		CCB2F9612A2568EE00F24F2D /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
 		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
 		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
@@ -269,15 +269,6 @@
 			path = Bluetooth;
 			sourceTree = "<group>";
 		};
-		CC3FE0222A0EE64B00756941 /* Speech */ = {
-			isa = PBXGroup;
-			children = (
-				CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */,
-				CC07BD9A2A1962DC0082999A /* M4AWriter.swift */,
-			);
-			path = Speech;
-			sourceTree = "<group>";
-		};
 		CC3FE0272A0EF80300756941 /* Test Assets */ = {
 			isa = PBXGroup;
 			children = (
@@ -323,7 +314,6 @@
 			children = (
 				CCB2F9642A2598E900F24F2D /* Util */,
 				CC3FE0342A0F12C800756941 /* OpenAI */,
-				CC3FE0222A0EE64B00756941 /* Speech */,
 				CC3FE0142A0B1C1D00756941 /* Bluetooth */,
 				CC3FE0072A098DBC00756941 /* Settings */,
 				CC4E3AED2A00BBB00058AC20 /* Chat */,
@@ -402,8 +392,7 @@
 		CC6851582A9933AB004EA777 /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				CC6851612A99553E004EA777 /* Tahoe_Mask.bin */,
-				CC6851622A99553E004EA777 /* Tahoe.bin */,
+				CC6851672A9964C2004EA777 /* Tahoe.jpg */,
 			);
 			path = Images;
 			sourceTree = "<group>";
@@ -424,6 +413,9 @@
 				CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */,
 				CCB2F9652A2598F600F24F2D /* HexDump.swift */,
 				CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */,
+				CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */,
+				CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */,
+				CC07BD9A2A1962DC0082999A /* M4AWriter.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -538,16 +530,15 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC6851632A99553E004EA777 /* Tahoe_Mask.bin in Resources */,
 				CC3FE0312A0EF81A00756941 /* Question_History.m4a in Resources */,
 				CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */,
 				352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */,
 				CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */,
 				CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */,
+				CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */,
 				CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */,
 				CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */,
 				CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */,
-				CC6851642A99553E004EA777 /* Tahoe.bin in Resources */,
 				CC200A512A37E396005C67E0 /* graphics.py in Resources */,
 				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,
 				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
@@ -601,6 +592,7 @@
 				CCCECE6D2A1EE7C700DBB7CA /* OpenAIError.swift in Sources */,
 				CC4E3AF12A00BC8A0058AC20 /* MessageContentView.swift in Sources */,
 				CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */,
+				CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */,
 				CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */,
 				CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */,
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
