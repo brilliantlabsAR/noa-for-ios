@@ -196,7 +196,6 @@ class DallE: NSObject {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: [])
             if let response = json as? [String: AnyObject] {
-                print("got here 1")
                 if let errorPayload = response["error"] as? [String: AnyObject],
                    var errorMessage = errorPayload["message"] as? String {
                     // Error from OpenAI
