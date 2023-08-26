@@ -31,6 +31,7 @@ import Combine
 import CoreBluetooth
 import CryptoKit
 import Foundation
+import UIKit
 
 import NordicDFU
 
@@ -404,12 +405,17 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         /// Test Dall-E
         let imageURL = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
         let imageData = try! Data(contentsOf: imageURL)
-        _dallE.renderEdit(jpegFileData: imageData, maskPNGFileData: nil, prompt: "Flying saucers", apiKey: _settings.apiKey) { (imageURL: String, error: OpenAIError?) in
-            print("Result image = \(imageURL)")
+        if let picture = UIImage(data: imageData) {
+            printToChat("Flying saucers", picture: picture, as: .user)
+        }
+        _dallE.renderEdit(jpegFileData: imageData, maskPNGFileData: nil, prompt: "Flying saucers", apiKey: _settings.apiKey) { (image: UIImage?, error: OpenAIError?) in
+            if let error = error {
+                print("[Controller] Error: \(error.description)")
+            } else {
+                self.printToChat("Flying saucers", picture: image, as: .assistant)
+            }
         }
     }
-
-    
 
     /// Connect to the nearest device if one exists.
     public func connectToNearest() {
@@ -1014,7 +1020,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     // MARK: Result Output
 
     private func printErrorToChat(_ message: String, as participant: Participant) {
-        _messages.putMessage(Message(content: message, isError: true, participant: participant))
+        _messages.putMessage(Message(text: message, isError: true, participant: participant))
 
         // Send all error messages to Monocle
         sendTextToMonocleInChunks(text: message, isError: true)
@@ -1023,15 +1029,15 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     private func printTypingIndicatorToChat(as participant: Participant) {
-        _messages.putMessage(Message(content: "", typingInProgress: true, participant: participant))
+        _messages.putMessage(Message(text: "", typingInProgress: true, participant: participant))
     }
 
-    private func printToChat(_ message: String, as participant: Participant) {
-        _messages.putMessage(Message(content: message, participant: participant))
+    private func printToChat(_ text: String, picture: UIImage? = nil, as participant: Participant) {
+        _messages.putMessage(Message(text: text, picture: picture, participant: participant))
 
         if participant != .user {
             // Send AI response to Monocle
-            sendTextToMonocleInChunks(text: message, isError: false)
+            sendTextToMonocleInChunks(text: text, isError: false)
         }
     }
 

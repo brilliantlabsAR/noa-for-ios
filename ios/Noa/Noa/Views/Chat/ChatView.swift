@@ -189,11 +189,15 @@ struct ChatView: View {
 struct ChatView_Previews: PreviewProvider {
     private static var _chatMessageStore: ChatMessageStore = {
         let store = ChatMessageStore()
-        store.putMessage(Message(content: "Hello", participant: Participant.user))
-        store.putMessage(Message(content: "Message 2", participant: Participant.assistant))
-        store.putMessage(Message(content: "Message 3", isError: true, participant: Participant.user))
+        let imageURL = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
+        let imageData = try! Data(contentsOf: imageURL)
+        let image = UIImage(data: imageData)
+        store.putMessage(Message(text: "Hello", participant: Participant.user))
+        store.putMessage(Message(text: "Message 2", participant: Participant.assistant))
+        store.putMessage(Message(text: "Message 3", isError: true, participant: Participant.user))
+        store.putMessage(Message(text: "Lake Tahoe!", picture: image, participant: Participant.user))
         for i in 0..<100 {
-            store.putMessage(Message(content: "A reply from ChatGPT... I am going to write a whole lot of text here. The objective is to wrap the line and ensure that multiple lines display properly! Let's see what happens.\nSingle newline.\n\nTwo newlines.", typingInProgress: false, participant: Participant.assistant))
+            store.putMessage(Message(text: "A reply from ChatGPT... I am going to write a whole lot of text here. The objective is to wrap the line and ensure that multiple lines display properly! Let's see what happens.\nSingle newline.\n\nTwo newlines.", typingInProgress: false, participant: Participant.assistant))
         }
         return store
     }()

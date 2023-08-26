@@ -15,7 +15,8 @@ class DallE: NSObject {
     }
 
     private var _session: URLSession!
-    private var _completionByTask: [Int: (String, OpenAIError?) -> Void] = [:]
+    private var _completionByTask: [Int: (UIImage?, OpenAIError?) -> Void] = [:]
+    private var _responseDataByTask: [Int: Data] = [:]
     private var _tempFileURL: URL?
 
     public init(configuration: NetworkConfiguration) {
@@ -41,12 +42,12 @@ class DallE: NSObject {
         }
     }
 
-    public func renderEdit(jpegFileData: Data, maskPNGFileData: Data?, prompt: String, apiKey: String, completion: @escaping (String, OpenAIError?) -> Void) {
+    public func renderEdit(jpegFileData: Data, maskPNGFileData: Data?, prompt: String, apiKey: String, completion: @escaping (UIImage?, OpenAIError?) -> Void) {
         // Convert JPEG to PNG and, if no mask supplied, mask off entire image by clearing the
         // alpha channel so that the entire image is redrawn
         guard let pngImageData = convertJPEGToPNG(jpegFileData: jpegFileData, clearAlphaChannel: maskPNGFileData == nil) else {
             DispatchQueue.main.async {
-                completion("", OpenAIError.dataFormatError(message: "Unable to convert JPEG image to PNG data"))
+                completion(nil, OpenAIError.dataFormatError(message: "Unable to convert JPEG image to PNG data"))
             }
             return
         }
@@ -86,24 +87,19 @@ class DallE: NSObject {
         formData.append(prompt.data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
 
+        // Form parameter "response_format"
+        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
+        formData.append("Content-Disposition:form-data;name=\"response_format\"\r\n".data(using: .utf8)!)
+        formData.append("\r\n".data(using: .utf8)!)
+        formData.append("b64_json".data(using: .utf8)!)
+        formData.append("\r\n".data(using: .utf8)!)
+
         // Form parameter "size"
         formData.append("--\(boundary)\r\n".data(using: .utf8)!)
         formData.append("Content-Disposition:form-data;name=\"size\"\r\n".data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
         formData.append("512x512".data(using: .utf8)!) // can seemingly be anything, even just "translate"
         formData.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-
-
-
-        //Util.hexDump(formData, bytesPerLine: 16, offsetBytes: 2)
-
-        // Form parameter "response_format"
-//        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-//        formData.append("Content-Disposition:form-data;name=\"response_format\"\r\n".data(using: .utf8)!)
-//        formData.append("\r\n".data(using: .utf8)!)
-//        formData.append("b64_json".data(using: .utf8)!)
-//        formData.append("\r\n".data(using: .utf8)!)
-
 
         // If this is a background task using a file, write that file, else attach to request
         if let fileURL = _tempFileURL {
@@ -116,8 +112,9 @@ class DallE: NSObject {
         // Create task
         let task = _tempFileURL == nil ? _session.dataTask(with: request) : _session.uploadTask(with: request, fromFile: _tempFileURL!)
 
-        // Associate completion handler with this task
+        // Associate completion handler and a buffer with this task
         _completionByTask[task.taskIdentifier] = completion
+        _responseDataByTask[task.taskIdentifier] = Data()
 
         // Begin
         task.resume()
@@ -156,7 +153,7 @@ class DallE: NSObject {
         let pixelsHigh = CVPixelBufferGetHeight(pixelBuffer)
         let offsetToNextLine = byteStride - pixelsWide * 4
         if let address = CVPixelBufferGetBaseAddress(pixelBuffer) {
-            var bytes = address.assumingMemoryBound(to: UInt8.self)
+            let bytes = address.assumingMemoryBound(to: UInt8.self)
             var idx = 0
             for _ in 0..<pixelsHigh {
                 for _ in 0..<pixelsWide {
@@ -169,14 +166,37 @@ class DallE: NSObject {
         CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
     }
 
-    private func extractContent(from data: Data) -> (OpenAIError?, String?) {
-        do {
-            let jsonString = String(decoding: data, as: UTF8.self)
-            if jsonString.count > 0 {
-                print("[DallE] Response payload: \(jsonString)")
+    private func deliverImage(for taskIdentifier: Int) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            guard let completion = _completionByTask[taskIdentifier] else {
+                print("[DallE] Error: Lost completion data for task \(taskIdentifier)")
+                _responseDataByTask.removeValue(forKey: taskIdentifier)
+                return
             }
+
+            _completionByTask.removeValue(forKey: taskIdentifier)
+
+            guard let responseData = _responseDataByTask[taskIdentifier] else {
+                print("[DallE] Error: Lost response data for task \(taskIdentifier)")
+                return
+            }
+
+            print("Data=\(responseData.count) bytes")
+            _responseDataByTask.removeValue(forKey: taskIdentifier)
+
+            // Extract and deliver image
+            let (contentError, image) = self.extractContent(from: responseData)
+            completion(image, contentError)
+        }
+    }
+
+    private func extractContent(from data: Data) -> (OpenAIError?, UIImage?) {
+        do {
             let json = try JSONSerialization.jsonObject(with: data, options: [])
             if let response = json as? [String: AnyObject] {
+                print("got here 1")
                 if let errorPayload = response["error"] as? [String: AnyObject],
                    var errorMessage = errorPayload["message"] as? String {
                     // Error from OpenAI
@@ -191,9 +211,12 @@ class DallE: NSObject {
                     }
                     return (OpenAIError.apiError(message: errorMessage), nil)
                 } else if let dataObject = response["data"] as? [[String: String]],
-                    dataObject.count > 0,
-                    let imageURL = dataObject[0]["url"] {
-                    return (nil, imageURL)
+                       dataObject.count > 0,
+                       let base64String = dataObject[0]["b64_json"],
+                       let base64Data = base64String.data(using: .utf8),
+                       let imageData = Data(base64Encoded: base64Data),
+                       let image = UIImage(data: imageData) {
+                    return (nil, image)
                 }
             }
             print("[DallE] Error: Unable to parse response")
@@ -213,9 +236,10 @@ extension DallE: URLSessionDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             for (_, completion) in self._completionByTask {
-                completion("", OpenAIError.clientSideNetworkError(error: error))
+                completion(nil, OpenAIError.clientSideNetworkError(error: error))
             }
             _completionByTask = [:]
+            _responseDataByTask = [:]
         }
     }
 
@@ -255,8 +279,9 @@ extension DallE: URLSessionDataDelegate {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if let completion = self._completionByTask[task.taskIdentifier] {
-                    completion("", OpenAIError.urlAuthenticationFailed)
+                    completion(nil, OpenAIError.urlAuthenticationFailed)
                     self._completionByTask.removeValue(forKey: task.taskIdentifier)
+                    self._responseDataByTask.removeValue(forKey: task.taskIdentifier)
                 }
             }
         }
@@ -280,6 +305,10 @@ extension DallE: URLSessionDataDelegate {
                 self._completionByTask.removeValue(forKey: task.taskIdentifier) // out with the old
                 self._completionByTask[newTask.taskIdentifier] = completion     // in with the new
             }
+            if let data = self._responseDataByTask[task.taskIdentifier] {
+                self._responseDataByTask.removeValue(forKey: task.taskIdentifier)
+                self._responseDataByTask[newTask.taskIdentifier] = data
+            }
         }
 
         // Continue with new task
@@ -290,7 +319,8 @@ extension DallE: URLSessionDataDelegate {
         if let error = error {
             print("[DallE] URLSessionDataTask failed to complete: \(error.localizedDescription)")
         } else {
-            // Error == nil should indicate successful completion
+            // Error == nil should indicate successful completion. Process final result.
+            deliverImage(for: task.taskIdentifier)
             print("[DallE] URLSessionDataTask finished")
         }
 
@@ -300,8 +330,9 @@ extension DallE: URLSessionDataDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let completion = self._completionByTask[task.taskIdentifier] {
-                completion("", OpenAIError.clientSideNetworkError(error: error))
+                completion(nil, OpenAIError.clientSideNetworkError(error: error))
                 self._completionByTask.removeValue(forKey: task.taskIdentifier)
+                self._responseDataByTask.removeValue(forKey: task.taskIdentifier)
             }
         }
     }
@@ -319,15 +350,12 @@ extension DallE: URLSessionDataDelegate {
     }
 
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        let (contentError, imageURL) = self.extractContent(from: data)
-        let imageURLString = imageURL ?? "" // if response is nill, contentError will be set
-
-        // Deliver response
+        // Responses can arrive in chunks
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            if let completion = self._completionByTask[dataTask.taskIdentifier] {
-                completion(imageURLString, contentError)
-                self._completionByTask.removeValue(forKey: dataTask.taskIdentifier)
+            if var responseData = _responseDataByTask[dataTask.taskIdentifier] {
+                responseData.append(data)
+                _responseDataByTask[dataTask.taskIdentifier] = responseData
             }
         }
     }
