@@ -23,6 +23,25 @@ extension UIImage {
         self.init(cgImage: cgImage)
     }
 
+    public func centerCropped(to cropSize: CGSize) -> UIImage? {
+        guard let srcImage = self.cgImage else {
+            print("[UIImage] Unable to obtain CGImage")
+            return nil
+        }
+
+        // Must be careful to avoid rounding up anywhere!
+        let xOffset = (size.width - cropSize.width) / 2.0
+        let yOffset = (size.height - cropSize.height) / 2.0
+        let cropRect = CGRect(x: CGFloat(Int(xOffset)), y: CGFloat(Int(yOffset)), width: CGFloat(Int(cropSize.width)), height: CGFloat(Int(cropSize.height)))
+
+        guard let croppedImage = srcImage.cropping(to: cropRect) else {
+            print("[UIImage] Failed to produce cropped CGImage")
+            return nil
+        }
+
+        return UIImage(cgImage: croppedImage, scale: self.imageRendererFormat.scale, orientation: self.imageOrientation)
+    }
+
     /// Converts a `UIImage` to an ARGB-formatted `CVPixelBuffer`. The `UIImage` is assumed to be
     /// opaque and the alpha channel is ignored. The resulting pixel buffer has all alpha values set to `0xFF`.
     /// - Returns: `CVPixelBuffer` if successful otherwise `nil`.

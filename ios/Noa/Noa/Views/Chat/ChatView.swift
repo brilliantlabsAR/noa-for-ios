@@ -163,7 +163,7 @@ struct ChatView: View {
         }
         .onAppear {
             // When view appears, check whether we need an API key
-            popUpApiBox = _settings.apiKey.isEmpty
+            popUpApiBox = _settings.openAIKey.isEmpty
         }
     }
 

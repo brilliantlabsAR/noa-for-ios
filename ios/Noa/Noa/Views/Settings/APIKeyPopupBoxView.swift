@@ -36,7 +36,7 @@ struct APIKeyPopupBoxView: View {
 
             HStack {
                 Button(action: {
-                    _settings.setAPIKey(_apiKey)
+                    _settings.setOpenAIKey(_apiKey)
                     closeWithAnimation()
                 }) {
                     Text("Done")
@@ -71,7 +71,7 @@ struct APIKeyPopupBoxView: View {
             }
 
             // Fetch existing API key
-            _apiKey = _settings.apiKey
+            _apiKey = _settings.openAIKey
         }
     }
 

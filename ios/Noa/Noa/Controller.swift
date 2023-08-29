@@ -184,7 +184,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private let _m4aWriter = M4AWriter()
     private let _whisper = Whisper(configuration: .backgroundData)
     private let _chatGPT = ChatGPT(configuration: .backgroundData)
-    private let _dallE = DallE(configuration: .backgroundData)
+    private let _stableDiffusion = StableDiffusion(configuration: .backgroundData)
 
     private var _pendingQueryByID: [UUID: String] = [:]
 
@@ -403,16 +403,17 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }.store(in: &_subscribers)
 
         /// Test Dall-E
+        let prompt = "Aliens celebrating 4th of July on the lake."
         let imageURL = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
         let imageData = try! Data(contentsOf: imageURL)
         if let picture = UIImage(data: imageData) {
-            printToChat("Flying saucers", picture: picture, as: .user)
-        }
-        _dallE.renderEdit(jpegFileData: imageData, maskPNGFileData: nil, prompt: "Flying saucers", apiKey: _settings.apiKey) { (image: UIImage?, error: OpenAIError?) in
-            if let error = error {
-                print("[Controller] Error: \(error.description)")
-            } else {
-                self.printToChat("Flying saucers", picture: image, as: .assistant)
+            printToChat(prompt, picture: picture, as: .user)
+            _stableDiffusion.imageToImage(image: picture, prompt: prompt, strength: _settings.imageStrength, guidance: _settings.imageGuidance, apiKey: _settings.stabilityAIKey) { (image: UIImage?, error: AIError?) in
+                if let error = error {
+                    print("[Controller] Error: \(error.description)")
+                } else {
+                    self.printToChat(prompt, picture: image, as: .assistant)
+                }
             }
         }
     }
@@ -966,7 +967,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private func transcribe(audioFile fileData: Data, mode: ChatGPT.Mode) {
         print("[Controller] Transcribing voice...")
 
-        _whisper.transcribe(mode: mode == .assistant ? .transcription : .translation, fileData: fileData, format: .m4a, apiKey: _settings.apiKey) { [weak self] (query: String, error: OpenAIError?) in
+        _whisper.transcribe(mode: mode == .assistant ? .transcription : .translation, fileData: fileData, format: .m4a, apiKey: _settings.openAIKey) { [weak self] (query: String, error: AIError?) in
             guard let self = self else { return }
             if let error = error {
                 printErrorToChat(error.description, as: .user)
@@ -1007,7 +1008,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         // Send to ChatGPT
         let responder = mode == .assistant ? Participant.assistant : Participant.translator
         printTypingIndicatorToChat(as: responder)
-        _chatGPT.send(mode: mode, query: query, apiKey: _settings.apiKey, model: _settings.model) { [weak self] (response: String, error: OpenAIError?) in
+        _chatGPT.send(mode: mode, query: query, apiKey: _settings.openAIKey, model: _settings.gptModel) { [weak self] (response: String, error: AIError?) in
             if let error = error {
                 self?.printErrorToChat(error.description, as: responder)
             } else {
