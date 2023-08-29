@@ -42,6 +42,38 @@ extension UIImage {
         return UIImage(cgImage: croppedImage, scale: self.imageRendererFormat.scale, orientation: self.imageOrientation)
     }
 
+    public func expandImageWithLetterbox(to newSize: CGSize) -> UIImage? {
+        assert(newSize.width >= self.size.width && newSize.height >= self.size.height, "Image can only be expanded")
+
+        if newSize == self.size {
+            return self
+        }
+
+        guard let cgImage = self.cgImage else {
+            print("[UIImage] UNable to obtain CGImage")
+            return nil
+        }
+
+        UIGraphicsBeginImageContext(newSize)
+        defer {
+            UIGraphicsEndImageContext()
+        }
+        guard let ctx = UIGraphicsGetCurrentContext() else {
+            print("[UIImage] Unable to get current graphics context")
+            return nil
+        }
+
+        // Fill new image with black and then draw old image in the middle
+        ctx.setFillColor(red: 0, green: 0, blue: 0, alpha: 1)
+        ctx.fill([ CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height) ])
+        let xOffset = (newSize.width - self.size.width) / 2
+        let yOffset = (newSize.height - self.size.height) / 2
+        self.draw(in: CGRect(x: xOffset, y: yOffset, width: self.size.width, height: self.size.height))
+
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        return newImage
+    }
+
     /// Converts a `UIImage` to an ARGB-formatted `CVPixelBuffer`. The `UIImage` is assumed to be
     /// opaque and the alpha channel is ignored. The resulting pixel buffer has all alpha values set to `0xFF`.
     /// - Returns: `CVPixelBuffer` if successful otherwise `nil`.

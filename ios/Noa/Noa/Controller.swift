@@ -171,15 +171,16 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _rawREPLTimer: Timer?
     private var _matcher: Util.StreamingStringMatcher?
 
-    private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.219.1551", withExtension: "zip")!
-    private static let _fpgaURL = Bundle.main.url(forResource: "monocle-fpga-revC", withExtension: "bin")!
-    private let _requiredFirmwareVersion = "v23.219.1551"
-    private let _requiredFPGAVersion = "v23.179.1006"
-    private var _receivedVersionResponse = ""           // buffer for firmware and FPGA version responses
+    private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.237.1144", withExtension: "zip")!
+    private static let _fpgaURL = Bundle.main.url(forResource: "monocle-fpga", withExtension: "bin")!
+    private let _requiredFirmwareVersion = "v23.237.1144"
+    private let _requiredFPGAVersion = "v23.230.0808"
+    private var _receivedVersionResponse = ""   // buffer for firmware and FPGA version responses
     private var _currentFirmwareVersion: String?
     private var _currentFPGAVersion: String?
 
     private var _audioData = Data()
+    private var _imageData = Data()
 
     private let _m4aWriter = M4AWriter()
     private let _whisper = Whisper(configuration: .backgroundData)
@@ -401,21 +402,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _dfuBluetooth.enabled = false
             _dfuBluetooth.enabled = true
         }.store(in: &_subscribers)
-
-        /// Test Dall-E
-        let prompt = "Aliens celebrating 4th of July on the lake."
-        let imageURL = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
-        let imageData = try! Data(contentsOf: imageURL)
-        if let picture = UIImage(data: imageData) {
-            printToChat(prompt, picture: picture, as: .user)
-            _stableDiffusion.imageToImage(image: picture, prompt: prompt, strength: _settings.imageStrength, guidance: _settings.imageGuidance, apiKey: _settings.stabilityAIKey) { (image: UIImage?, error: AIError?) in
-                if let error = error {
-                    print("[Controller] Error: \(error.description)")
-                } else {
-                    self.printToChat(prompt, picture: image, as: .assistant)
-                }
-            }
-        }
     }
 
     /// Connect to the nearest device if one exists.
@@ -834,7 +820,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
     private func loadFilesForTransmission() -> ([(name: String, content: String)], String) {
         // Load up all the files
-        let basenames = [ "states", "graphics", "main" ]
+        let basenames = [ "states", "graphics", "audio", "photo", "main" ]
         var files: [(name: String, content: String)] = []
         for basename in basenames {
             let filename = basename + ".py"
@@ -912,15 +898,31 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     // MARK: Monocle Commands
 
     private func onMonocleCommand(command: String, data: Data) {
-        if command.starts(with: "ast:") {
+        if command.starts(with: "ast:") || command.starts(with: "ien:") {
             // Delete currently stored audio and prepare to receive new audio sample over
             // multiple packets
-            print("[Controller] Received audio start command")
             _audioData.removeAll(keepingCapacity: true)
+
+            if command.starts(with: "ien:") {
+                // Image end command indicates image data complete and prompt on the way
+                print("[Controller] Received complete image buffer (\(_imageData.count) bytes. Awaiting audio next.")
+            } else {
+                // Audio start command means this is *not* an image request, clear image buffer
+                print("[Controller] Received audio start command")
+                _imageData.removeAll(keepingCapacity: true)
+            }
+        } else if command.starts(with: "ist:") {
+            // Delete currently stored image and prepare to receive new image over multiple packets
+            print("[Controller] Received image start command")
+            _imageData.removeAll(keepingCapacity: true)
         } else if command.starts(with: "dat:") {
             // Append audio data
             print("[Controller] Received audio data packet (\(data.count) bytes)")
             _audioData.append(data)
+        } else if command.starts(with: "idt:") {
+            // Append image data
+            print("[Controler] Received image data packet (\(data.count) bytes)")
+            _imageData.append(data)
         } else if command.starts(with: "aen:") {
             // Audio finished, submit for transcription
             print("[Controller] Received complete audio buffer (\(_audioData.count) bytes)")
@@ -971,7 +973,8 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             guard let self = self else { return }
             if let error = error {
                 printErrorToChat(error.description, as: .user)
-            } else {
+            } else if _imageData.isEmpty {
+                // No image data: normal operation (assistant or translator)
                 if mode == .assistant {
                     // Store query and send ID to Monocle. We need to do this because we cannot perform
                     // back-to-back network requests in background mode. Monocle will reply back with
@@ -985,6 +988,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                     printToChat(query, as: .translator)
                     print("[Controller] Translation received: \(query)")
                 }
+            } else {
+                // Have image data, perform image generation
+                generateImage(prompt: query)
             }
         }
     }
@@ -1014,6 +1020,38 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             } else {
                 self?.printToChat(response, as: responder)
                 print("[Controller] Received response from ChatGPT for \(id): \(response)")
+            }
+        }
+    }
+
+    private func generateImage(prompt: String) {
+        // Monocle will not receive anything, tell it to go back to idle (ick = image ack)
+        _monocleBluetooth.send(text: "ick:", on: Self._dataRx)
+
+        // Attempt to decode image
+        guard let picture = UIImage(data: _imageData) else {
+            printErrorToChat("Photo could not be decoded", as: .user)
+            return
+        }
+
+        // Display image as user
+        printToChat(prompt, picture: picture, as: .user)
+
+        // Submit to Stable Diffusion
+        _stableDiffusion.imageToImage(
+            image: picture,
+            prompt: prompt,
+            strength: _settings.imageStrength,
+            guidance: _settings.imageGuidance,
+            apiKey: _settings.stabilityAIKey
+        ) { [weak self] (image: UIImage?, error: AIError?) in
+            if let error = error {
+                self?.printErrorToChat(error.description, as: .assistant)
+            } else if let picture = image {
+                self?.printToChat(prompt, picture: picture, as: .assistant)
+            } else {
+                // No picture but also no explicit error
+                self?.printErrorToChat("No image received", as: .assistant)
             }
         }
     }

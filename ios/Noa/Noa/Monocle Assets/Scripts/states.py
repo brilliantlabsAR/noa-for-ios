@@ -32,6 +32,12 @@ class State:
     class PrintResponse:
         pass
 
+    class CaptureImage:
+        pass
+
+    class SendImage:
+        pass
+
     class Undefined:
         pass
 

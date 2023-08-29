@@ -44,7 +44,7 @@ class StableDiffusion: NSObject {
 
     public func imageToImage(image: UIImage, prompt: String, strength: Float, guidance: Int, apiKey: String, completion: @escaping (UIImage?, AIError?) -> Void) {
         // Stable Diffusion wants images to be multiples of 64 pixels on each side
-        guard let pngImageData = getCroppedPNGData(for: image) else {
+        guard let pngImageData = getPNGData(for: image) else {
             DispatchQueue.main.async {
                 completion(nil, AIError.dataFormatError(message: "Unable to crop image and convert to PNG"))
             }
@@ -126,13 +126,20 @@ class StableDiffusion: NSObject {
         print("[StableDiffusion] Submitted image2image request with: strength=\(strength), guidance=\(guidance), prompt=\(prompt)")
     }
 
-    private func getCroppedPNGData(for image: UIImage) -> Data? {
+    /// Given a UIImage, expands it so that each side is the next integral multiple of 64 (as
+    /// required by Stable Diffusion), letterboxing and centering the original content. Monocle
+    /// sends images that are 640x400. Cropping them down to 640x384 produces an image
+    /// that is *too small* for Stable Diffusion but bumping the size up *just* works.
+    /// - Parameter for: Image to expand and obtain PNG data for.
+    /// - Returns: PNG data of an expanded copy of the image or `nil` if there was an error.
+    private func getPNGData(for image: UIImage) -> Data? {
+        // Expand each dimension to multiple of 64 that is equal or greater than current size
         let currentWidth = Int(image.size.width)
         let currentHeight = Int(image.size.height)
-        let croppedWidth = currentWidth & ~63
-        let croppedHeight = currentHeight & ~63
-        let cropSize = CGSize(width: CGFloat(croppedWidth), height: CGFloat(croppedHeight))
-        return image.centerCropped(to: cropSize)?.pngData()
+        let newWidth = (currentWidth + 63) & ~63
+        let newHeight = (currentHeight + 63) & ~63
+        let newSize = CGSize(width: CGFloat(newWidth), height: CGFloat(newHeight))
+        return image.expandImageWithLetterbox(to: newSize)?.pngData()
     }
 
     private func deliverImage(for taskIdentifier: Int) {
