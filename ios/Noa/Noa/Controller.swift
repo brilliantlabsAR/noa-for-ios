@@ -905,7 +905,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
             if command.starts(with: "ien:") {
                 // Image end command indicates image data complete and prompt on the way
-                print("[Controller] Received complete image buffer (\(_imageData.count) bytes. Awaiting audio next.")
+                print("[Controller] Received complete image buffer (\(_imageData.count) bytes). Awaiting audio next.")
             } else {
                 // Audio start command means this is *not* an image request, clear image buffer
                 print("[Controller] Received audio start command")

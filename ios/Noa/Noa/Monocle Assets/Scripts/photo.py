@@ -11,7 +11,8 @@ def capture_image(state, gfx, send_message):
     state.after(250, state.SendImage)
 
 def send_image(state, gfx, send_message):
-    #TODO: come up with some estimates for progress bar based on actual observed JPEG sizes
+    if state.on_entry():
+        state.current_state.bytes_sent = 0
     samples = bluetooth.max_length() - 4
     chunk = camera.read(samples)
     if chunk == None:
@@ -20,3 +21,16 @@ def send_image(state, gfx, send_message):
         state.after(0, state.StartRecording)
     else:
         send_message(b"idt:" + chunk)
+        state.current_state.bytes_sent += len(chunk)
+        benchmark_size = 64000
+        percent = state.current_state.bytes_sent / benchmark_size
+        if percent > 0.8:
+            gfx.set_prompt("Sending photo [=====]")
+        elif percent > 0.6:
+            gfx.set_prompt("Sending photo [==== ]")
+        elif percent > 0.4:
+            gfx.set_prompt("Sending photo [===  ]")
+        elif percent > 0.2:
+            gfx.set_prompt("Sending photo [==   ]")
+        else:
+            gfx.set_prompt("Sending photo [=    ]")
