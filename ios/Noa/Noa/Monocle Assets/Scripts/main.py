@@ -41,7 +41,7 @@ def bluetooth_message_handler(message):
 
 def touch_pad_handler(_):
     if state.current_state == state.WaitForTap:
-        state.after(0, state.CaptureImage)
+        state.after(0, state.DetectSingleTap)
     elif (
         state.current_state == state.WaitForPing
         or state.current_state == state.WaitForResponse
@@ -80,6 +80,19 @@ while True:
         if state.on_entry():
             bluetooth_send_message(b"rdy:")
             gfx.set_prompt("Tap and speak")
+
+    elif state.current_state == state.DetectSingleTap:
+        if state.has_been() >= 250:
+            if touch.state(touch.EITHER): # still holding, try detect hold
+                state.after(0, state.DetectHold)
+            else:
+                state.after(0, state.StartRecording)
+
+    elif state.current_state == state.DetectHold:
+        if state.has_been() >= 1000 and touch.state(touch.EITHER):
+            state.after(0, state.CaptureImage)
+        elif not touch.state(touch.EITHER):
+            state.after(0, state.WaitForTap)
 
     elif state.current_state == state.StartRecording:
         start_recording(state, gfx, bluetooth_send_message)

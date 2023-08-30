@@ -14,6 +14,12 @@ class State:
     class WaitForTap:
         pass
 
+    class DetectSingleTap:
+        pass
+
+    class DetectHold:
+        pass
+
     class StartRecording:
         pass
 
