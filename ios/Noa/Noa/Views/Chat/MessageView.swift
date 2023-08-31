@@ -21,9 +21,8 @@ struct MessageView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: 300, maxHeight: 300, alignment: .bottomTrailing)
-//                        .frame(width: 300, height: 300, alignment: .bottomTrailing)
                         .padding(.all, 8)
-                    if _currentMessage.participant == .translator {
+                    if _currentMessage.participant != .user {
                         Spacer()
                     }
                 }
@@ -34,7 +33,7 @@ struct MessageView: View {
                     Spacer()
                 }
                 MessageContentView(message: _currentMessage)
-                if _currentMessage.participant == .translator {
+                if _currentMessage.participant != .user {
                     Spacer()
                 }
             }
@@ -51,7 +50,7 @@ struct MessageView_Previews: PreviewProvider {
         let imageURL = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
         let imageData = try! Data(contentsOf: imageURL)
         let image = UIImage(data: imageData)
-        return Message(text: "Lake Tahoe!", picture: image, participant: Participant.user)
+        return Message(text: "Lake Tahoe!", picture: image, participant: Participant.assistant)
     }()
 
     static var previews: some View {

@@ -196,6 +196,8 @@ struct ChatView_Previews: PreviewProvider {
         store.putMessage(Message(text: "Message 2", participant: Participant.assistant))
         store.putMessage(Message(text: "Message 3", isError: true, participant: Participant.user))
         store.putMessage(Message(text: "Lake Tahoe!", picture: image, participant: Participant.user))
+        store.putMessage(Message(text: "Assistant response", picture: image, participant: Participant.assistant))
+        store.putMessage(Message(text: "Translator version", picture: image, participant: Participant.translator))
         for i in 0..<100 {
             store.putMessage(Message(text: "A reply from ChatGPT... I am going to write a whole lot of text here. The objective is to wrap the line and ensure that multiple lines display properly! Let's see what happens.\nSingle newline.\n\nTwo newlines.", typingInProgress: false, participant: Participant.assistant))
         }
