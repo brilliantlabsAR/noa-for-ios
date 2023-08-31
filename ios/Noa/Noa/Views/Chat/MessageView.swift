@@ -10,6 +10,8 @@ import SwiftUI
 struct MessageView: View {
     private var _currentMessage: Message
 
+    @Binding private var _expandedPicture: UIImage?
+
     var body: some View {
         VStack {
             if let picture = _currentMessage.picture {
@@ -17,11 +19,16 @@ struct MessageView: View {
                     if _currentMessage.participant != .assistant {
                         Spacer()
                     }
+
                     Image(uiImage: picture)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: 300, maxHeight: 300, alignment: .bottomTrailing)
                         .padding(.all, 8)
+                        .onTapGesture {
+                            _expandedPicture = picture
+                        }
+
                     if _currentMessage.participant != .user {
                         Spacer()
                     }
@@ -40,8 +47,9 @@ struct MessageView: View {
        }
     }
 
-    public init(currentMessage: Message) {
+    public init(currentMessage: Message, expandedPicture: Binding<UIImage?>) {
         _currentMessage = currentMessage
+        __expandedPicture = expandedPicture
     }
 }
 
@@ -54,7 +62,7 @@ struct MessageView_Previews: PreviewProvider {
     }()
 
     static var previews: some View {
-        MessageView(currentMessage: Self._message)
+        MessageView(currentMessage: Self._message, expandedPicture: .constant(nil))
 
     }
 }
