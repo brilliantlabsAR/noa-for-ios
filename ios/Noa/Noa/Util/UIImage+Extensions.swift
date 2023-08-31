@@ -49,11 +49,6 @@ extension UIImage {
             return self
         }
 
-        guard let cgImage = self.cgImage else {
-            print("[UIImage] UNable to obtain CGImage")
-            return nil
-        }
-
         UIGraphicsBeginImageContext(newSize)
         defer {
             UIGraphicsEndImageContext()
