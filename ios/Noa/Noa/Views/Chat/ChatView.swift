@@ -7,6 +7,10 @@
 //  Based on: https://iosapptemplates.com/blog/swiftui/swiftui-chat
 //
 
+
+//TODO: share sheet
+//TODO: add code to send image back (and just leave it empty in Python)
+
 import SwiftUI
 
 struct ChatView: View {
@@ -129,7 +133,7 @@ struct ChatView: View {
             }
         }
         .onAppear {
-            // When view appears, check whether we need an API key
+            // When view appears, check whether we need an API key (only OpenAI is required)
             popUpApiBox = _settings.openAIKey.isEmpty
         }
         .onChange(of: _expandedPicture) {
@@ -228,7 +232,6 @@ fileprivate struct ChatTextFieldView: View {
 
             // Text input box
             HStack(spacing: -35) {
-
                 // Text entry
                 TextField("Ask a question", text: $textInput)
                     .padding(6)

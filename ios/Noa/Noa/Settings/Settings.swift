@@ -59,13 +59,23 @@ class Settings: ObservableObject {
         return name
     }
 
-    /// Sets the value of the API key setting and persists it.
+    /// Sets the value of the OpenAI API key setting and persists it.
     /// - Parameter value: The new value.
     public func setOpenAIKey(_ value: String) {
         if openAIKey != value {
             openAIKey = value
             UserDefaults.standard.set(value, forKey: Self.k_openAIKey)
             print("[Settings] Set: \(Self.k_openAIKey) = \(openAIKey)")
+        }
+    }
+
+    /// Sets the value of the Stability AI API key setting and persists it.
+    /// - Parameter value: The new value.
+    public func setStabilityAIKey(_ value: String) {
+        if stabilityAIKey != value {
+            stabilityAIKey = value
+            UserDefaults.standard.set(value, forKey: Self.k_stabilityAIKey)
+            print("[Settings] Set: \(Self.k_stabilityAIKey) = \(stabilityAIKey)")
         }
     }
 

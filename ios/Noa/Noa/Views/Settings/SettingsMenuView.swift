@@ -24,7 +24,7 @@ struct SettingsMenuView: View {
             Button(action: {
                 popUpApiBox = true
             }) {
-                Label("Change API Key", systemImage: "person.circle")
+                Label("Manage API Keys", systemImage: "person.circle")
             }
 
             Toggle(isOn: $_translateEnabled) {

@@ -13,50 +13,42 @@ struct APIKeyPopupBoxView: View {
 
     @EnvironmentObject private var _settings: Settings
 
-    @State private var _apiKey: String = ""
+    @State private var _openAIKey: String = ""
+    @State private var _stabilityAIKey: String = ""
 
     var body: some View {
         VStack {
-            Text("Enter your OpenAI API key")
+            Text("Enter API Keys")
                 .font(.system(size: 20, weight: .semibold))
                 .padding(.top, 20)
                 .padding(.bottom, 2)
 
-            Text("Or press Get Key to create one on the OpenAI website.")
+            Text("Your [OpenAI key](https://platform.openai.com) is required. An optional [Stability AI key](https://platform.stability.ai) is needed for image generation.")
                 .font(.system(size: 15, weight: .regular))
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 5)
 
-            TextField("sk-...", text: $_apiKey)
+            TextField("OpenAI: sk-...", text: $_openAIKey)
+                .padding(.all, 2)
+                .background(Color.gray.opacity(0.2))
+                .padding(.horizontal)
+
+            TextField("Stability AI (Optional): sk-...", text: $_stabilityAIKey)
                 .padding(.all, 2)
                 .background(Color.gray.opacity(0.2))
                 .padding(.horizontal)
 
             Divider().background(Color.gray)
 
-            HStack {
-                Button(action: {
-                    _settings.setOpenAIKey(_apiKey)
-                    closeWithAnimation()
-                }) {
-                    Text("Done")
-                        .bold()
-                        .foregroundColor(.blue)
-                        .frame(maxWidth: .infinity)
-                }
-
-                Divider()
-                    .background(Color.gray)
-                    .padding(.top, -8)
-
-                Button(action: {
-                    UIApplication.shared.open(URL(string: "http://platform.openai.com")!)
-                }) {
-                    Text("Get Key")
-                        .font(.headline)
-                        .foregroundColor(.blue)
-                        .frame(maxWidth: .infinity)
-                }
+            Button(action: {
+                _settings.setOpenAIKey(_openAIKey)
+                _settings.setStabilityAIKey(_stabilityAIKey)
+                closeWithAnimation()
+            }) {
+                Text("Done")
+                    .bold()
+                    .foregroundColor(.blue)
+                    .frame(maxWidth: .infinity)
             }
             .frame(height: 40)
         }
@@ -71,7 +63,8 @@ struct APIKeyPopupBoxView: View {
             }
 
             // Fetch existing API key
-            _apiKey = _settings.openAIKey
+            _openAIKey = _settings.openAIKey
+            _stabilityAIKey = _settings.stabilityAIKey
         }
     }
 
