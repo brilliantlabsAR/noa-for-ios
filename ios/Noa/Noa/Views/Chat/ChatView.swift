@@ -7,10 +7,6 @@
 //  Based on: https://iosapptemplates.com/blog/swiftui/swiftui-chat
 //
 
-
-//TODO: share sheet
-//TODO: add code to send image back (and just leave it empty in Python)
-
 import SwiftUI
 
 struct ChatView: View {
@@ -52,14 +48,14 @@ struct ChatView: View {
             VStack(alignment: .center) {
                 // Title/navigation bar
                 if _expandedPicture == nil {
-                    ChatTitleBar(
+                    ChatTitleBarView(
                         popUpApiBox: $popUpApiBox,
                         showPairingView: $_showPairingView,
                         bluetoothEnabled: $_bluetoothEnabled,
                         mode: $_mode
                     )
                 } else {
-                    ExpandedPhotoTitleBar(expandedPicture: $_expandedPicture)
+                    PictureTitleBarView(expandedPicture: $_expandedPicture)
                 }
                 Spacer()
                 
@@ -97,13 +93,15 @@ struct ChatView: View {
                 .opacity(1 - _topLayerOpacity)              // hide when picture is being shown
 
                 // Bottom bar: connection status and text entry
-                ChatTextFieldView(
-                    isMonocleConnected: $_isMonocleConnected,
-                    textInput: $_textInput,
-                    onTextSubmitted: _onTextSubmitted
-                )
-                .allowsHitTesting(_expandedPicture == nil)
-                .opacity(1 - _topLayerOpacity)
+                if _expandedPicture == nil {
+                    ChatTextFieldView(
+                        isMonocleConnected: $_isMonocleConnected,
+                        textInput: $_textInput,
+                        onTextSubmitted: _onTextSubmitted
+                    )
+                } else {
+                    PictureToolbarView(picture: _expandedPicture)
+                }
             }
             .background(colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255) : Color(red: 242/255, green: 242/255, blue: 247/255))
             .blur(radius: popUpApiBox ? 1 : 0)
@@ -161,7 +159,7 @@ struct ChatView: View {
     }
 }
 
-fileprivate struct ChatTitleBar: View {
+fileprivate struct ChatTitleBarView: View {
     @EnvironmentObject private var _settings: Settings
 
     @Binding var popUpApiBox: Bool
@@ -188,24 +186,6 @@ fileprivate struct ChatTitleBar: View {
             )
             .environmentObject(_settings)
             .padding(.trailing)
-        }
-        .padding(.top)
-        .frame(maxWidth: .infinity, alignment: .top)
-    }
-}
-
-fileprivate struct ExpandedPhotoTitleBar: View {
-    @Binding var expandedPicture: UIImage?
-
-    var body: some View {
-        HStack {
-            Spacer()
-            Button("Done") {
-                // Close
-                expandedPicture = nil
-            }
-            .padding(.trailing)
-            .font(.system(size: 22, weight: .bold))
         }
         .padding(.top)
         .frame(maxWidth: .infinity, alignment: .top)
@@ -261,6 +241,48 @@ fileprivate struct ChatTextFieldView: View {
             .padding(.bottom, 5)
             .padding(.top, -10)
             .padding(.horizontal, 20)
+        }
+    }
+}
+
+fileprivate struct PictureTitleBarView: View {
+    @Binding var expandedPicture: UIImage?
+
+    var body: some View {
+        HStack {
+            Spacer()
+            Button("Done") {
+                // Close
+                expandedPicture = nil
+            }
+            .padding(.trailing)
+            .font(.system(size: 22, weight: .bold))
+        }
+        .padding(.top)
+        .frame(maxWidth: .infinity, alignment: .top)
+    }
+}
+
+fileprivate struct PictureToolbarView: View {
+    private let _image: Image?
+
+    var body: some View {
+        HStack {
+            if let image = _image {
+                ShareLink(item: image, preview: SharePreview("Picture", image: image)) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                }
+                .padding(.leading)
+            }
+            Spacer()
+        }
+    }
+
+    init(picture: UIImage?) {
+        if let picture = picture {
+            _image = Image(uiImage: picture)
+        } else {
+            _image = nil
         }
     }
 }
