@@ -1089,7 +1089,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         ) { [weak self] (image: UIImage?, error: AIError?) in
             if let error = error {
                 self?.printErrorToChat(error.description, as: .assistant)
-            } else if let picture = image {
+            } else if let picture = image?.centerCropped(to: CGSize(width: 640, height: 400)) { // crop out the letterboxing we had to introduce and return to original size
                 self?.printToChat(prompt, picture: picture, as: .assistant)
             } else {
                 // No picture but also no explicit error
