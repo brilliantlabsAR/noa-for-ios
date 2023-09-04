@@ -38,6 +38,9 @@ import NordicDFU
 class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgressDelegate {
     // MARK: Internal State
 
+    // Bluetooth communication happens on a background thread
+    private let _bluetoothQueue = DispatchQueue(label: "Bluetooth", qos: .default)
+
     // Monocle characteristic IDs. Note that directionality is from Monocle's perspective (i.e., we
     // transmit to Monocle on the receive characteristic).
     private static let _serialTx = CBUUID(string: "6e400003-b5a3-f393-e0a9-e50e24dcca9e")
@@ -46,33 +49,10 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private static let _dataRx = CBUUID(string: "e5700002-7bac-429a-b4ce-57ff900f479d")
 
     // Monocle Bluetooth manager
-    private let _monocleBluetooth = BluetoothManager(
-        autoConnectByProximity: false,  // must not auto-connect during pairing sequence; user must have time to click Connect
-        peripheralName: "monocle",
-        services: [
-            CBUUID(string: "6e400001-b5a3-f393-e0a9-e50e24dcca9e"): "Serial",
-            CBUUID(string: "e5700001-7bac-429a-b4ce-57ff900f479d"): "Data"
-        ],
-        receiveCharacteristics: [
-            Controller._serialTx: "SerialTx",
-            Controller._dataTx: "DataTx",
-        ],
-        transmitCharacteristics: [
-            Controller._serialRx: "SerialRx",
-            Controller._dataRx: "DataRx"
-        ]
-    )
+    private let _monocleBluetooth: BluetoothManager
 
     // DFU target Bluetooth manager
-    private let _dfuBluetooth = BluetoothManager(
-        autoConnectByProximity: true,   // DFU target will have different ID and so we must just auto-connect
-        peripheralName: "DfuTarg",
-        services: [
-            CBUUID(string: "0xfe59"): "Nordic DFU"
-        ],
-        receiveCharacteristics: [:],    // DFUServiceConroller will handle services on its own
-        transmitCharacteristics: [:]
-    )
+    private let _dfuBluetooth: BluetoothManager
 
     // Nordic DFU
     private let _dfuInitiator: DFUServiceInitiator
@@ -210,8 +190,11 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         didSet {
             // Pass through to Bluetooth managers. We look for both Monocle and DfuTarg in case we
             // need to resume a firmware update that was interrupted.
-            _monocleBluetooth.enabled = bluetoothEnabled
-            _dfuBluetooth.enabled = bluetoothEnabled
+            let enabled = bluetoothEnabled
+            _bluetoothQueue.async { [weak _monocleBluetooth, weak _dfuBluetooth] in
+                _monocleBluetooth?.enabled = enabled
+                _dfuBluetooth?.enabled = enabled
+            }
         }
     }
 
@@ -239,19 +222,44 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         _settings = settings
         _messages = messages
 
-        // Set initial state
-        isMonocleConnected = _monocleBluetooth.isConnected
-        pairedMonocleID = _monocleBluetooth.selectedDeviceID
-        bluetoothEnabled = false
+        // Instantiate Bluetooth managers first
+        _monocleBluetooth = BluetoothManager(
+            autoConnectByProximity: false,  // must not auto-connect during pairing sequence; user must have time to click Connect
+            peripheralName: "monocle",
+            services: [
+                CBUUID(string: "6e400001-b5a3-f393-e0a9-e50e24dcca9e"): "Serial",
+                CBUUID(string: "e5700001-7bac-429a-b4ce-57ff900f479d"): "Data"
+            ],
+            receiveCharacteristics: [
+                Controller._serialTx: "SerialTx",
+                Controller._dataTx: "DataTx",
+            ],
+            transmitCharacteristics: [
+                Controller._serialRx: "SerialRx",
+                Controller._dataRx: "DataRx"
+            ],
+            queue: _bluetoothQueue
+        )
+
+        _dfuBluetooth = BluetoothManager(
+            autoConnectByProximity: true,   // DFU target will have different ID and so we must just auto-connect
+            peripheralName: "DfuTarg",
+            services: [
+                CBUUID(string: "0xfe59"): "Nordic DFU"
+            ],
+            receiveCharacteristics: [:],    // DFUServiceConroller will handle services on its own
+            transmitCharacteristics: [:],
+            queue: _bluetoothQueue
+        )
 
         // Nordic DFU
         let firmware = try! DFUFirmware(urlToZipFile: Self._firmwareURL)
-        _dfuInitiator = DFUServiceInitiator().with(firmware: firmware)
+        _dfuInitiator = DFUServiceInitiator(queue: _bluetoothQueue, delegateQueue: .main, progressQueue: .main).with(firmware: firmware)
         _dfuInitiator.delegate = self
         _dfuInitiator.logger = self
         _dfuInitiator.progressDelegate = self
 
-        // Subscribe to changed of paired device ID setting
+        // Subscribe to changed of paired device ID setting (comes in on main queue)
         _settings.$pairedDeviceID.sink(receiveValue: { [weak self] (newPairedDeviceID: UUID?) in
             guard let self = self else { return }
 
@@ -261,147 +269,174 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 print("[Controller] Unpaired")
             }
 
-            // Begin connection attempts or disconnect
-            self._monocleBluetooth.selectedDeviceID = newPairedDeviceID
-
             // Update public state
             pairedMonocleID = newPairedDeviceID
+
+            // Begin connection attempts or disconnect
+            _bluetoothQueue.async { [weak _monocleBluetooth] in
+                _monocleBluetooth?.selectedDeviceID = newPairedDeviceID
+            }
         })
         .store(in: &_subscribers)
 
-        // Changes in nearby list of Monocle devices
+        // Changes in nearby list of Monocle devices (arrives on Bluetooth queue)
         _monocleBluetooth.discoveredDevices.sink { [weak self] (devices: [(deviceID: UUID, rssi: Float)]) in
-            guard let self = self else { return }
-            // If there is a Monocle that is within pairing distance, broadcast that. We use two
-            // thresholds for hysteresis.
-            let thresholdLow: Float = -85
-            let thresholdHigh: Float = -65
-            if let nearestDevice = devices.first {
-                if nearestDevice.rssi > thresholdHigh {
-                    nearestMonocleID = nearestDevice.deviceID
-                } else if nearestDevice.rssi < thresholdLow {
-                    nearestMonocleID = nil
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                // If there is a Monocle that is within pairing distance, broadcast that. We use two
+                // thresholds for hysteresis.
+                let thresholdLow: Float = -85
+                let thresholdHigh: Float = -65
+                if let nearestDevice = devices.first {
+                    if nearestDevice.rssi > thresholdHigh {
+                        nearestMonocleID = nearestDevice.deviceID
+                    } else if nearestDevice.rssi < thresholdLow {
+                        nearestMonocleID = nil
+                    }
+                    return
                 }
-                return
+                nearestMonocleID = nil
             }
-            nearestMonocleID = nil
         }
         .store(in: &_subscribers)
 
-        // Connection to Monocle
+        // Connection to Monocle (arrives on Bluetooth queue)
         _monocleBluetooth.peripheralConnected.sink { [weak self] (deviceID: UUID) in
-            guard let self = self else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
 
-            print("[Controller] Monocle connected")
+                print("[Controller] Monocle connected")
 
-            // Did we arrive here as a new connection or because a DFU update was finished?
-            var didFinishDFU = false
-            if case .performDFU(_, _) = _state {
-                didFinishDFU = true
+                // Did we arrive here as a new connection or because a DFU update was finished?
+                var didFinishDFU = false
+                if case .performDFU(_, _) = _state {
+                    didFinishDFU = true
+                }
+
+                // When Monocle is connected, stop looking for DfuTarg
+                _bluetoothQueue.async { [weak _dfuBluetooth] in
+                    _dfuBluetooth?.enabled = false
+                }
+                _dfuController = nil
+
+                // Save the paired device if we auto-connected. Currently, auto-connecting should not be
+                // possible anymore.
+                if self._settings.pairedDeviceID == nil {
+                    self._settings.setPairedDeviceID(deviceID)
+                }
+
+                // Always enter raw REPL mode
+                transmitRawREPLCode()
+
+                // Wait for confirmation that raw REPL was activated
+                transitionState(to: .waitingForRawREPL(didFinishDFU: didFinishDFU))
+
+                // Since firmware v23.181.0720, some sort of Bluetooth race condition has been exposed.
+                // If the iOS app is running and then Monocle is powered on, or if Monocle is restarted
+                // while the app is running, the raw REPL code is not received and Controller hangs
+                // forever in the waitingForRawREPL state. Presumably, Monocle needs some time before
+                // its receive characteristic is actually ready to accept data but to my knowledge, we
+                // have no way to detect this using CoreBluetooth. The "solution" is to periodically
+                // re-transmit the raw REPL code.
+                _rawREPLTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] (timer: Timer) in
+                    if case .waitingForRawREPL(_) = self?._state {
+                        self?.transmitRawREPLCode()
+                    }
+                }
+
+                // Update public state
+                isMonocleConnected = true
             }
+        }.store(in: &_subscribers)
 
-            // When Monocle is connected, stop looking for DfuTarg
-            _dfuBluetooth.enabled = false
-            _dfuController = nil
+        // Monocle disconnected (arrives on Bluetooth queue)
+        _monocleBluetooth.peripheralDisconnected.sink { [weak self] in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                print("[Controller] Monocle disconnected")
 
-            // Save the paired device if we auto-connected. Currently, auto-connecting should not be
-            // possible anymore.
-            if self._settings.pairedDeviceID == nil {
-                self._settings.setPairedDeviceID(deviceID)
-            }
+                // Are we in a DFU state?
+                var isPerformingDFU = false
+                switch _state {
+                case .initiateDFUAndWaitForDFUTarget:
+                    isPerformingDFU = true
+                case .performDFU(peripheral: _):
+                    isPerformingDFU = true
+                default:
+                    break
+                }
 
-            // Always enter raw REPL mode
-            transmitRawREPLCode()
-
-            // Wait for confirmation that raw REPL was activated
-            transitionState(to: .waitingForRawREPL(didFinishDFU: didFinishDFU))
-
-            // Since firmware v23.181.0720, some sort of Bluetooth race condition has been exposed.
-            // If the iOS app is running and then Monocle is powered on, or if Monocle is restarted
-            // while the app is running, the raw REPL code is not received and Controller hangs
-            // forever in the waitingForRawREPL state. Presumably, Monocle needs some time before
-            // its receive characteristic is actually ready to accept data but to my knowledge, we
-            // have no way to detect this using CoreBluetooth. The "solution" is to periodically
-            // re-transmit the raw REPL code.
-            _rawREPLTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] (timer: Timer) in
-                if case .waitingForRawREPL(_) = self?._state {
-                    self?.transmitRawREPLCode()
+                if !isPerformingDFU {
+                    // When waiting for DFU target/performing update, a disconnect is expected and we
+                    // don't want to change the state. Otherwise, Monocle has disconnected and we need
+                    // to move to the disconnected state. Note DFU target will often connect *before*
+                    // we receive the Monocle disconnect event and continue to progress, hence the need
+                    // to check *all* DFU states.
+                    transitionState(to: .disconnected)
                 }
             }
-
-            // Update public state
-            isMonocleConnected = true
         }.store(in: &_subscribers)
 
-        // Monocle disconnected
-        _monocleBluetooth.peripheralDisconnected.sink { [weak self] in
-            guard let self = self else { return }
-            print("[Controller] Monocle disconnected")
-
-            // Are we in a DFU state?
-            var isPerformingDFU = false
-            switch _state {
-            case .initiateDFUAndWaitForDFUTarget:
-                isPerformingDFU = true
-            case .performDFU(peripheral: _):
-                isPerformingDFU = true
-            default:
-                break
-            }
-
-            if !isPerformingDFU {
-                // When waiting for DFU target/performing update, a disconnect is expected and we
-                // don't want to change the state. Otherwise, Monocle has disconnected and we need
-                // to move to the disconnected state. Note DFU target will often connect *before*
-                // we receive the Monocle disconnect event and continue to progress, hence the need
-                // to check *all* DFU states.
-                transitionState(to: .disconnected)
-            }
-        }.store(in: &_subscribers)
-
-        // Monocle data received
+        // Monocle data received (arrives on Bluetooth queue)
         _monocleBluetooth.dataReceived.sink { [weak self] (received: (characteristic: CBUUID, value: Data)) in
-            guard let self = self else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
 
-            let (characteristicID, value) = received
+                let (characteristicID, value) = received
 
-            if characteristicID == Self._serialTx {
-                handleSerialDataReceived(value)
-            } else if characteristicID == Self._dataTx {
-                handleDataReceived(value)
+                if characteristicID == Self._serialTx {
+                    handleSerialDataReceived(value)
+                } else if characteristicID == Self._dataTx {
+                    handleDataReceived(value)
+                }
             }
         }.store(in: &_subscribers)
 
-        // DFU target connected
+        // DFU target connected (arrives on Bluetooth queue)
         _dfuBluetooth.peripheralConnected.sink { [weak self] (deviceID: UUID) in
-            guard let self = self,
-                  let peripheral = _dfuBluetooth.connectedPeripheral else {
-                return
-            }
-            print("[Controller] DFUTarget connected")
+            guard let peripheral = self?._dfuBluetooth.connectedPeripheral else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
 
-            if case let .initiateDFUAndWaitForDFUTarget(rescaleUpdatePercentage: rescaleUpdatePercentage) = _state {
-                transitionState(to: .performDFU(peripheral: peripheral, rescaleUpdatePercentage: rescaleUpdatePercentage))
-            } else {
-                // This can occur if device is stuck in DFU mode and we bring the app up. We cannot
-                // yet know whether an FPGA will follow so let's assume it won't.
-                transitionState(to: .performDFU(peripheral: peripheral, rescaleUpdatePercentage: false))
+                print("[Controller] DFUTarget connected")
+
+                if case let .initiateDFUAndWaitForDFUTarget(rescaleUpdatePercentage: rescaleUpdatePercentage) = _state {
+                    transitionState(to: .performDFU(peripheral: peripheral, rescaleUpdatePercentage: rescaleUpdatePercentage))
+                } else {
+                    // This can occur if device is stuck in DFU mode and we bring the app up. We cannot
+                    // yet know whether an FPGA will follow so let's assume it won't.
+                    transitionState(to: .performDFU(peripheral: peripheral, rescaleUpdatePercentage: false))
+                }
             }
         }.store(in: &_subscribers)
 
         // DFU target disconnected (which means update succeeded, in which case device comes back
-        // up as Monocle, or failed, in which case we will need to retry)
-        _dfuBluetooth.peripheralDisconnected.sink { [weak self] in
-            guard let self = self else { return }
+        // up as Monocle, or failed, in which case we will need to retry). Arrives on Bluetooth
+        // queue.
+        _dfuBluetooth.peripheralDisconnected.sink { [weak _dfuBluetooth] in
             print("[Controller] DFUTarget disconnected")
-            _dfuController = nil
 
-            // DFU controller has been observed to occasionally abort for some unknown reasos,
+            DispatchQueue.main.async { [weak self] in
+                self?._dfuController = nil
+            }
+
+            // DFU controller has been observed to occasionally abort for some unknown reason,
             // which also appears to stop Bluetooth scanning. We need to bounce the Bluetooth
             // manager so it starts scanning and auto-retries DFU.
-            _dfuBluetooth.enabled = false
-            _dfuBluetooth.enabled = true
+            _dfuBluetooth?.enabled = false
+            _dfuBluetooth?.enabled = true
         }.store(in: &_subscribers)
+
+        // Set initial state
+        isMonocleConnected = _monocleBluetooth.isConnected
+        pairedMonocleID = _monocleBluetooth.selectedDeviceID
+
+        // Start Bluetooth managers and ensure they are initially disabled
+        _bluetoothQueue.async { [_monocleBluetooth, _dfuBluetooth] in
+            _monocleBluetooth.start()
+            _dfuBluetooth.start()
+        }
+        bluetoothEnabled = false
     }
 
     /// Connect to the nearest device if one exists.
@@ -468,7 +503,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
         case .running:
             // Send ^D to start app
-            _monocleBluetooth.send(data: Data([ 0x04 ]), on: Self._serialRx)
+            send(data: Data([ 0x04 ]), to: _monocleBluetooth, on: Self._serialRx)
 
             // Not updating anymore
             updateState = .notUpdating
@@ -649,14 +684,21 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             let rescaleFPGAUpdatePercentage = didFinishDFU
 
             // Do update
-            if let maximumDataLength = _monocleBluetooth.maximumDataLength, maximumDataLength > 100 {
-                // Need a reasonable MTU size
-                transitionState(to: .initiateFPGAUpdate(maximumDataLength: maximumDataLength, rescaleUpdatePercentage: rescaleFPGAUpdatePercentage))
-            } else {
-                // We don't know the MTU size or it is unreasonably small, cannot update, proceed otherwise
-                let mtuSize = _monocleBluetooth.maximumDataLength == nil ? "unknown" : "\(_monocleBluetooth.maximumDataLength!)"
-                print("[Controller] Error: Unable to update FPGA. MTU size: \(mtuSize)")
-                transitionState(to: .waitingForARGPTVersion)
+            _bluetoothQueue.async { [weak _monocleBluetooth] in // Bluetooth thread to access maximum data length
+                guard let _monocleBluetooth = _monocleBluetooth else { return }
+                if let maximumDataLength = _monocleBluetooth.maximumDataLength, maximumDataLength > 100 {
+                    // Need a reasonable MTU size
+                    DispatchQueue.main.async { [weak self] in   // back to main thread...
+                        self?.transitionState(to: .initiateFPGAUpdate(maximumDataLength: maximumDataLength, rescaleUpdatePercentage: rescaleFPGAUpdatePercentage))
+                    }
+                } else {
+                    // We don't know the MTU size or it is unreasonably small, cannot update, proceed otherwise
+                    let mtuSize = _monocleBluetooth.maximumDataLength == nil ? "unknown" : "\(_monocleBluetooth.maximumDataLength!)"
+                    print("[Controller] Error: Unable to update FPGA. MTU size: \(mtuSize)")
+                    DispatchQueue.main.async { [weak self] in
+                        self?.transitionState(to: .waitingForARGPTVersion)
+                    }
+                }
             }
         } else {
             // Proceed with uploading and running Monocle script
@@ -776,7 +818,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
     private func transmitRawREPLCode() {
         // ^C (kill current), ^C (again to be sure), ^A (raw REPL mode)
-        _monocleBluetooth.send(data: Data([ 0x03, 0x03, 0x01 ]), on: Self._serialRx)
+        send(data: Data([ 0x03, 0x03, 0x01 ]), to: _monocleBluetooth, on: Self._serialRx)
     }
 
     private func transmitFirmwareVersionCheck() {
@@ -815,7 +857,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         var data = Data()
         data.append(command)
         data.append(Data([ 0x04 ])) // ^D to execute the command
-        _monocleBluetooth.send(data: data, on: Self._serialRx)
+        send(data: data, to: _monocleBluetooth, on: Self._serialRx)
     }
 
     private func loadFilesForTransmission() -> ([(name: String, content: String)], String) {
@@ -884,7 +926,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         data.append(Data([ 0x04 ])) // ^D to execute the command
 
         // Send!
-        _monocleBluetooth.send(data: data, on: Self._serialRx)
+        send(data: data, to: _monocleBluetooth, on: Self._serialRx)
         print("[Controller] Sent \(filename): \(data.count) bytes")
     }
 
@@ -981,7 +1023,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                     // the ID, allowing us to perform a ChatGPT request.
                     let id = UUID()
                     _pendingQueryByID[id] = query
-                    _monocleBluetooth.send(text: "pin:" + id.uuidString, on: Self._dataRx)
+                    send(text: "pin:" + id.uuidString, to: _monocleBluetooth, on: Self._dataRx)
                     print("[Controller] Sent transcription ID to Monocle: \(id)")
                 } else {
                     // Translation mode: No more network requests to do. Display translation.
@@ -1026,7 +1068,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
     private func generateImage(prompt: String) {
         // Monocle will not receive anything, tell it to go back to idle (ick = image ack)
-        _monocleBluetooth.send(text: "ick:", on: Self._dataRx)
+        send(text: "ick:", to: _monocleBluetooth, on: Self._dataRx)
 
         // Attempt to decode image
         guard let picture = UIImage(data: _imageData) else {
@@ -1080,27 +1122,44 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }
     }
 
+    // MARK: Send to Monocle
+
+    private func send(data: Data, to bluetooth: BluetoothManager, on characteristicID: CBUUID) {
+        _bluetoothQueue.async {
+            bluetooth.send(data: data, on: characteristicID)
+        }
+    }
+
+    private func send(text: String, to bluetooth: BluetoothManager, on characteristicID: CBUUID) {
+        _bluetoothQueue.async {
+            bluetooth.send(text: text, on: characteristicID)
+        }
+    }
+
     private func sendTextToMonocleInChunks(text: String, isError: Bool) {
-        guard var chunkSize = _monocleBluetooth.maximumDataLength else {
-            return
-        }
+        _bluetoothQueue.async { [weak _monocleBluetooth] in
+            guard let _monocleBluetooth = _monocleBluetooth,
+                  var chunkSize = _monocleBluetooth.maximumDataLength else {
+                return
+            }
 
-        chunkSize -= 4  // make room for command identifier
-        guard chunkSize > 0 else {
-            print("[Controller] Internal error: Unusable write length: \(chunkSize)")
-            return
-        }
+            chunkSize -= 4  // make room for command identifier
+            guard chunkSize > 0 else {
+                print("[Controller] Internal error: Unusable write length: \(chunkSize)")
+                return
+            }
 
-        // Split strings into chunks and prepend each one with the correct command
-        let command = isError ? "err:" : "res:"
-        var idx = 0
-        while idx < text.count {
-            let end = min(idx + chunkSize, text.count)
-            let startIdx = text.index(text.startIndex, offsetBy: idx)
-            let endIdx = text.index(text.startIndex, offsetBy: end)
-            let chunk = command + text[startIdx..<endIdx]
-            _monocleBluetooth.send(text: chunk, on: Self._dataRx)
-            idx = end
+            // Split strings into chunks and prepend each one with the correct command
+            let command = isError ? "err:" : "res:"
+            var idx = 0
+            while idx < text.count {
+                let end = min(idx + chunkSize, text.count)
+                let startIdx = text.index(text.startIndex, offsetBy: idx)
+                let endIdx = text.index(text.startIndex, offsetBy: end)
+                let chunk = command + text[startIdx..<endIdx]
+                _monocleBluetooth.send(text: chunk, on: Self._dataRx)
+                idx = end
+            }
         }
     }
 
@@ -1156,7 +1215,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }
     }
 
-    // MARK: Nordic DFU Delegates
+    // MARK: Nordic DFU Delegates (Main Queue)
 
     public func logWith(_ level: LogLevel, message: String) {
         print("[Controller] DFU: \(message)")
