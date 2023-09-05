@@ -1091,7 +1091,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 self?.printErrorToChat(error.description, as: .assistant)
             } else if let picture = image?.centerCropped(to: CGSize(width: 640, height: 400)) { // crop out the letterboxing we had to introduce and return to original size
                 self?.printToChat(prompt, picture: picture, as: .assistant)
-                self?.sendImageToMonocleInChunks(image: picture)
+
+                //TODO: this does not seem to work yet
+                //self?.sendImageToMonocleInChunks(image: picture)
             } else {
                 // No picture but also no explicit error
                 self?.printErrorToChat("No image received", as: .assistant)
