@@ -16,6 +16,7 @@
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
 		CC1632402AA6A0AC006A8E6A /* RGB343.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC16323F2AA6A0AC006A8E6A /* RGB343.swift */; };
+		CC1632422AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */; };
 		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
 		CC200A502A37E396005C67E0 /* states.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4E2A37E396005C67E0 /* states.py */; };
 		CC200A512A37E396005C67E0 /* graphics.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4F2A37E396005C67E0 /* graphics.py */; };
@@ -23,7 +24,6 @@
 		CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC202CBF2A9036C400A71EE4 /* TimestampView.swift */; };
 		CC212D682A9D34A90093479F /* StableDiffusion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC212D672A9D34A90093479F /* StableDiffusion.swift */; };
 		CC212D6A2A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */; };
-		CC212D6C2A9E6F040093479F /* monocle-micropython-v23.237.1144.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6B2A9E6F040093479F /* monocle-micropython-v23.237.1144.zip */; };
 		CC212D6E2A9E6F130093479F /* monocle-fpga.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6D2A9E6F130093479F /* monocle-fpga.bin */; };
 		CC212D702A9E74870093479F /* audio.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6F2A9E74870093479F /* audio.py */; };
 		CC212D722A9E764B0093479F /* photo.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D712A9E764B0093479F /* photo.py */; };
@@ -99,6 +99,7 @@
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
 		CC16323F2AA6A0AC006A8E6A /* RGB343.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RGB343.swift; sourceTree = "<group>"; };
+		CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.248.0754.zip"; sourceTree = "<group>"; };
 		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
 		CC200A4E2A37E396005C67E0 /* states.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = states.py; sourceTree = "<group>"; };
 		CC200A4F2A37E396005C67E0 /* graphics.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = graphics.py; sourceTree = "<group>"; };
@@ -106,7 +107,6 @@
 		CC202CBF2A9036C400A71EE4 /* TimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampView.swift; sourceTree = "<group>"; };
 		CC212D672A9D34A90093479F /* StableDiffusion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableDiffusion.swift; sourceTree = "<group>"; };
 		CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CVPixelBuffer+Extensions.swift"; sourceTree = "<group>"; };
-		CC212D6B2A9E6F040093479F /* monocle-micropython-v23.237.1144.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.237.1144.zip"; sourceTree = "<group>"; };
 		CC212D6D2A9E6F130093479F /* monocle-fpga.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga.bin"; sourceTree = "<group>"; };
 		CC212D6F2A9E74870093479F /* audio.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = audio.py; sourceTree = "<group>"; };
 		CC212D712A9E764B0093479F /* photo.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = photo.py; sourceTree = "<group>"; };
@@ -209,7 +209,7 @@
 		CC00398D2A6B7F5A009E3BAC /* Firmware */ = {
 			isa = PBXGroup;
 			children = (
-				CC212D6B2A9E6F040093479F /* monocle-micropython-v23.237.1144.zip */,
+				CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */,
 			);
 			path = Firmware;
 			sourceTree = "<group>";
@@ -550,6 +550,7 @@
 				352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */,
 				CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */,
 				CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */,
+				CC1632422AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip in Resources */,
 				CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */,
 				CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */,
 				CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */,
@@ -567,7 +568,6 @@
 				CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */,
 				CC4E3AC82A00BA4C0058AC20 /* Assets.xcassets in Resources */,
 				CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */,
-				CC212D6C2A9E6F040093479F /* monocle-micropython-v23.237.1144.zip in Resources */,
 				CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */,
 				CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */,
 			);

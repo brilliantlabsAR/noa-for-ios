@@ -70,6 +70,34 @@
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
+			<string>Model</string>
+			<key>Key</key>
+			<string>stability_sd_model</string>
+			<key>DefaultValue</key>
+			<string>stable-diffusion-v1-5</string>
+			<key>Titles</key>
+			<array>
+				<string>v1.4</string>
+				<string>v1.5</string>
+				<string>v2.0</string>
+				<string>Depth v2.0</string>
+				<string>v2.1</string>
+				<string>XL Beta v2.2.2</string>
+			</array>
+			<key>Values</key>
+			<array>
+				<string>stable-diffusion-v1</string>
+				<string>stable-diffusion-v1-5</string>
+				<string>stable-diffusion-512-v2-0</string>
+				<string>stable-diffusion-depth-v2-0</string>
+				<string>stable-diffusion-512-v2-1</string>
+				<string>stable-diffusion-xl-beta-v2-2-2</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
 			<string>Image Strength</string>
 			<key>Key</key>
 			<string>stability_image_strength</string>

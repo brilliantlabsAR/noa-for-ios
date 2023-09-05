@@ -42,7 +42,7 @@ class StableDiffusion: NSObject {
         }
     }
 
-    public func imageToImage(image: UIImage, prompt: String, strength: Float, guidance: Int, apiKey: String, completion: @escaping (UIImage?, AIError?) -> Void) {
+    public func imageToImage(image: UIImage, prompt: String, model: String, strength: Float, guidance: Int, apiKey: String, completion: @escaping (UIImage?, AIError?) -> Void) {
         // Stable Diffusion wants images to be multiples of 64 pixels on each side
         guard let pngImageData = getPNGData(for: image) else {
             DispatchQueue.main.async {
@@ -53,7 +53,7 @@ class StableDiffusion: NSObject {
 
         // Prepare URL request
         let boundary = UUID().uuidString
-        let url = URL(string: "https://api.stability.ai/v1/generation/stable-diffusion-v1-5/image-to-image")!
+        let url = URL(string: "https://api.stability.ai/v1/generation/\(model)/image-to-image")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
@@ -123,7 +123,7 @@ class StableDiffusion: NSObject {
         // Begin
         task.resume()
 
-        print("[StableDiffusion] Submitted image2image request with: strength=\(strength), guidance=\(guidance), prompt=\(prompt)")
+        print("[StableDiffusion] Submitted image2image request with: model=\(model), strength=\(strength), guidance=\(guidance), prompt=\(prompt)")
     }
 
     /// Given a UIImage, expands it so that each side is the next integral multiple of 64 (as

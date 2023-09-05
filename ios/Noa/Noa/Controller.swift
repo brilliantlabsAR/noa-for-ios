@@ -151,9 +151,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _rawREPLTimer: Timer?
     private var _matcher: Util.StreamingStringMatcher?
 
-    private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.237.1144", withExtension: "zip")!
+    private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.248.0754", withExtension: "zip")!
     private static let _fpgaURL = Bundle.main.url(forResource: "monocle-fpga", withExtension: "bin")!
-    private let _requiredFirmwareVersion = "v23.237.1144"
+    private let _requiredFirmwareVersion = "v23.248.0754"
     private let _requiredFPGAVersion = "v23.230.0808"
     private var _receivedVersionResponse = ""   // buffer for firmware and FPGA version responses
     private var _currentFirmwareVersion: String?
@@ -1080,9 +1080,11 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         printToChat(prompt, picture: picture, as: .user)
 
         // Submit to Stable Diffusion
+        printTypingIndicatorToChat(as: .assistant)
         _stableDiffusion.imageToImage(
             image: picture,
             prompt: prompt,
+            model: _settings.stableDiffusionModel,
             strength: _settings.imageStrength,
             guidance: _settings.imageGuidance,
             apiKey: _settings.stabilityAIKey

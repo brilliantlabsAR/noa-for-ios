@@ -23,6 +23,9 @@ class Settings: ObservableObject {
     @Published private(set) var stabilityAIKey: String = ""
     private static let k_stabilityAIKey = "stability_api_key"
 
+    @Published private(set) var stableDiffusionModel: String = ""
+    private static let k_stableDiffusionModelKey = "stability_sd_model"
+
     @Published private(set) var imageStrength: Float = 0
     private static let k_imageStrength = "stability_image_strength"
 
@@ -180,6 +183,11 @@ class Settings: ObservableObject {
         let stabilityAIKey = UserDefaults.standard.string(forKey: Self.k_stabilityAIKey) ?? ""
         if stabilityAIKey != self.stabilityAIKey {
             self.stabilityAIKey = stabilityAIKey
+        }
+
+        let stableDiffusionModel = UserDefaults.standard.string(forKey: Self.k_stableDiffusionModelKey) ?? ""
+        if stableDiffusionModel != self.stableDiffusionModel {
+            self.stableDiffusionModel = stableDiffusionModel
         }
 
         let imageStrength = UserDefaults.standard.float(forKey: Self.k_imageStrength)
