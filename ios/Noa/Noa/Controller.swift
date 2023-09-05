@@ -1091,6 +1091,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 self?.printErrorToChat(error.description, as: .assistant)
             } else if let picture = image?.centerCropped(to: CGSize(width: 640, height: 400)) { // crop out the letterboxing we had to introduce and return to original size
                 self?.printToChat(prompt, picture: picture, as: .assistant)
+                self?.sendImageToMonocleInChunks(image: picture)
             } else {
                 // No picture but also no explicit error
                 self?.printErrorToChat("No image received", as: .assistant)
@@ -1160,6 +1161,48 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 _monocleBluetooth.send(text: chunk, on: Self._dataRx)
                 idx = end
             }
+        }
+    }
+
+    private func sendImageToMonocleInChunks(image: UIImage) {
+        guard let pixelBuffer = image.toPixelBuffer() else { return }
+
+        let bitmap = convertARGB8ToRGB343(pixelBuffer)
+
+        let expectedSize = 640 * 400 * 10 / 8
+        guard bitmap.count == expectedSize else {
+            print("[Controler] Error: RGB343 image is not the expected size (got \(bitmap.count) bytes instead of \(expectedSize))")
+            return
+        }
+
+        _bluetoothQueue.async { [weak _monocleBluetooth] in
+            guard let _monocleBluetooth = _monocleBluetooth,
+                  var chunkSize = _monocleBluetooth.maximumDataLength else {
+                return
+            }
+
+            chunkSize -= 4  // make room for command identifier
+            guard chunkSize > 0 else {
+                print("[Controller] Internal error: Unusable write length: \(chunkSize)")
+                return
+            }
+
+            // Send "bitmap start" command
+            _monocleBluetooth.send(text: "bst:", on: Self._dataRx)
+
+            // Send bitmap data
+            var idx = 0
+            while idx < bitmap.count {
+                let end = min(idx + chunkSize, bitmap.count)
+                let chunk = "bdt:".data(using: .utf8)! + bitmap[idx..<end]
+                _monocleBluetooth.send(data: chunk, on: Self._dataRx)
+                idx = end
+            }
+
+            // Send "bitmap end" command
+            _monocleBluetooth.send(text: "ben:", on: Self._dataRx)
+
+            print("[Controller] Send \(bitmap.count) bytes of bitmap data to Monocle")
         }
     }
 

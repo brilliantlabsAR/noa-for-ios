@@ -15,6 +15,7 @@
 		CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
+		CC1632402AA6A0AC006A8E6A /* RGB343.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC16323F2AA6A0AC006A8E6A /* RGB343.swift */; };
 		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
 		CC200A502A37E396005C67E0 /* states.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4E2A37E396005C67E0 /* states.py */; };
 		CC200A512A37E396005C67E0 /* graphics.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4F2A37E396005C67E0 /* graphics.py */; };
@@ -97,6 +98,7 @@
 		CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Statement_Chinese.m4a; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
+		CC16323F2AA6A0AC006A8E6A /* RGB343.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RGB343.swift; sourceTree = "<group>"; };
 		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
 		CC200A4E2A37E396005C67E0 /* states.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = states.py; sourceTree = "<group>"; };
 		CC200A4F2A37E396005C67E0 /* graphics.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = graphics.py; sourceTree = "<group>"; };
@@ -428,6 +430,7 @@
 				CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */,
 				CC07BD9A2A1962DC0082999A /* M4AWriter.swift */,
 				CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */,
+				CC16323F2AA6A0AC006A8E6A /* RGB343.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -621,6 +624,7 @@
 				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,
 				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,
 				CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */,
+				CC1632402AA6A0AC006A8E6A /* RGB343.swift in Sources */,
 				CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */,
 				F8B8D4792A71761700817A24 /* LoopingVideoPlayer.swift in Sources */,
 				CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */,
