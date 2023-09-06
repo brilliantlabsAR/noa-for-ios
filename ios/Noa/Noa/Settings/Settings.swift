@@ -14,59 +14,81 @@ import Combine
 import Foundation
 
 class Settings: ObservableObject {
-    @Published private(set) var apiKey: String = ""
-    private static let k_apiKey = "api_key"
+    @Published private(set) var openAIKey: String = ""
+    private static let k_openAIKey = "api_key"
 
-    @Published private(set) var model: String = ""
-    private static let k_model = "model"
+    @Published private(set) var gptModel: String = ""
+    private static let k_gptModel = "model"
+
+    @Published private(set) var stabilityAIKey: String = ""
+    private static let k_stabilityAIKey = "stability_api_key"
+
+    @Published private(set) var stableDiffusionModel: String = ""
+    private static let k_stableDiffusionModelKey = "stability_sd_model"
+
+    @Published private(set) var imageStrength: Float = 0
+    private static let k_imageStrength = "stability_image_strength"
+
+    @Published private(set) var imageGuidance: Int = 0
+    private static let k_imageGuidance = "stability_guidance"
 
     @Published private(set) var pairedDeviceID: UUID?
     private static let k_pairedDeviceID = "paired_device_id"    // this key should *not* appear in Root.plist (therefore cannot be edited in Settings by user directly; only from app)
 
-    public let supportedModels: [String]
+    public let supportedGPTModels: [String]
 
-    private let _modelToPrintableName: [String: String]
+    private let _gptModelToPrintableName: [String: String]
 
     public init() {
         Self.registerDefaults()
 
-        let (modelNames, supportedModels) = Self.getPossibleTitlesAndValuesForMultiValueItem(withKey: Self.k_model)
-        self.supportedModels = supportedModels
+        let (modelNames, supportedModels) = Self.getPossibleTitlesAndValuesForMultiValueItem(withKey: Self.k_gptModel)
+        self.supportedGPTModels = supportedModels
 
         var modelToPrintableName: [String: String] = [:]
         for i in 0..<min(modelNames.count, supportedModels.count) {
             modelToPrintableName[supportedModels[i]] = modelNames[i]
         }
-        _modelToPrintableName = modelToPrintableName
+        _gptModelToPrintableName = modelToPrintableName
 
         NotificationCenter.default.addObserver(self, selector: #selector(Self.onSettingsChanged), name: UserDefaults.didChangeNotification, object: nil)
         onSettingsChanged()
     }
 
-    public func printableModelName(model: String) -> String {
-        guard let name = _modelToPrintableName[model] else {
+    public func printableGPTModelName(model: String) -> String {
+        guard let name = _gptModelToPrintableName[model] else {
             return "?"
         }
         return name
     }
 
-    /// Sets the value of the API key setting and persists it.
+    /// Sets the value of the OpenAI API key setting and persists it.
     /// - Parameter value: The new value.
-    public func setAPIKey(_ value: String) {
-        if apiKey != value {
-            apiKey = value
-            UserDefaults.standard.set(value, forKey: Self.k_apiKey)
-            print("[Settings] Set: \(Self.k_apiKey) = \(apiKey)")
+    public func setOpenAIKey(_ value: String) {
+        if openAIKey != value {
+            openAIKey = value
+            UserDefaults.standard.set(value, forKey: Self.k_openAIKey)
+            print("[Settings] Set: \(Self.k_openAIKey) = \(openAIKey)")
+        }
+    }
+
+    /// Sets the value of the Stability AI API key setting and persists it.
+    /// - Parameter value: The new value.
+    public func setStabilityAIKey(_ value: String) {
+        if stabilityAIKey != value {
+            stabilityAIKey = value
+            UserDefaults.standard.set(value, forKey: Self.k_stabilityAIKey)
+            print("[Settings] Set: \(Self.k_stabilityAIKey) = \(stabilityAIKey)")
         }
     }
 
     /// Sets the value of the model setting. Currently does not perform validation to ensure an allowed value is used.
     /// - Parameter value: The new value.
-    public func setModel(_ value: String) {
-        if model != value {
-            model = value
-            UserDefaults.standard.set(value, forKey: Self.k_model)
-            print("[Settings] Set: \(Self.k_model) = \(model)")
+    public func setGPTModel(_ value: String) {
+        if gptModel != value {
+            gptModel = value
+            UserDefaults.standard.set(value, forKey: Self.k_gptModel)
+            print("[Settings] Set: \(Self.k_gptModel) = \(gptModel)")
         }
     }
 
@@ -148,14 +170,34 @@ class Settings: ObservableObject {
 
     @objc private func onSettingsChanged() {
         // Publish changes when settings have been edited
-        let apiKey = UserDefaults.standard.string(forKey: Self.k_apiKey) ?? ""
-        if apiKey != self.apiKey {
-            self.apiKey = apiKey
+        let openAIKey = UserDefaults.standard.string(forKey: Self.k_openAIKey) ?? ""
+        if openAIKey != self.openAIKey {
+            self.openAIKey = openAIKey
         }
 
-        let model = UserDefaults.standard.string(forKey: Self.k_model) ?? "gpt-3.5-turbo"
-        if model != self.model {
-            self.model = model
+        let model = UserDefaults.standard.string(forKey: Self.k_gptModel) ?? "gpt-3.5-turbo"
+        if model != self.gptModel {
+            self.gptModel = model
+        }
+
+        let stabilityAIKey = UserDefaults.standard.string(forKey: Self.k_stabilityAIKey) ?? ""
+        if stabilityAIKey != self.stabilityAIKey {
+            self.stabilityAIKey = stabilityAIKey
+        }
+
+        let stableDiffusionModel = UserDefaults.standard.string(forKey: Self.k_stableDiffusionModelKey) ?? ""
+        if stableDiffusionModel != self.stableDiffusionModel {
+            self.stableDiffusionModel = stableDiffusionModel
+        }
+
+        let imageStrength = UserDefaults.standard.float(forKey: Self.k_imageStrength)
+        if imageStrength != self.imageStrength {
+            self.imageStrength = imageStrength
+        }
+
+        let imageGuidance = UserDefaults.standard.integer(forKey: Self.k_imageGuidance)
+        if imageGuidance != self.imageGuidance {
+            self.imageGuidance = imageGuidance
         }
 
         // This property is not exposed to users in Settings and so may be absent

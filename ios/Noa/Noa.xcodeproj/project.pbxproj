@@ -12,16 +12,21 @@
 		CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC0039952A6C7E57009E3BAC /* NordicDFU */; };
 		CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */; };
 		CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A42A6DA57E009E3BAC /* ContentView.swift */; };
-		CC02BBA42A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */; };
-		CC02BBA62A81DB8B00A8AA59 /* monocle-fpga-revC.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */; };
 		CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
+		CC1632402AA6A0AC006A8E6A /* RGB343.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC16323F2AA6A0AC006A8E6A /* RGB343.swift */; };
+		CC1632422AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */; };
 		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
 		CC200A502A37E396005C67E0 /* states.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4E2A37E396005C67E0 /* states.py */; };
 		CC200A512A37E396005C67E0 /* graphics.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4F2A37E396005C67E0 /* graphics.py */; };
 		CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */; };
 		CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC202CBF2A9036C400A71EE4 /* TimestampView.swift */; };
+		CC212D682A9D34A90093479F /* StableDiffusion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC212D672A9D34A90093479F /* StableDiffusion.swift */; };
+		CC212D6A2A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */; };
+		CC212D6E2A9E6F130093479F /* monocle-fpga.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6D2A9E6F130093479F /* monocle-fpga.bin */; };
+		CC212D702A9E74870093479F /* audio.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6F2A9E74870093479F /* audio.py */; };
+		CC212D722A9E764B0093479F /* photo.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D712A9E764B0093479F /* photo.py */; };
 		CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */; };
 		CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE00A2A09C0BF00756941 /* Settings.bundle */; };
 		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
@@ -45,12 +50,15 @@
 		CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF22A00C4180058AC20 /* MessageView.swift */; };
 		CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */; };
 		CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF62A01AA350058AC20 /* ChatView.swift */; };
+		CC68515A2A9933F8004EA777 /* DallE.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851592A9933F8004EA777 /* DallE.swift */; };
+		CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */; };
+		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
 		CCB2F9622A2568EE00F24F2D /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* Controller.swift */; };
 		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
 		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
 		CCBC46262A02101A00871C12 /* Participant.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCBC46252A02101A00871C12 /* Participant.swift */; };
 		CCCECE6B2A1EB4B100DBB7CA /* Whisper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */; };
-		CCCECE6D2A1EE7C700DBB7CA /* OpenAIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6C2A1EE7C700DBB7CA /* OpenAIError.swift */; };
+		CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */; };
 		CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */; };
 		CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */; };
 		CCCECE762A1EF36C00DBB7CA /* Question_Nutrition.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE702A1EF36C00DBB7CA /* Question_Nutrition.wav */; };
@@ -87,16 +95,21 @@
 		CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
 		CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupDeviceView.swift; sourceTree = "<group>"; };
 		CC0039A42A6DA57E009E3BAC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.219.1551.zip"; sourceTree = "<group>"; };
-		CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga-revC.bin"; sourceTree = "<group>"; };
 		CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Statement_Chinese.m4a; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
+		CC16323F2AA6A0AC006A8E6A /* RGB343.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RGB343.swift; sourceTree = "<group>"; };
+		CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.248.0754.zip"; sourceTree = "<group>"; };
 		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
 		CC200A4E2A37E396005C67E0 /* states.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = states.py; sourceTree = "<group>"; };
 		CC200A4F2A37E396005C67E0 /* graphics.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = graphics.py; sourceTree = "<group>"; };
 		CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingStringMatcher.swift; sourceTree = "<group>"; };
 		CC202CBF2A9036C400A71EE4 /* TimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampView.swift; sourceTree = "<group>"; };
+		CC212D672A9D34A90093479F /* StableDiffusion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableDiffusion.swift; sourceTree = "<group>"; };
+		CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CVPixelBuffer+Extensions.swift"; sourceTree = "<group>"; };
+		CC212D6D2A9E6F130093479F /* monocle-fpga.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga.bin"; sourceTree = "<group>"; };
+		CC212D6F2A9E74870093479F /* audio.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = audio.py; sourceTree = "<group>"; };
+		CC212D712A9E764B0093479F /* photo.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = photo.py; sourceTree = "<group>"; };
 		CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorView.swift; sourceTree = "<group>"; };
 		CC3FE00A2A09C0BF00756941 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		CC3FE00C2A09C8A400756941 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -124,12 +137,15 @@
 		CC4E3AF22A00C4180058AC20 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
 		CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageStore.swift; sourceTree = "<group>"; };
 		CC4E3AF62A01AA350058AC20 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		CC6851592A9933F8004EA777 /* DallE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DallE.swift; sourceTree = "<group>"; };
+		CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
+		CC6851672A9964C2004EA777 /* Tahoe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tahoe.jpg; sourceTree = "<group>"; };
 		CCB2F9612A2568EE00F24F2D /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
 		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
 		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
 		CCBC46252A02101A00871C12 /* Participant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Participant.swift; sourceTree = "<group>"; };
 		CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Whisper.swift; sourceTree = "<group>"; };
-		CCCECE6C2A1EE7C700DBB7CA /* OpenAIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIError.swift; sourceTree = "<group>"; };
+		CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIError.swift; sourceTree = "<group>"; };
 		CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_History.wav; sourceTree = "<group>"; };
 		CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Movies.wav; sourceTree = "<group>"; };
 		CCCECE702A1EF36C00DBB7CA /* Question_Nutrition.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Nutrition.wav; sourceTree = "<group>"; };
@@ -183,6 +199,8 @@
 			children = (
 				CC200A4F2A37E396005C67E0 /* graphics.py */,
 				CC200A4E2A37E396005C67E0 /* states.py */,
+				CC212D6F2A9E74870093479F /* audio.py */,
+				CC212D712A9E764B0093479F /* photo.py */,
 				CC200A4C2A37E38C005C67E0 /* main.py */,
 			);
 			path = Scripts;
@@ -191,7 +209,7 @@
 		CC00398D2A6B7F5A009E3BAC /* Firmware */ = {
 			isa = PBXGroup;
 			children = (
-				CC02BBA32A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip */,
+				CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */,
 			);
 			path = Firmware;
 			sourceTree = "<group>";
@@ -199,7 +217,7 @@
 		CC00399B2A6D0D14009E3BAC /* FPGA */ = {
 			isa = PBXGroup;
 			children = (
-				CC02BBA52A81DB8B00A8AA59 /* monocle-fpga-revC.bin */,
+				CC212D6D2A9E6F130093479F /* monocle-fpga.bin */,
 			);
 			path = FPGA;
 			sourceTree = "<group>";
@@ -263,43 +281,25 @@
 			path = Bluetooth;
 			sourceTree = "<group>";
 		};
-		CC3FE0222A0EE64B00756941 /* Speech */ = {
+		CC3FE0272A0EF80300756941 /* Test Assets */ = {
 			isa = PBXGroup;
 			children = (
-				CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */,
-				CC07BD9A2A1962DC0082999A /* M4AWriter.swift */,
+				CC6851582A9933AB004EA777 /* Images */,
+				CC6851572A9933A3004EA777 /* Voice */,
 			);
-			path = Speech;
+			path = "Test Assets";
 			sourceTree = "<group>";
 		};
-		CC3FE0272A0EF80300756941 /* Test Voice Assets */ = {
-			isa = PBXGroup;
-			children = (
-				CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */,
-				CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */,
-				CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */,
-				CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */,
-				CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */,
-				CCCECE702A1EF36C00DBB7CA /* Question_Nutrition.wav */,
-				CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */,
-				CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */,
-				CC3FE02B2A0EF81A00756941 /* Question_History.m4a */,
-				CC3FE02A2A0EF81A00756941 /* Question_Lizards.m4a */,
-				CC3FE0292A0EF81A00756941 /* Question_Movies.m4a */,
-				CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */,
-				CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */,
-			);
-			path = "Test Voice Assets";
-			sourceTree = "<group>";
-		};
-		CC3FE0342A0F12C800756941 /* OpenAI */ = {
+		CC3FE0342A0F12C800756941 /* AI */ = {
 			isa = PBXGroup;
 			children = (
 				CC3FE0352A0F12F700756941 /* ChatGPT.swift */,
+				CC6851592A9933F8004EA777 /* DallE.swift */,
 				CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */,
-				CCCECE6C2A1EE7C700DBB7CA /* OpenAIError.swift */,
+				CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */,
+				CC212D672A9D34A90093479F /* StableDiffusion.swift */,
 			);
-			path = OpenAI;
+			path = AI;
 			sourceTree = "<group>";
 		};
 		CC4E3AB72A00BA4C0058AC20 = {
@@ -326,8 +326,7 @@
 			isa = PBXGroup;
 			children = (
 				CCB2F9642A2598E900F24F2D /* Util */,
-				CC3FE0342A0F12C800756941 /* OpenAI */,
-				CC3FE0222A0EE64B00756941 /* Speech */,
+				CC3FE0342A0F12C800756941 /* AI */,
 				CC3FE0142A0B1C1D00756941 /* Bluetooth */,
 				CC3FE0072A098DBC00756941 /* Settings */,
 				CC4E3AED2A00BBB00058AC20 /* Chat */,
@@ -341,7 +340,7 @@
 				CC3FE0172A0B215700756941 /* Noa-Info.plist */,
 				CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */,
 				352D27F62A7B01480019EFDB /* UI Assets */,
-				CC3FE0272A0EF80300756941 /* Test Voice Assets */,
+				CC3FE0272A0EF80300756941 /* Test Assets */,
 				CCB2F9632A25812B00F24F2D /* Monocle Assets */,
 				CC4E3AC92A00BA4D0058AC20 /* Preview Content */,
 			);
@@ -383,6 +382,34 @@
 			path = Chat;
 			sourceTree = "<group>";
 		};
+		CC6851572A9933A3004EA777 /* Voice */ = {
+			isa = PBXGroup;
+			children = (
+				CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */,
+				CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */,
+				CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */,
+				CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */,
+				CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */,
+				CCCECE702A1EF36C00DBB7CA /* Question_Nutrition.wav */,
+				CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */,
+				CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */,
+				CC3FE02B2A0EF81A00756941 /* Question_History.m4a */,
+				CC3FE02A2A0EF81A00756941 /* Question_Lizards.m4a */,
+				CC3FE0292A0EF81A00756941 /* Question_Movies.m4a */,
+				CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */,
+				CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */,
+			);
+			path = Voice;
+			sourceTree = "<group>";
+		};
+		CC6851582A9933AB004EA777 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				CC6851672A9964C2004EA777 /* Tahoe.jpg */,
+			);
+			path = Images;
+			sourceTree = "<group>";
+		};
 		CCB2F9632A25812B00F24F2D /* Monocle Assets */ = {
 			isa = PBXGroup;
 			children = (
@@ -399,6 +426,11 @@
 				CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */,
 				CCB2F9652A2598F600F24F2D /* HexDump.swift */,
 				CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */,
+				CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */,
+				CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */,
+				CC07BD9A2A1962DC0082999A /* M4AWriter.swift */,
+				CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */,
+				CC16323F2AA6A0AC006A8E6A /* RGB343.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -518,17 +550,20 @@
 				352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */,
 				CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */,
 				CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */,
+				CC1632422AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip in Resources */,
+				CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */,
 				CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */,
 				CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */,
+				CC212D6E2A9E6F130093479F /* monocle-fpga.bin in Resources */,
+				CC212D702A9E74870093479F /* audio.py in Resources */,
 				CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */,
 				CC200A512A37E396005C67E0 /* graphics.py in Resources */,
 				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,
 				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
-				CC02BBA62A81DB8B00A8AA59 /* monocle-fpga-revC.bin in Resources */,
 				CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */,
 				CC200A502A37E396005C67E0 /* states.py in Resources */,
-				CC02BBA42A81C79900A8AA59 /* monocle-micropython-v23.219.1551.zip in Resources */,
 				CC200A4D2A37E38C005C67E0 /* main.py in Resources */,
+				CC212D722A9E764B0093479F /* photo.py in Resources */,
 				CCCECE762A1EF36C00DBB7CA /* Question_Nutrition.wav in Resources */,
 				CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */,
 				CC4E3AC82A00BA4C0058AC20 /* Assets.xcassets in Resources */,
@@ -564,19 +599,23 @@
 				F8BC4DE52A4DBD680005F6F0 /* DeviceScreenView.swift in Sources */,
 				CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
+				CC212D6A2A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift in Sources */,
+				CC68515A2A9933F8004EA777 /* DallE.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
 				CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */,
 				CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */,
 				CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */,
 				CCBC46262A02101A00871C12 /* Participant.swift in Sources */,
 				CCB2F9622A2568EE00F24F2D /* Controller.swift in Sources */,
-				CCCECE6D2A1EE7C700DBB7CA /* OpenAIError.swift in Sources */,
+				CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */,
 				CC4E3AF12A00BC8A0058AC20 /* MessageContentView.swift in Sources */,
 				CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */,
+				CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */,
 				CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */,
 				CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */,
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
 				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
+				CC212D682A9D34A90093479F /* StableDiffusion.swift in Sources */,
 				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
 				CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */,
@@ -585,6 +624,7 @@
 				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,
 				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,
 				CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */,
+				CC1632402AA6A0AC006A8E6A /* RGB343.swift in Sources */,
 				CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */,
 				F8B8D4792A71761700817A24 /* LoopingVideoPlayer.swift in Sources */,
 				CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */,
@@ -748,7 +788,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Noa/Preview Content\"";
-				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				DEVELOPMENT_TEAM = 7T2874S592;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Noa-Info.plist";

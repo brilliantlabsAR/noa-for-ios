@@ -1,12 +1,14 @@
 import bluetooth
+import camera
 import graphics
 import microphone
 import touch
 import states
+from audio import *
+from photo import *
 
 state = states.State()
 gfx = graphics.Graphics()
-
 
 def bluetooth_send_message(message):
     while True:
@@ -16,7 +18,6 @@ def bluetooth_send_message(message):
         except OSError:
             pass
 
-
 def bluetooth_message_handler(message):
     if state.current_state == state.WaitForPing:
         if message.startswith("pin:"):
@@ -24,6 +25,8 @@ def bluetooth_message_handler(message):
             state.after(0, state.WaitForResponse)
         elif message.startswith("res:") or message.startswith("err:"):
             print_response(message)
+        elif message.startswith("ick:"):
+            state.after(0, state.WaitForTap)
 
     elif state.current_state == state.WaitForResponse:
         if message.startswith("res:") or message.startswith("err:"):
@@ -32,10 +35,13 @@ def bluetooth_message_handler(message):
     elif state.current_state == state.PrintResponse:
         gfx.append_response(message[4:].decode("utf-8"))
 
+    elif state.current_state == state.WaitForTap:
+        if message.startswith("res:") or message.startswith("err:"):
+            print_response(message)
 
 def touch_pad_handler(_):
     if state.current_state == state.WaitForTap:
-        state.after(0, state.StartRecording)
+        state.after(0, state.DetectSingleTap)
     elif (
         state.current_state == state.WaitForPing
         or state.current_state == state.WaitForResponse
@@ -43,7 +49,6 @@ def touch_pad_handler(_):
         state.after(0, state.AskToCancel)
     elif state.current_state == state.AskToCancel:
         state.after(0, state.WaitForTap)
-
 
 def print_response(message):
     gfx.error_flag = message.startswith("err:")
@@ -76,39 +81,24 @@ while True:
             bluetooth_send_message(b"rdy:")
             gfx.set_prompt("Tap and speak")
 
+    elif state.current_state == state.DetectSingleTap:
+        if state.has_been() >= 250:
+            if touch.state(touch.EITHER): # still holding, try detect hold
+                state.after(0, state.DetectHold)
+            else:
+                state.after(0, state.StartRecording)
+
+    elif state.current_state == state.DetectHold:
+        if state.has_been() >= 1000 and touch.state(touch.EITHER):
+            state.after(0, state.CaptureImage)
+        elif not touch.state(touch.EITHER):
+            state.after(0, state.WaitForTap)
+
     elif state.current_state == state.StartRecording:
-        if state.on_entry():
-            microphone.record(seconds=6.0, bit_depth=8, sample_rate=8000)
-            bluetooth_send_message(b"ast:")
-            gfx.clear_response()
-            gfx.set_prompt("Listening [     ]")
-        state.after(1000, state.SendAudio)
+        start_recording(state, gfx, bluetooth_send_message)
 
     elif state.current_state == state.SendAudio:
-        if state.has_been() > 5000:
-            gfx.set_prompt("Waiting for openAI")
-        elif state.has_been() > 4000:
-            gfx.set_prompt("Listening [=====]")
-        elif state.has_been() > 3000:
-            gfx.set_prompt("Listening [==== ]")
-        elif state.has_been() > 2000:
-            gfx.set_prompt("Listening [===  ]")
-        elif state.has_been() > 1000:
-            gfx.set_prompt("Listening [==   ]")
-        else:
-            gfx.set_prompt("Listening [=    ]")
-
-        samples = (bluetooth.max_length() - 4) // 2
-        chunk1 = microphone.read(samples)
-        chunk2 = microphone.read(samples)
-
-        if chunk1 == None:
-            bluetooth_send_message(b"aen:")
-            state.after(0, state.WaitForPing)
-        elif chunk2 == None:
-            bluetooth_send_message(b"dat:" + chunk1)
-        else:
-            bluetooth_send_message(b"dat:" + chunk1 + chunk2)
+        send_audio(state, gfx, bluetooth_send_message)
 
     elif (
         state.current_state == state.WaitForPing
@@ -124,5 +114,11 @@ while True:
         gfx.set_prompt("")
         if gfx.done_printing:
             state.after(0, state.WaitForTap)
+
+    elif state.current_state == state.CaptureImage:
+        capture_image(state, gfx, bluetooth_send_message)
+
+    elif state.current_state == state.SendImage:
+        send_image(state, gfx, bluetooth_send_message)
 
     gfx.run()

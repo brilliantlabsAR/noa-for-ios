@@ -4,6 +4,11 @@
 //
 //  Created by Bart Trzynadlowski on 7/20/23.
 //
+//  After initialization, callers must ensure that methods are called on the same queue that was
+//  provided. BluetoothManager will not dispatch its own calls. Likewise, all published properties
+//  will adhere to Combine's thread safety rules but objects they pass along should not be accessed
+//  outside of the Bluetooth queue.
+//
 //  Resources
 //  ---------
 //  - "The Ultimate Guide to Apple's Core Bluetooth"
@@ -92,9 +97,12 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     private let _transmitCharacteristicUUIDs: [CBUUID]  // characteristics on which we transmit data
     private let _characteristicNameByID: [CBUUID: String]
 
+    private let _queue: DispatchQueue
+
     private lazy var _manager: CBCentralManager = {
-        return CBCentralManager(delegate: self, queue: .main)
+        return CBCentralManager(delegate: self, queue: _queue)
     }()
+    private var _started = false
 
     private let _allowAutoConnectByProximity: Bool
 
@@ -121,7 +129,8 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         peripheralName: String,
         services: [CBUUID: String],
         receiveCharacteristics: [CBUUID: String],
-        transmitCharacteristics: [CBUUID: String]
+        transmitCharacteristics: [CBUUID: String],
+        queue: DispatchQueue
     ) {
         _peripheralName = peripheralName
         _serviceUUIDs = Array(services.keys)
@@ -138,10 +147,19 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         }
         _characteristicNameByID = characteristicNameByID
 
+        _queue = queue
+
         super.init()
+    }
+
+    /// Start the Bluetooth manager. Must be called once and only once after init(). As with other
+    /// methods and properties, must be called on the Bluetooth queue.
+    public func start() {
+        precondition(!_started)
 
         // Ensure manager is instantiated; all logic will then be driven by centralManagerDidUpdateState()
         _ = _manager
+        _started = true
     }
 
     public func send(data: Data, on id: CBUUID, response: Bool = false) {

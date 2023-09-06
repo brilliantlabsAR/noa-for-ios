@@ -1,5 +1,5 @@
 //
-//  OpenAIError.swift
+//  AIError.swift
 //  Noa
 //
 //  Created by Bart Trzynadlowski on 5/24/23.
@@ -7,15 +7,15 @@
 
 import Foundation
 
-public enum OpenAIError: Error {
+public enum AIError: Error {
     case urlAuthenticationFailed
     case responsePayloadParseError
     case clientSideNetworkError(error: Error?)
     case apiError(message: String)
+    case dataFormatError(message: String)
 }
 
-
-extension OpenAIError: CustomStringConvertible {
+extension AIError: CustomStringConvertible {
     public var description: String {
         switch self {
         case .clientSideNetworkError(let error):
@@ -30,6 +30,8 @@ extension OpenAIError: CustomStringConvertible {
             return message
         case .urlAuthenticationFailed:
             return "OpenAI API URL authentication failed."
+        case .dataFormatError(let message):
+            return message
         }
     }
 }

@@ -17,7 +17,6 @@ struct ContentView: View {
 
     /// Monocle state (as reported by Controller)
     @State private var _isMonocleConnected = false
-    @State private var _pairedMonocleID: UUID?
     @State private var _monocleWithinPairingRange = false   // only updated when no Monocle yet paired
 
     /// Bluetooth state
@@ -68,7 +67,6 @@ struct ContentView: View {
             } else {
                 ChatView(
                     isMonocleConnected: $_isMonocleConnected,
-                    pairedMonocleID: $_pairedMonocleID,
                     bluetoothEnabled: $_bluetoothEnabled,
                     showPairingView: $_showDeviceSheet,
                     mode: $_mode,
@@ -94,7 +92,6 @@ struct ContentView: View {
         .onAppear {
             // Initialize state
             _isMonocleConnected = _controller.isMonocleConnected
-            _pairedMonocleID = _controller.pairedMonocleID
             _monocleWithinPairingRange = _controller.nearestMonocleID != nil
             _bluetoothEnabled = _controller.bluetoothEnabled
 
@@ -106,10 +103,6 @@ struct ContentView: View {
         .onChange(of: _controller.isMonocleConnected) {
             // Sync connection state
             _isMonocleConnected = $0
-        }
-        .onChange(of: _controller.pairedMonocleID) {
-            // Sync paired device ID
-            _pairedMonocleID = $0
         }
         .onChange(of: _controller.nearestMonocleID) {
             // Sync nearest Monocle device ID

@@ -74,7 +74,7 @@ class Whisper: NSObject {
     }
 
     private var _session: URLSession!
-    private var _completionByTask: [Int: (String, OpenAIError?) -> Void] = [:]
+    private var _completionByTask: [Int: (String, AIError?) -> Void] = [:]
     private var _tempFileURL: URL?
 
     public init(configuration: NetworkConfiguration) {
@@ -100,12 +100,11 @@ class Whisper: NSObject {
         }
     }
 
-    public func transcribe(mode: Mode, fileData: Data, format: AudioFormat, apiKey: String, completion: @escaping (String, OpenAIError?) -> Void) {
+    public func transcribe(mode: Mode, fileData: Data, format: AudioFormat, apiKey: String, completion: @escaping (String, AIError?) -> Void) {
         let boundary = UUID().uuidString
 
         let function = mode == .transcription ? "transcriptions" : "translations"
         let url = URL(string: "https://api.openai.com/v1/audio/\(function)")!
-        print(url)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
@@ -162,7 +161,7 @@ class Whisper: NSObject {
         task.resume()
     }
 
-    private func extractContent(from data: Data) -> (OpenAIError?, String?) {
+    private func extractContent(from data: Data) -> (AIError?, String?) {
         do {
             let jsonString = String(decoding: data, as: UTF8.self)
             if jsonString.count > 0 {
@@ -182,7 +181,7 @@ class Whisper: NSObject {
                             errorMessage = "No response received. Ensure your API key is valid and try again."
                         }
                     }
-                    return (OpenAIError.apiError(message: errorMessage), nil)
+                    return (AIError.apiError(message: errorMessage), nil)
                 } else if let text = response["text"] as? String {
                     return (nil, text)
                 }
@@ -191,7 +190,7 @@ class Whisper: NSObject {
         } catch {
             print("[Whisper] Error: Unable to deserialize response: \(error)")
         }
-        return (OpenAIError.responsePayloadParseError, nil)
+        return (AIError.responsePayloadParseError, nil)
     }
 }
 
@@ -204,7 +203,7 @@ extension Whisper: URLSessionDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             for (_, completion) in self._completionByTask {
-                completion("", OpenAIError.clientSideNetworkError(error: error))
+                completion("", AIError.clientSideNetworkError(error: error))
             }
             _completionByTask = [:]
         }
@@ -246,7 +245,7 @@ extension Whisper: URLSessionDataDelegate {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if let completion = self._completionByTask[task.taskIdentifier] {
-                    completion("", OpenAIError.urlAuthenticationFailed)
+                    completion("", AIError.urlAuthenticationFailed)
                     self._completionByTask.removeValue(forKey: task.taskIdentifier)
                 }
             }
@@ -291,7 +290,7 @@ extension Whisper: URLSessionDataDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let completion = self._completionByTask[task.taskIdentifier] {
-                completion("", OpenAIError.clientSideNetworkError(error: error))
+                completion("", AIError.clientSideNetworkError(error: error))
                 self._completionByTask.removeValue(forKey: task.taskIdentifier)
             }
         }

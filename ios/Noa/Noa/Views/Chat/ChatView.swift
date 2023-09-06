@@ -16,7 +16,6 @@ struct ChatView: View {
 
     // Monocle state
     @Binding private var _isMonocleConnected: Bool
-    @Binding private var _pairedMonocleID: UUID?
 
     // Bluetooth state
     @Binding private var _bluetoothEnabled: Bool
@@ -34,6 +33,10 @@ struct ChatView: View {
     @State private var popUpApiBox: Bool = false
     @State private var popupApiBoxScale: CGFloat = 0   // animation
 
+    // Image detail view
+    @State private var _expandedPicture: UIImage?
+    @State private var _topLayerOpacity: CGFloat = 0    // animation
+
     // Chat callbacks
     private let _onTextSubmitted: ((String) -> Void)?
     private let _onClearChatButtonPressed: (() -> Void)?
@@ -43,32 +46,20 @@ struct ChatView: View {
     var body: some View {
         ZStack {
             VStack(alignment: .center) {
-                // Top title bar
-                HStack {
-                    Spacer()
-                        .frame(width: 70)
-
-                    // Title
-                    Text("Noa")
-                        .font(.system(size: 22, weight: .bold))
-                        .frame(maxWidth: .infinity)
-                    
-                    // Settings menu
-                    SettingsMenuView(
+                // Title/navigation bar
+                if _expandedPicture == nil {
+                    ChatTitleBarView(
                         popUpApiBox: $popUpApiBox,
                         showPairingView: $_showPairingView,
                         bluetoothEnabled: $_bluetoothEnabled,
                         mode: $_mode
                     )
-                        .environmentObject(_settings)
-                        .padding(.trailing)
+                } else {
+                    PictureTitleBarView(expandedPicture: $_expandedPicture)
                 }
-                .padding(.top)
-                .frame(maxWidth: .infinity, alignment: .top)
                 Spacer()
                 
-                // Message view
-                // List of messages
+                // Message view (list of messages)
                 ScrollViewReader { scrollView in
                     List {
                         // Use enumerated array so that we can ID each element, allowing us to scroll to the bottom. Adding an
@@ -77,7 +68,7 @@ struct ChatView: View {
                             if _chatMessageStore.minutesElapsed(from: i - 1, to: i) >= 10 {
                                 TimestampView(timestamp: element.timestamp)
                             }
-                            MessageView(currentMessage: element).id(i)
+                            MessageView(currentMessage: element, expandedPicture: $_expandedPicture).id(i)
                         }
                         .listRowSeparator(.hidden)
                         .listRowInsets(.init(top: 5, leading: 10, bottom: 5, trailing: 10))
@@ -98,50 +89,24 @@ struct ChatView: View {
                         }
                     }
                 }
-                VStack {
-                    if !_isMonocleConnected  {
-                        Text("Not Connected \(Image(systemName: "exclamationmark.circle"))")
-                            .foregroundColor(Color.red)
-                            .padding(.bottom)
-                    } else {
-                        Text("")
-                    }
-                }
-                HStack(spacing: -35) {
-                    
-                    // Text entry
-                    TextField("Ask a question", text: $_textInput)
-                        .padding(6)
-                        .padding(.leading, 10)
-                        .background(RoundedRectangle(cornerRadius: 25).strokeBorder(Color.gray.opacity(0.5)))
-                        .frame(minHeight: CGFloat(30))
-                    
-                    // Send button
-                    let textFieldEmpty = _textInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    let sendButtonColor = textFieldEmpty ? Color(UIColor.systemGray) : Color(red: 87/255, green: 199/255, blue: 170/255)
-                    Button(
-                        action: {
-                            _onTextSubmitted?(_textInput)
-                            _textInput = ""
-                        },
-                        label: {
-                            Image(systemName: "arrow.up.circle.fill")
-                                .font(.system(.title))
-                                .foregroundColor(sendButtonColor)
-                                .symbolRenderingMode(.multicolor)
-                                .frame(minHeight: 29, alignment: .center)
-                                .padding(1)
-                        }
+                .allowsHitTesting(_expandedPicture == nil)  // do not allow input underneath picture
+                .opacity(1 - _topLayerOpacity)              // hide when picture is being shown
+
+                // Bottom bar: connection status and text entry
+                if _expandedPicture == nil {
+                    ChatTextFieldView(
+                        isMonocleConnected: $_isMonocleConnected,
+                        textInput: $_textInput,
+                        onTextSubmitted: _onTextSubmitted
                     )
-                    .disabled(textFieldEmpty)
+                } else {
+                    PictureToolbarView(picture: _expandedPicture)
                 }
-                .padding(.bottom, 5)
-                .padding(.top, -10)
-                .padding(.horizontal, 20)
             }
             .background(colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255) : Color(red: 242/255, green: 242/255, blue: 247/255))
             .blur(radius: popUpApiBox ? 1 : 0)
-            
+
+            // Top layer of ZStack: API pop-up box or expanded picture
             if popUpApiBox {
                 Rectangle()
                     .fill(Color.black.opacity(0.4))
@@ -159,17 +124,26 @@ struct ChatView: View {
                     }
                 APIKeyPopupBoxView(scale: $popupApiBoxScale, popUpApiBox: $popUpApiBox)
                     .environmentObject(_settings)
+            } else if let picture = _expandedPicture {
+                Image(uiImage: picture)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
             }
         }
         .onAppear {
-            // When view appears, check whether we need an API key
-            popUpApiBox = _settings.apiKey.isEmpty
+            // When view appears, check whether we need an API key (only OpenAI is required)
+            popUpApiBox = _settings.openAIKey.isEmpty
+        }
+        .onChange(of: _expandedPicture) {
+            let opacity: CGFloat = $0 == nil ? 0 : 1
+            withAnimation(.easeInOut(duration: 0.2)) {
+                _topLayerOpacity = opacity
+            }
         }
     }
 
     public init(
         isMonocleConnected: Binding<Bool>,
-        pairedMonocleID: Binding<UUID?>,
         bluetoothEnabled: Binding<Bool>,
         showPairingView: Binding<Bool>,
         mode: Binding<ChatGPT.Mode>,
@@ -177,7 +151,6 @@ struct ChatView: View {
         onClearChatButtonPressed: (() -> Void)? = nil
     ) {
         __isMonocleConnected = isMonocleConnected
-        __pairedMonocleID = pairedMonocleID
         __bluetoothEnabled = bluetoothEnabled
         __showPairingView = showPairingView
         __mode = mode
@@ -186,14 +159,148 @@ struct ChatView: View {
     }
 }
 
+fileprivate struct ChatTitleBarView: View {
+    @EnvironmentObject private var _settings: Settings
+
+    @Binding var popUpApiBox: Bool
+    @Binding var showPairingView: Bool
+    @Binding var bluetoothEnabled: Bool
+    @Binding var mode: ChatGPT.Mode
+
+    var body: some View {
+        HStack {
+            Spacer()
+                .frame(width: 70)
+
+            // Title
+            Text("Noa")
+                .font(.system(size: 22, weight: .bold))
+                .frame(maxWidth: .infinity)
+
+            // Settings menu
+            SettingsMenuView(
+                popUpApiBox: $popUpApiBox,
+                showPairingView: $showPairingView,
+                bluetoothEnabled: $bluetoothEnabled,
+                mode: $mode
+            )
+            .environmentObject(_settings)
+            .padding(.trailing)
+        }
+        .padding(.top)
+        .frame(maxWidth: .infinity, alignment: .top)
+    }
+}
+
+fileprivate struct ChatTextFieldView: View {
+    @Binding var isMonocleConnected: Bool
+    @Binding var textInput: String
+    let onTextSubmitted: ((String) -> Void)?
+
+    var body: some View {
+        VStack {
+            // Connection status
+            VStack {
+                if !isMonocleConnected  {
+                    Text("Not Connected \(Image(systemName: "exclamationmark.circle"))")
+                        .foregroundColor(Color.red)
+                        .padding(.bottom)
+                } else {
+                    Text("")
+                }
+            }
+
+            // Text input box
+            HStack(spacing: -35) {
+                // Text entry
+                TextField("Ask a question", text: $textInput)
+                    .padding(6)
+                    .padding(.leading, 10)
+                    .background(RoundedRectangle(cornerRadius: 25).strokeBorder(Color.gray.opacity(0.5)))
+                    .frame(minHeight: CGFloat(30))
+
+                // Send button
+                let textFieldEmpty = textInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                let sendButtonColor = textFieldEmpty ? Color(UIColor.systemGray) : Color(red: 87/255, green: 199/255, blue: 170/255)
+                Button(
+                    action: {
+                        onTextSubmitted?(textInput)
+                        textInput = ""
+                    },
+                    label: {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(.title))
+                            .foregroundColor(sendButtonColor)
+                            .symbolRenderingMode(.multicolor)
+                            .frame(minHeight: 29, alignment: .center)
+                            .padding(1)
+                    }
+                )
+                .disabled(textFieldEmpty)
+            }
+            .padding(.bottom, 5)
+            .padding(.top, -10)
+            .padding(.horizontal, 20)
+        }
+    }
+}
+
+fileprivate struct PictureTitleBarView: View {
+    @Binding var expandedPicture: UIImage?
+
+    var body: some View {
+        HStack {
+            Spacer()
+            Button("Done") {
+                // Close
+                expandedPicture = nil
+            }
+            .padding(.trailing)
+            .font(.system(size: 22, weight: .bold))
+        }
+        .padding(.top)
+        .frame(maxWidth: .infinity, alignment: .top)
+    }
+}
+
+fileprivate struct PictureToolbarView: View {
+    private let _image: Image?
+
+    var body: some View {
+        HStack {
+            if let image = _image {
+                ShareLink(item: image, preview: SharePreview("Picture", image: image)) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                }
+                .padding(.leading)
+            }
+            Spacer()
+        }
+    }
+
+    init(picture: UIImage?) {
+        if let picture = picture {
+            _image = Image(uiImage: picture)
+        } else {
+            _image = nil
+        }
+    }
+}
+
 struct ChatView_Previews: PreviewProvider {
     private static var _chatMessageStore: ChatMessageStore = {
         let store = ChatMessageStore()
-        store.putMessage(Message(content: "Hello", participant: Participant.user))
-        store.putMessage(Message(content: "Message 2", participant: Participant.assistant))
-        store.putMessage(Message(content: "Message 3", isError: true, participant: Participant.user))
+        let imageURL = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
+        let imageData = try! Data(contentsOf: imageURL)
+        let image = UIImage(data: imageData)
+        store.putMessage(Message(text: "Hello", participant: Participant.user))
+        store.putMessage(Message(text: "Message 2", participant: Participant.assistant))
+        store.putMessage(Message(text: "Message 3", isError: true, participant: Participant.user))
+        store.putMessage(Message(text: "Lake Tahoe!", picture: image, participant: Participant.user))
+        store.putMessage(Message(text: "Assistant response", picture: image, participant: Participant.assistant))
+        store.putMessage(Message(text: "Translator version", picture: image, participant: Participant.translator))
         for i in 0..<100 {
-            store.putMessage(Message(content: "A reply from ChatGPT... I am going to write a whole lot of text here. The objective is to wrap the line and ensure that multiple lines display properly! Let's see what happens.\nSingle newline.\n\nTwo newlines.", typingInProgress: false, participant: Participant.assistant))
+            store.putMessage(Message(text: "A reply from ChatGPT... I am going to write a whole lot of text here. The objective is to wrap the line and ensure that multiple lines display properly! Let's see what happens.\nSingle newline.\n\nTwo newlines.", typingInProgress: false, participant: Participant.assistant))
         }
         return store
     }()
@@ -201,7 +308,6 @@ struct ChatView_Previews: PreviewProvider {
     static var previews: some View {
         ChatView(
             isMonocleConnected: .constant(false),
-            pairedMonocleID: .constant(UUID()),
             bluetoothEnabled: .constant(false),
             showPairingView: .constant(false),
             mode: .constant(.assistant)

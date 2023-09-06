@@ -36,30 +36,21 @@ extension AVAudioPCMBuffer
             return nil
         }
 
-        // Allocate a data buffer that is twice as large to hold output 16-bit samples
-        var data16 = Data(repeating: 0, count: 2 * data.count)
-
-        // Convert signed 8-bit samples to signed 16-bit samples
-        data16.withUnsafeMutableBytes { bufferPtr in
-            bufferPtr.withMemoryRebound(to: Int16.self) { destWords -> Void in
-                for i in 0..<data.count {
-                    // Interpret each byte as a signed 8-bit value and shift left 8 bits for Int16
-                    let sample = Int8(bitPattern: data[i])
-                    let sample16 = Int16(sample) << 8
-                    destWords[i] = sample16
-                }
-            }
-        }
-
-        // Get the underlying memory for the PCM buffer and copy data into it
+        // Get the underlying memory for the PCM buffer and store samples converted from signed 8-
+        // bit to signed 16-bit in it
         guard let destSamples = buffer.int16ChannelData else {
             return nil
         }
         let destPtr = UnsafeMutableBufferPointer(start: destSamples.pointee, count: Int(buffer.frameCapacity))
-        destPtr.withMemoryRebound(to: UInt8.self) { destBytes -> Void in
-            // Now we have the destination as a byte buffer and can copy from the data buffer
-            _ = data16.copyBytes(to: destBytes)
+        destPtr.withMemoryRebound(to: Int16.self) { destWords -> Void in
+            for i in 0..<data.count {
+                // Interpret each byte as a signed 8-bit value and shift left 8 bits for Int16
+                let sample = Int8(bitPattern: data[i])
+                let sample16 = Int16(sample) << 8
+                destWords[i] = sample16
+            }
         }
+
         buffer.frameLength = buffer.frameCapacity
         return buffer
     }

@@ -22,7 +22,7 @@ public class ChatGPT: NSObject {
     private static let _maxTokens = 4000    // 4096 for gpt-3.5-turbo and larger for gpt-4, but we use a conservative number to avoid hitting that limit
 
     private var _session: URLSession!
-    private var _completionByTask: [Int: (String, OpenAIError?) -> Void] = [:]
+    private var _completionByTask: [Int: (String, AIError?) -> Void] = [:]
     private var _tempFileURL: URL?
 
     private static let _assistantPrompt = "You are a smart assistant that answers all user queries, questions, and statements with a single sentence."
@@ -71,7 +71,7 @@ public class ChatGPT: NSObject {
         }
     }
 
-    public func send(mode: Mode, query: String, apiKey: String, model: String, completion: @escaping (String, OpenAIError?) -> Void) {
+    public func send(mode: Mode, query: String, apiKey: String, model: String, completion: @escaping (String, AIError?) -> Void) {
         let requestHeader = [
             "Authorization": "Bearer \(apiKey)",
             "Content-Type": "application/json"
@@ -130,7 +130,7 @@ public class ChatGPT: NSObject {
         }
     }
 
-    private func extractContent(from data: Data) -> (Any?, OpenAIError?, String?) {
+    private func extractContent(from data: Data) -> (Any?, AIError?, String?) {
         do {
             let jsonString = String(decoding: data, as: UTF8.self)
             if jsonString.count > 0 {
@@ -150,7 +150,7 @@ public class ChatGPT: NSObject {
                             errorMessage = "No response received. Ensure your API key is valid and try again."
                         }
                     }
-                    return (json, OpenAIError.apiError(message: errorMessage), nil)
+                    return (json, AIError.apiError(message: errorMessage), nil)
                 } else if let choices = response["choices"] as? [AnyObject],
                           choices.count > 0,
                           let first = choices[0] as? [String: AnyObject],
@@ -163,7 +163,7 @@ public class ChatGPT: NSObject {
         } catch {
             print("[ChatGPT] Error: Unable to deserialize response: \(error)")
         }
-        return (nil, OpenAIError.responsePayloadParseError, nil)
+        return (nil, AIError.responsePayloadParseError, nil)
     }
 
     private func extractTotalTokensUsed(from json: Any?) -> Int {
@@ -186,7 +186,7 @@ extension ChatGPT: URLSessionDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             for (_, completion) in self._completionByTask {
-                completion("", OpenAIError.clientSideNetworkError(error: error))
+                completion("", AIError.clientSideNetworkError(error: error))
             }
             _completionByTask = [:]
         }
@@ -228,7 +228,7 @@ extension ChatGPT: URLSessionDataDelegate {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if let completion = self._completionByTask[task.taskIdentifier] {
-                    completion("", OpenAIError.urlAuthenticationFailed)
+                    completion("", AIError.urlAuthenticationFailed)
                     self._completionByTask.removeValue(forKey: task.taskIdentifier)
                 }
             }
@@ -273,7 +273,7 @@ extension ChatGPT: URLSessionDataDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let completion = self._completionByTask[task.taskIdentifier] {
-                completion("", OpenAIError.clientSideNetworkError(error: error))
+                completion("", AIError.clientSideNetworkError(error: error))
                 self._completionByTask.removeValue(forKey: task.taskIdentifier)
             }
         }

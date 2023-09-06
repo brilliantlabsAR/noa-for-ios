@@ -1,10 +1,11 @@
-// MessageContentView.swift
-// arGPT
-// Created by Bart Trzynadlowski on 5/1/23.
 //
+//  MessageContentView.swift
+//  Noa
 //
+//  Created by Bart Trzynadlowski on 5/1/23.
 //
 // ChatBubble taken from here: https://prafullkumar77.medium.com/swiftui-creating-a-chat-bubble-like-imessage-using-path-and-shape-67cf23ccbf62
+//
 
 import SwiftUI
 
@@ -64,7 +65,7 @@ struct MessageContentView: View {
                     .background(backgroundColor)
                     .cornerRadius(10)
             } else {
-                Text(_message.content)
+                Text(_message.text)
                     .padding(10)
                     .foregroundColor(fontColor)
                     .background(
@@ -193,7 +194,7 @@ struct ChatBubbleShape: Shape {
 
 struct MessageContentView_Previews: PreviewProvider {
     static var previews: some View {
-        let msg = Message(content: "Hello from ChatGPT", typingInProgress: false, participant: .translator)
+        let msg = Message(text: "Hello from ChatGPT", typingInProgress: false, participant: .translator)
 //        let msg = Message(content: "ignored", typingInProgress: true, participant: Participant.chatGPT)
         MessageContentView(message: msg)
     }

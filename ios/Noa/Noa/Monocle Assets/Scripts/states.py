@@ -14,6 +14,12 @@ class State:
     class WaitForTap:
         pass
 
+    class DetectSingleTap:
+        pass
+
+    class DetectHold:
+        pass
+
     class StartRecording:
         pass
 
@@ -30,6 +36,12 @@ class State:
         pass
 
     class PrintResponse:
+        pass
+
+    class CaptureImage:
+        pass
+
+    class SendImage:
         pass
 
     class Undefined:

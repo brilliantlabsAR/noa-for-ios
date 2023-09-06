@@ -5,10 +5,11 @@
 //  Created by Bart Trzynadlowski on 5/1/23.
 //
 
-import Foundation
+import UIKit
 
 struct Message: Hashable {
-    public var content: String
+    public var text: String
+    public var picture: UIImage?
     public var typingInProgress = false // if true, content may be ignored and typing indicator will be shown
     public var isError = false          // if true, content must be printed and contains an error message
     public var participant: Participant
