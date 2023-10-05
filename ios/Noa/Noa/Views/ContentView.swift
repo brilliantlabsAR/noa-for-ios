@@ -36,10 +36,7 @@ struct ContentView: View {
 
     var body: some View {
         VStack {
-            // Initial view includes pairing and updating
-            let showDeviceScreen = (_showDeviceSheet && _settings.pairedDeviceID == nil) || _controller.updateState != .notUpdating
-
-            if showDeviceScreen {
+            if _showDeviceSheet {
                 // This view shown until 1) device becomes paired or 2) forcible dismissed by
                 // _showPairingView = false
                 DeviceScreenView(
@@ -97,8 +94,9 @@ struct ContentView: View {
 
             // Do we need to bring up device sheet initially? Do so if no Monocle paired or
             // if somehow already in an update state
-            _deviceSheetType = decideDeviceSheetType()
-            _showDeviceSheet = decideShowDeviceSheet()
+            let (showDeviceSheet, deviceSheetType) = decideShowDeviceSheet()
+            _showDeviceSheet = showDeviceSheet
+            _deviceSheetType = deviceSheetType
         }
         .onChange(of: _controller.isMonocleConnected) {
             // Sync connection state
@@ -121,12 +119,13 @@ struct ContentView: View {
 
             // When enabled, update device sheet type
             if !dismissed {
-                _deviceSheetType = decideDeviceSheetType()
+                let (_, deviceSheetType) = decideShowDeviceSheet()
+                _deviceSheetType = deviceSheetType
                 return
             }
 
             // Cannot dismiss while updating
-            if dismissed && _controller.updateState != .notUpdating {
+            if dismissed && isUpdating() {
                 _showDeviceSheet = true
                 return
             }
@@ -137,10 +136,13 @@ struct ContentView: View {
                 _bluetoothEnabled = false
             }
         }
-        .onChange(of: _controller.updateState) { (value: Controller.UpdateState) in
-            _showDeviceSheet = decideShowDeviceSheet()
-            _deviceSheetType = decideDeviceSheetType()
+        /*
+        .onChange(of: _controller.monocleState) { (value: Controller.MonocleState) in
+            let (showDeviceSheet, deviceSheetType) = decideShowDeviceSheet()
+            _showDeviceSheet = showDeviceSheet
+            _deviceSheetType = deviceSheetType
         }
+         */
         .onChange(of: _controller.updateProgressPercent) {
             _updateProgressPercent = $0
         }
@@ -156,18 +158,25 @@ struct ContentView: View {
         _controller = controller
     }
 
-    private func decideShowDeviceSheet() -> Bool {
-        return _settings.pairedDeviceID == nil || _controller.updateState != .notUpdating
+    private func decideShowDeviceSheet() -> (Bool, DeviceSheetType) {
+        if _settings.pairedDeviceID == nil {
+            // No Monocle pair, show pairing sheet
+            return (true, .pairing)
+        }
+
+        switch _controller.monocleState {
+        case .notReady:
+            return (false, .pairing)    // don't show pairing sheet if disconnected but paired
+        case .updatingFirmware:
+            return (true, .firmwareUpdate)
+        case .updatingFPGA:
+            return (true, .fpgaUpdate)
+        case .ready:
+            return (false, .pairing)    // device is connected and running
+        }
     }
 
-    private func decideDeviceSheetType() -> DeviceSheetType {
-        switch _controller.updateState {
-        case .notUpdating:
-            return .pairing
-        case .updatingFirmware:
-            return .firmwareUpdate
-        case .updatingFPGA:
-            return .fpgaUpdate
-        }
+    private func isUpdating() -> Bool {
+        return _controller.monocleState == .updatingFirmware || _controller.monocleState == .updatingFPGA
     }
 }

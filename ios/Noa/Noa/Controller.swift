@@ -198,13 +198,14 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }
     }
 
-    public enum UpdateState {
-        case notUpdating
+    public enum MonocleState {
+        case notReady           // Monocle connection not yet firmly established
         case updatingFirmware
         case updatingFPGA
+        case ready              // connected, finished all updates, running state
     }
 
-    @Published private(set) var updateState = UpdateState.notUpdating
+    @Published private(set) var monocleState = MonocleState.notReady
     @Published private(set) var updateProgressPercent: Int = 0
 
     public var mode = ChatGPT.Mode.assistant {
@@ -472,7 +473,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         switch newState {
         case .disconnected:
             isMonocleConnected = false
-            updateState = .notUpdating
+            monocleState = .notReady
             _dfuController = nil
 
         case .waitingForRawREPL(didFinishDFU: let didFinishDFU):
@@ -481,7 +482,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _currentFPGAVersion = nil
             if !didFinishDFU {
                 // Just connected, we are not currently updating
-                updateState = .notUpdating
+                monocleState = .notReady
             }
 
         case .waitingForFirmwareVersion:
@@ -506,7 +507,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             send(data: Data([ 0x04 ]), to: _monocleBluetooth, on: Self._serialRx)
 
             // Not updating anymore
-            updateState = .notUpdating
+            monocleState = .ready
 
         case .initiateDFUAndWaitForDFUTarget:
             // Kick off firmware update. We will then get a disconnect event when Monocle switches
@@ -517,7 +518,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _dfuBluetooth.enabled = true
 
             // Update the firmware...
-            updateState = .updatingFirmware
+            monocleState = .updatingFirmware
             updateProgressPercent = 0
 
             print("[Controller] Firmware update initiated")
@@ -525,7 +526,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         case .performDFU(peripheral: let peripheral, rescaleUpdatePercentage: _):
             // We may enter this state at any time (e.g., if app starts up when Monocle is in DFU
             // state due to a previously failed update, etc.). Set the external state.
-            updateState = .updatingFirmware
+            monocleState = .updatingFirmware
             updateProgressPercent = 0
 
             // Instantiate Nordic DFU library object that will handle the firmware update
@@ -533,7 +534,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _dfuController = _dfuInitiator.start(target: peripheral)
 
         case .initiateFPGAUpdate(maximumDataLength: let maximumDataLength, rescaleUpdatePercentage: let rescaleUpdatePercentage):
-            updateState = .updatingFPGA
+            monocleState = .updatingFPGA
             updateProgressPercent = rescaleUpdatePercentage ? 50 : 0
             _matcher = nil
             let updateState = FPGAUpdateState(maximumDataLength: maximumDataLength, rescaleUpdatePercentage: rescaleUpdatePercentage)
