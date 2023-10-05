@@ -31,6 +31,9 @@ struct ContentView: View {
     /// Update percentage
     @State private var _updateProgressPercent: Int = 0
 
+    /// First time connected? If device was ever in unpaired state, this flag is set and a tutorial is displayed upon successful pairing.
+    @State private var _firstTimeConnecting = false
+
     /// Translation mode state
     @State private var _mode: ChatGPT.Mode = .assistant
 
@@ -91,6 +94,7 @@ struct ContentView: View {
             _isMonocleConnected = _controller.isMonocleConnected
             _monocleWithinPairingRange = _controller.nearestMonocleID != nil
             _bluetoothEnabled = _controller.bluetoothEnabled
+            _firstTimeConnecting = _controller.pairedMonocleID == nil
 
             // Do we need to bring up device sheet initially? Do so if no Monocle paired or
             // if somehow already in an update state
@@ -136,13 +140,15 @@ struct ContentView: View {
                 _bluetoothEnabled = false
             }
         }
-        /*
         .onChange(of: _controller.monocleState) { (value: Controller.MonocleState) in
-            let (showDeviceSheet, deviceSheetType) = decideShowDeviceSheet()
-            _showDeviceSheet = showDeviceSheet
-            _deviceSheetType = deviceSheetType
+            if _controller.pairedMonocleID == nil {
+                _firstTimeConnecting = true
+            } else if value == .ready && _firstTimeConnecting {
+                // Connected. Do we need to display tutorial?
+                _chatMessageStore.putMessage(Message(text: "Welcome!", participant: .assistant))
+                _firstTimeConnecting = false
+            }
         }
-         */
         .onChange(of: _controller.updateProgressPercent) {
             _updateProgressPercent = $0
         }
