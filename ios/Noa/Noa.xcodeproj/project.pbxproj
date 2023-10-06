@@ -67,6 +67,10 @@
 		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
 		CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD4B9012A93EB47004E3ADD /* NoaApp.swift */; };
 		CCEE174F2ACF7E71000170F5 /* Tutorial.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEE174E2ACF7E71000170F5 /* Tutorial.swift */; };
+		CCEE17542ACF8CC1000170F5 /* Tutorial_2.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17502ACF8CC1000170F5 /* Tutorial_2.png */; };
+		CCEE17552ACF8CC1000170F5 /* Tutorial_5.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17512ACF8CC1000170F5 /* Tutorial_5.png */; };
+		CCEE17562ACF8CC1000170F5 /* Tutorial_4.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17522ACF8CC1000170F5 /* Tutorial_4.png */; };
+		CCEE17572ACF8CC1000170F5 /* Tutorial_3.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17532ACF8CC1000170F5 /* Tutorial_3.png */; };
 		CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */; };
 		CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */; };
 		CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */; };
@@ -155,6 +159,10 @@
 		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
 		CCD4B9012A93EB47004E3ADD /* NoaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaApp.swift; sourceTree = "<group>"; };
 		CCEE174E2ACF7E71000170F5 /* Tutorial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tutorial.swift; sourceTree = "<group>"; };
+		CCEE17502ACF8CC1000170F5 /* Tutorial_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_2.png; sourceTree = "<group>"; };
+		CCEE17512ACF8CC1000170F5 /* Tutorial_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_5.png; sourceTree = "<group>"; };
+		CCEE17522ACF8CC1000170F5 /* Tutorial_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_4.png; sourceTree = "<group>"; };
+		CCEE17532ACF8CC1000170F5 /* Tutorial_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_3.png; sourceTree = "<group>"; };
 		CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuView.swift; sourceTree = "<group>"; };
 		CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyPopupBoxView.swift; sourceTree = "<group>"; };
 		CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorModeAdaptiveImage.swift; sourceTree = "<group>"; };
@@ -192,6 +200,10 @@
 			isa = PBXGroup;
 			children = (
 				352D27F72A7B01820019EFDB /* SpinningMonocle.mp4 */,
+				CCEE17502ACF8CC1000170F5 /* Tutorial_2.png */,
+				CCEE17532ACF8CC1000170F5 /* Tutorial_3.png */,
+				CCEE17522ACF8CC1000170F5 /* Tutorial_4.png */,
+				CCEE17512ACF8CC1000170F5 /* Tutorial_5.png */,
 			);
 			path = "UI Assets";
 			sourceTree = "<group>";
@@ -563,14 +575,18 @@
 				CC200A512A37E396005C67E0 /* graphics.py in Resources */,
 				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,
 				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
+				CCEE17542ACF8CC1000170F5 /* Tutorial_2.png in Resources */,
 				CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */,
 				CC200A502A37E396005C67E0 /* states.py in Resources */,
 				CC200A4D2A37E38C005C67E0 /* main.py in Resources */,
+				CCEE17552ACF8CC1000170F5 /* Tutorial_5.png in Resources */,
 				CC212D722A9E764B0093479F /* photo.py in Resources */,
 				CCCECE762A1EF36C00DBB7CA /* Question_Nutrition.wav in Resources */,
+				CCEE17562ACF8CC1000170F5 /* Tutorial_4.png in Resources */,
 				CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */,
 				CC4E3AC82A00BA4C0058AC20 /* Assets.xcassets in Resources */,
 				CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */,
+				CCEE17572ACF8CC1000170F5 /* Tutorial_3.png in Resources */,
 				CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */,
 				CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */,
 			);
