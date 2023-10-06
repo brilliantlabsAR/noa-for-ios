@@ -15,6 +15,8 @@ struct ContentView: View {
     private let _chatMessageStore: ChatMessageStore
     @ObservedObject private var _controller: Controller
 
+    private var _tutorialTask: Task<(), Error>?
+
     /// Monocle state (as reported by Controller)
     @State private var _isMonocleConnected = false
     @State private var _monocleWithinPairingRange = false   // only updated when no Monocle yet paired
@@ -141,13 +143,21 @@ struct ContentView: View {
             }
         }
         .onChange(of: _controller.monocleState) { (value: Controller.MonocleState) in
+            // Tutorial
             if _controller.pairedMonocleID == nil {
                 _firstTimeConnecting = true
             } else if value == .ready && _firstTimeConnecting {
                 // Connected. Do we need to display tutorial?
-                _chatMessageStore.putMessage(Message(text: "Welcome!", participant: .assistant))
+                Task {
+                    try await displayTutorialInChatWindow(chatMessageStore: _chatMessageStore)
+                }
                 _firstTimeConnecting = false
             }
+
+            // Device sheet?
+            let (showDeviceSheet, deviceSheetType) = decideShowDeviceSheet()
+            _showDeviceSheet = showDeviceSheet
+            _deviceSheetType = deviceSheetType
         }
         .onChange(of: _controller.updateProgressPercent) {
             _updateProgressPercent = $0

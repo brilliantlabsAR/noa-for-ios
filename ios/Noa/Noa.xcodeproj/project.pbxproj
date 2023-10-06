@@ -66,6 +66,7 @@
 		CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */; };
 		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
 		CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD4B9012A93EB47004E3ADD /* NoaApp.swift */; };
+		CCEE174F2ACF7E71000170F5 /* Tutorial.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEE174E2ACF7E71000170F5 /* Tutorial.swift */; };
 		CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */; };
 		CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */; };
 		CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */; };
@@ -153,6 +154,7 @@
 		CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_CPU.wav; sourceTree = "<group>"; };
 		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
 		CCD4B9012A93EB47004E3ADD /* NoaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaApp.swift; sourceTree = "<group>"; };
+		CCEE174E2ACF7E71000170F5 /* Tutorial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tutorial.swift; sourceTree = "<group>"; };
 		CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuView.swift; sourceTree = "<group>"; };
 		CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyPopupBoxView.swift; sourceTree = "<group>"; };
 		CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorModeAdaptiveImage.swift; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 				CC00399E2A6DA3DF009E3BAC /* Settings */,
 				CC0039A42A6DA57E009E3BAC /* ContentView.swift */,
 				CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */,
+				CCEE174E2ACF7E71000170F5 /* Tutorial.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -595,6 +598,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */,
+				CCEE174F2ACF7E71000170F5 /* Tutorial.swift in Sources */,
 				CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */,
 				F8BC4DE52A4DBD680005F6F0 /* DeviceScreenView.swift in Sources */,
 				CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */,
