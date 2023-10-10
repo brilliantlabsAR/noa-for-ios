@@ -130,10 +130,6 @@ struct ChatView: View {
                     .aspectRatio(contentMode: .fit)
             }
         }
-        .onAppear {
-            // When view appears, check whether we need an API key (only OpenAI is required)
-            popUpApiBox = _settings.openAIKey.isEmpty
-        }
         .onChange(of: _expandedPicture) {
             let opacity: CGFloat = $0 == nil ? 0 : 1
             withAnimation(.easeInOut(duration: 0.2)) {
