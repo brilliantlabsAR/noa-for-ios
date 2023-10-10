@@ -6,13 +6,6 @@
 //
 //  Notes
 //  -----
-//  - There is a bug where occasionally the firmware version cannot successfully be read. What
-//    appears to be happening is the "raw REPL; CTRL-B to exit" is transmitted twice, with the
-//    second one being intercepted by the code awaiting the firmware version. This is probably due
-//    to a race condition with the raw REPL retry timer. It *seems* to happen more frequently after
-//    a firmware or FPGA update has taken place. Need to investigate this further if it becomes a
-//    serious problem. Not sure why this doesn't also cause an FPGA update but if that is ever
-//    observed, this should become a top priority issue to resolve.
 //  - The state code is a bit much to have in one file. Future refactoring advice:
 //      - Rely more on data-carrying enums. When transitioning states, pass state as a variable or
 //        struct attached to the enum.
@@ -72,6 +65,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         // them. If DFU was performed and Monocle had to reset, we detect that case so that when we
         // get to the firmware and FPGA update phase, we can compute the correct relative
         // percentage each contributes. We pass the DFU state along in the enums themselves.
+        case enterRawREPL(didFinishDFU: Bool)
         case waitingForRawREPL(didFinishDFU: Bool)
         case waitingForFirmwareVersion(didFinishDFU: Bool)
         case waitingForFPGAVersion(didFinishDFU: Bool)
@@ -148,7 +142,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     private var _state = State.disconnected
-    private var _rawREPLTimer: Timer?
     private var _matcher: Util.StreamingStringMatcher?
 
     private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.248.0754", withExtension: "zip")!
@@ -326,27 +319,8 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                     self._settings.setPairedDeviceID(deviceID)
                 }
 
-                // Always enter raw REPL mode
-                transmitRawREPLCode()
-
-                // Wait for confirmation that raw REPL was activated
-                transitionState(to: .waitingForRawREPL(didFinishDFU: didFinishDFU))
-
-                // Since firmware v23.181.0720, some sort of Bluetooth race condition has been exposed.
-                // If the iOS app is running and then Monocle is powered on, or if Monocle is restarted
-                // while the app is running, the raw REPL code is not received and Controller hangs
-                // forever in the waitingForRawREPL state. Presumably, Monocle needs some time before
-                // its receive characteristic is actually ready to accept data but to my knowledge, we
-                // have no way to detect this using CoreBluetooth. The "solution" is to periodically
-                // re-transmit the raw REPL code.
-                _rawREPLTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] (timer: Timer) in
-                    if case .waitingForRawREPL(_) = self?._state {
-                        self?.transmitRawREPLCode()
-                    }
-                }
-
-                // Update public state
-                isMonocleConnected = true
+                // Enter raw REPL mode
+                transitionState(to: .enterRawREPL(didFinishDFU: didFinishDFU))
             }
         }.store(in: &_subscribers)
 
@@ -475,6 +449,26 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             isMonocleConnected = false
             monocleState = .notReady
             _dfuController = nil
+
+        case .enterRawREPL(didFinishDFU: let didFinishDFU):
+            // Since firmware v23.181.0720, a Bluetooth race condition has been exposed. If the
+            // iOS app is running and then Monocle is powered on, or if Monocle is restarted
+            // while the app is running, the raw REPL code is not received and Controller hangs
+            // forever in the waitingForRawREPL state. Monocle probably needs some time before
+            // its receive characteristic is actually ready to accept data. Transmitting the
+            // raw REPL code periodically is unworkable because it can create a pile-up of
+            // responses that throws off the firmware detection logic. Instead, we use a delay.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                guard let self = self else { return }
+                guard case .enterRawREPL(didFinishDFU: _) = _state else { return }
+
+                // Transmit raw REPL code to enter raw REPL mode then wait for confirmation
+                transmitRawREPLCode()
+                transitionState(to: .waitingForRawREPL(didFinishDFU: didFinishDFU))
+
+                // Update public state
+                isMonocleConnected = true
+            }
 
         case .waitingForRawREPL(didFinishDFU: let didFinishDFU):
             _matcher = nil
@@ -612,10 +606,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         if _matcher!.matchExists(afterAppending: str) {
             print("[Controller] Raw REPL detected")
             _matcher = nil
-
-            // Stop transmiting the raw REPL code
-            _rawREPLTimer?.invalidate()
-            _rawREPLTimer = nil
 
             // Next, check firmware
             transitionState(to: .waitingForFirmwareVersion(didFinishDFU: didFinishDFU))
