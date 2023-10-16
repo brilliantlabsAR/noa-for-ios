@@ -159,6 +159,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private let _whisper = Whisper(configuration: .backgroundData)
     private let _chatGPT = ChatGPT(configuration: .backgroundData)
     private let _stableDiffusion = StableDiffusion(configuration: .backgroundData)
+    private let _llava = LLaVA(configuration: .backgroundData)
 
     private var _pendingQueryByID: [UUID: String] = [:]
 
@@ -1006,7 +1007,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             guard let self = self else { return }
             if let error = error {
                 printErrorToChat(error.description, as: .user)
-            } else if _imageData.isEmpty {
+            } else /*if _imageData.isEmpty*/ {
                 // No image data: normal operation (assistant or translator)
                 if mode == .assistant {
                     // Store query and send ID to Monocle. We need to do this because we cannot perform
@@ -1021,23 +1022,30 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                     printToChat(query, as: .translator)
                     print("[Controller] Translation received: \(query)")
                 }
-            } else {
-                // Have image data, perform image generation
-                generateImage(prompt: query)
             }
+//            } else {
+//                // Have image data, perform image generation
+//                generateImage(prompt: query)
+//            }
         }
     }
 
-    // Step 3: Transcription UUID received, kick off ChatGPT request
+    // Step 3: Transcription UUID received, kick off LLM request
     private func onTranscriptionAcknowledged(id: UUID) {
         // Fetch query
         guard let query = _pendingQueryByID.removeValue(forKey: id) else {
             return
         }
 
-        print("[Controller] Sending transcript \(id) to ChatGPT as query: \(query)")
-
-        submitQuery(query: query, transcriptionID: id)
+        if _imageData.isEmpty {
+            print("[Controller] Sending transcript \(id) to ChatGPT as query: \(query)")
+            submitQuery(query: query, transcriptionID: id)
+        } else {
+            // Have image data, use LLaVA
+            //TODO: need to store image with transcript id
+            print("[COntroler] Sending transcript \(id) to LLaVA as query: \(query)")
+            submitQueryToLLaVA(query: query, image: _imageData, transcriptionID: id)
+        }
     }
 
     private func submitQuery(query: String, transcriptionID id: UUID) {
@@ -1055,6 +1063,27 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 print("[Controller] Received response from ChatGPT for \(id): \(response)")
             }
         }
+    }
+
+    private func submitQueryToLLaVA(query: String, image: Data, transcriptionID id: UUID) {
+        // Attempt to decode image
+        guard let picture = UIImage(data: image) else {
+            printErrorToChat("Photo could not be decoded", as: .user)
+            return
+        }
+
+        // Display image as user
+        printToChat(query, picture: picture, as: .user)
+
+        // Submit to LLaVA
+        _llava.send(jpegFileData: image, prompt: query, completion: { [weak self] (response: String, error: AIError?) in
+            if let error = error {
+                self?.printErrorToChat(error.description, as: .assistant)
+            } else {
+                self?.printToChat(response, as: .assistant)
+                print("[Controller] Received response from LLaVA for \(id): \(response)")
+            }
+        })
     }
 
     private func generateImage(prompt: String) {
