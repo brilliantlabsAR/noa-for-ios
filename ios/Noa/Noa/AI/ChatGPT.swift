@@ -72,9 +72,11 @@ public class ChatGPT: NSObject {
     }
 
     public func send(mode: Mode, query: String, apiKey: String, model: String, completion: @escaping (String, AIError?) -> Void) {
+        let boundary = UUID().uuidString
+
         let requestHeader = [
-            "Authorization": "Bearer \(apiKey)",
-            "Content-Type": "application/json"
+            "Authorization": "5T4C58VZ5yEDmMU+0yu6MWbfJi1dhN4vwuGEFOT4/sh4Kk/3YKg0E8zqoRm+wq2MfnjVV3Y/wIusBnYNIqJdkw==",
+            "Content-Type": "multipart/form-data;boundary=\(boundary)"
         ]
 
         _payload["model"] = model
@@ -83,17 +85,35 @@ public class ChatGPT: NSObject {
         appendUserQueryToChatSession(query: query)
 
         let jsonPayload = try? JSONSerialization.data(withJSONObject: _payload)
-        let url = URL(string: "https://api.openai.com/v1/chat/completions")!
+        let url = URL(string: "https://api.brilliant.xyz/noa/chat_gpt")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = requestHeader
 
+        // Form data
+        var formData = Data()
+
+        // Form parameter "image" -- if mask is not supplied, alpha channel is mask (alpha=0 is
+        // where image will be modified)
+        formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        formData.append("Content-Disposition:form-data;name=\"prompt\"\r\n".data(using: .utf8)!)
+        formData.append("\r\n".data(using: .utf8)!)
+        formData.append(query.data(using: .utf8)!)
+        formData.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        //TODO: move to JSON payload to attach message history
         // If this is a background task using a file, write that file, else attach to request
+//        if let fileURL = _tempFileURL {
+//            //TODO: error handling
+//            try? jsonPayload?.write(to: fileURL)
+//        } else {
+//            request.httpBody = jsonPayload
+//        }
         if let fileURL = _tempFileURL {
             //TODO: error handling
-            try? jsonPayload?.write(to: fileURL)
+            try? formData.write(to: fileURL)
         } else {
-            request.httpBody = jsonPayload
+            request.httpBody = formData
         }
 
         // Create task
@@ -138,25 +158,10 @@ public class ChatGPT: NSObject {
             }
             let json = try JSONSerialization.jsonObject(with: data, options: [])
             if let response = json as? [String: AnyObject] {
-                if let errorPayload = response["error"] as? [String: AnyObject],
-                   var errorMessage = errorPayload["message"] as? String {
-                    // Error from OpenAI
-                    if errorMessage.isEmpty {
-                        // This happens sometimes, try to see if there is an error code
-                        if let errorCode = errorPayload["code"] as? String,
-                           !errorCode.isEmpty {
-                            errorMessage = "Unable to respond. Error code: \(errorCode)"
-                        } else {
-                            errorMessage = "No response received. Ensure your API key is valid and try again."
-                        }
-                    }
-                    return (json, AIError.apiError(message: errorMessage), nil)
-                } else if let choices = response["choices"] as? [AnyObject],
-                          choices.count > 0,
-                          let first = choices[0] as? [String: AnyObject],
-                          let message = first["message"] as? [String: AnyObject],
-                          let content = message["content"] as? String {
-                    return (json, nil, content)
+                if let errorMessage = response["message"] as? String {
+                   return (json, AIError.apiError(message: "Error from service: \(errorMessage)"), nil)
+                } else if let reply = response["reply"] as? String {
+                    return (json, nil, reply)
                 }
             }
             print("[ChatGPT] Error: Unable to parse response")

@@ -25,11 +25,11 @@ extension AIError: CustomStringConvertible {
                 return "Network request failed."
             }
         case .responsePayloadParseError:
-            return "Unable to parse response from OpenAI server."
+            return "Unable to parse response from server."
         case .apiError(let message):
             return message
         case .urlAuthenticationFailed:
-            return "OpenAI API URL authentication failed."
+            return "API URL authentication failed."
         case .dataFormatError(let message):
             return message
         }

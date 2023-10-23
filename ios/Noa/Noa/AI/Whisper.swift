@@ -103,42 +103,16 @@ class Whisper: NSObject {
     public func transcribe(mode: Mode, fileData: Data, format: AudioFormat, apiKey: String, completion: @escaping (String, AIError?) -> Void) {
         let boundary = UUID().uuidString
 
-        let function = mode == .transcription ? "transcriptions" : "translations"
-        let url = URL(string: "https://api.openai.com/v1/audio/\(function)")!
+        let url = URL(string: "https://api.brilliant.xyz/noa/translate")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("5T4C58VZ5yEDmMU+0yu6MWbfJi1dhN4vwuGEFOT4/sh4Kk/3YKg0E8zqoRm+wq2MfnjVV3Y/wIusBnYNIqJdkw==", forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data;boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
         // Form data
         var formData = Data()
-
-        // Form parameter "model"
         formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"model\"\r\n".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-        formData.append("whisper-1".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-
-        if mode == .transcription {
-            // Form parameter "language": en
-            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-            formData.append("Content-Disposition:form-data;name=\"language\"\r\n".data(using: .utf8)!)
-            formData.append("\r\n".data(using: .utf8)!)
-            formData.append("en".data(using: .utf8)!)
-            formData.append("\r\n".data(using: .utf8)!)
-        } else {
-            // Form parameter "prompt", required to make translation work
-            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-            formData.append("Content-Disposition:form-data;name=\"prompt\"\r\n".data(using: .utf8)!)
-            formData.append("\r\n".data(using: .utf8)!)
-            formData.append("Translate to English".data(using: .utf8)!) // can seemingly be anything, even just "translate"
-            formData.append("\r\n".data(using: .utf8)!)
-        }
-
-        // File data and form parameter "file"
-        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"file\";filename=\"audio.\(format.rawValue)\"\r\n".data(using: .utf8)!)  //TODO: temperature
+        formData.append("Content-Disposition:form-data;name=\"audio\";filename=\"audio.\(format.rawValue)\"\r\n".data(using: .utf8)!)  //TODO: temperature
         formData.append("Content-Type:audio/\(format.rawValue)\r\n\r\n".data(using: .utf8)!)
         formData.append(fileData)
         formData.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
@@ -169,20 +143,9 @@ class Whisper: NSObject {
             }
             let json = try JSONSerialization.jsonObject(with: data, options: [])
             if let response = json as? [String: AnyObject] {
-                if let errorPayload = response["error"] as? [String: AnyObject],
-                   var errorMessage = errorPayload["message"] as? String {
-                    // Error from OpenAI
-                    if errorMessage.isEmpty {
-                        // This happens sometimes, try to see if there is an error code
-                        if let errorCode = errorPayload["code"] as? String,
-                           !errorCode.isEmpty {
-                            errorMessage = "Unable to respond. Error code: \(errorCode)"
-                        } else {
-                            errorMessage = "No response received. Ensure your API key is valid and try again."
-                        }
-                    }
-                    return (AIError.apiError(message: errorMessage), nil)
-                } else if let text = response["text"] as? String {
+                if let errorMessage = response["message"] as? String {
+                   return (AIError.apiError(message: "Error from service: \(errorMessage)"), nil)
+                } else if let text = response["reply"] as? String {
                     return (nil, text)
                 }
             }
