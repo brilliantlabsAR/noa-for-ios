@@ -34,14 +34,16 @@ struct MessageView: View {
                     }
                 }
             }
-            HStack(alignment: .bottom, spacing: 15) {
-                if _currentMessage.participant != .assistant {
-                    // User bubble pushed all the way to right, translator will be centered
-                    Spacer()
-                }
-                MessageContentView(message: _currentMessage)
-                if _currentMessage.participant != .user {
-                    Spacer()
+            if _currentMessage.text.count > 0 {
+                HStack(alignment: .bottom, spacing: 15) {
+                    if _currentMessage.participant != .assistant {
+                        // User bubble pushed all the way to right, translator will be centered
+                        Spacer()
+                    }
+                    MessageContentView(message: _currentMessage)
+                    if _currentMessage.participant != .user {
+                        Spacer()
+                    }
                 }
             }
        }
