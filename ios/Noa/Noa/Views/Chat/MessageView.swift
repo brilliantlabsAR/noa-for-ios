@@ -34,7 +34,7 @@ struct MessageView: View {
                     }
                 }
             }
-            if _currentMessage.text.count > 0 {
+            if _currentMessage.text.count > 0 || _currentMessage.typingInProgress {
                 HStack(alignment: .bottom, spacing: 15) {
                     if _currentMessage.participant != .assistant {
                         // User bubble pushed all the way to right, translator will be centered
