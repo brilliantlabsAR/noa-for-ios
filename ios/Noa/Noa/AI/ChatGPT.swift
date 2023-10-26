@@ -21,8 +21,13 @@ public class ChatGPT: NSObject {
 
     private static let _maxTokens = 4000    // 4096 for gpt-3.5-turbo and larger for gpt-4, but we use a conservative number to avoid hitting that limit
 
+    private struct CompletionData {
+        let completion: (String, String, AIError?) -> Void
+        let wasAudioPrompt: Bool
+    }
+
     private var _session: URLSession!
-    private var _completionByTask: [Int: (String, String, AIError?) -> Void] = [:]
+    private var _completionByTask: [Int: CompletionData] = [:]
     private var _tempFileURL: URL?
 
     private static let _assistantPrompt = "You are a smart assistant that answers all user queries, questions, and statements with a single sentence."
@@ -71,79 +76,44 @@ public class ChatGPT: NSObject {
         }
     }
 
-    public func send(mode: Mode, audio: Data, apiKey: String, model: String, completion: @escaping (String, String, AIError?) -> Void) {
-        let boundary = UUID().uuidString
-
-        let requestHeader = [
-            "Authorization": "5T4C58VZ5yEDmMU+0yu6MWbfJi1dhN4vwuGEFOT4/sh4Kk/3YKg0E8zqoRm+wq2MfnjVV3Y/wIusBnYNIqJdkw==",
-            "Content-Type": "multipart/form-data;boundary=\(boundary)"
-        ]
-
-        _payload["model"] = model
-        setSystemPrompt(for: mode)
-
-//TODO: when text prompt mode is fixed, we need to make sure not to append user query a second time after extracting content! Can probably
-        // just check to see if it's already there at the end of the message list
-        //TODO: remember to do this when response received! need to distinguish between text and audio requests on reception
-        //appendUserQueryToChatSession(query: query)
-
-        let url = URL(string: "https://api.brilliant.xyz/noa/audio_gpt")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.allHTTPHeaderFields = requestHeader
-
-        // Form data
-        var formData = Data()
-
-        // Conversation history thus far using "json" field
-        if let historyPayload = try? JSONSerialization.data(withJSONObject: _payload) {
-            formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-            formData.append("Content-Disposition:form-data;name=\"json\"\r\n".data(using: .utf8)!)
-            formData.append("Content-Type:application/json\r\n\r\n".data(using: .utf8)!)
-            formData.append(historyPayload)
-            formData.append("\r\n".data(using: .utf8)!)
-        }
-
-        // Audio data representing next user query
-        formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"audio\";filename=\"audio.m4a\"\r\n".data(using: .utf8)!)  //TODO: temperature?
-        formData.append("Content-Type:audio/m4a\r\n\r\n".data(using: .utf8)!)
-        formData.append(audio)
-        formData.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-
-        // If this is a background task using a file, write that file, else attach to request
-        if let fileURL = _tempFileURL {
-            //TODO: error handling
-            try? formData.write(to: fileURL)
-        } else {
-            request.httpBody = formData
-        }
-
-        // Create task
-        let task = _tempFileURL == nil ? _session.dataTask(with: request) : _session.uploadTask(with: request, fromFile: _tempFileURL!)
-
-        // Associate completion handler with this task
-        _completionByTask[task.taskIdentifier] = completion
-
-        // Begin
-        task.resume()
+    public func send(mode: Mode, audio: Data, model: String, completion: @escaping (String, String, AIError?) -> Void) {
+        send(mode: mode, audio: audio, query: nil, model: model, completion: completion)
     }
 
-    public func send(mode: Mode, query: String, apiKey: String, model: String, completion: @escaping (String, String, AIError?) -> Void) {
+    public func send(mode: Mode, query: String, model: String, completion: @escaping (String, String, AIError?) -> Void) {
+        send(mode: mode, audio: nil, query: query, model: model, completion: completion)
+    }
+
+    private func send(mode: Mode, audio: Data?, query: String?, model: String, completion: @escaping (String, String, AIError?) -> Void) {
+        // Either audio or text prompt only
+        if audio != nil && query != nil {
+            fatalError("ChatGPT.send() cannot have both audio and text prompts")
+        } else if audio == nil && query == nil {
+            fatalError("ChatGPT.send() must have either an audio or text prompt")
+        }
+
         let boundary = UUID().uuidString
 
+        // Set up conversation details and append user prompt if we know it now. If input is audio,
+        // we will not be able to do this until we get the response.
+        _payload["model"] = model
+        setSystemPrompt(for: mode)
+        if let query = query {
+            appendUserQueryToChatSession(query: query)
+        }
+
+        guard let historyPayload = try? JSONSerialization.data(withJSONObject: _payload) else {
+            completion("", "", AIError.internalError(message: "Internal error: Conversation history cannot be serialized"))
+            return
+        }
+
+        // Build request
         let requestHeader = [
             "Authorization": "5T4C58VZ5yEDmMU+0yu6MWbfJi1dhN4vwuGEFOT4/sh4Kk/3YKg0E8zqoRm+wq2MfnjVV3Y/wIusBnYNIqJdkw==",
             "Content-Type": "multipart/form-data;boundary=\(boundary)"
         ]
-
-        _payload["model"] = model
-        setSystemPrompt(for: mode)
-
-        appendUserQueryToChatSession(query: query)
-
-        let jsonPayload = try? JSONSerialization.data(withJSONObject: _payload)
-        let url = URL(string: "https://api.brilliant.xyz/noa/chat_gpt")!
+        let service = audio != nil ? "audio_gpt" : "chat_gpt"
+        let url = URL(string: "https://api.brilliant.xyz/noa/\(service)")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = requestHeader
@@ -151,13 +121,25 @@ public class ChatGPT: NSObject {
         // Form data
         var formData = Data()
 
-        if let json = jsonPayload {
+        // Conversation history thus far using "json" field. If no audio, this must also contain
+        // the current user query.
+        formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        formData.append("Content-Disposition:form-data;name=\"json\"\r\n".data(using: .utf8)!)
+        formData.append("Content-Type:application/json\r\n\r\n".data(using: .utf8)!)
+        formData.append(historyPayload)
+        formData.append("\r\n".data(using: .utf8)!)
+
+        // Audio data representing next user query
+        if let audio = audio {
             formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-            formData.append("Content-Disposition:form-data;name=\"json\"\r\n".data(using: .utf8)!)
-            formData.append("Content-Type:application/json\r\n\r\n".data(using: .utf8)!)
-            formData.append(json)
+            formData.append("Content-Disposition:form-data;name=\"audio\";filename=\"audio.m4a\"\r\n".data(using: .utf8)!)  //TODO: temperature?
+            formData.append("Content-Type:audio/m4a\r\n\r\n".data(using: .utf8)!)
+            formData.append(audio)
             formData.append("\r\n".data(using: .utf8)!)
         }
+
+        // Terminate form data
+        formData.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
         // If this is a background task using a file, write that file, else attach to request
         if let fileURL = _tempFileURL {
@@ -171,7 +153,7 @@ public class ChatGPT: NSObject {
         let task = _tempFileURL == nil ? _session.dataTask(with: request) : _session.uploadTask(with: request, fromFile: _tempFileURL!)
 
         // Associate completion handler with this task
-        _completionByTask[task.taskIdentifier] = completion
+        _completionByTask[task.taskIdentifier] = CompletionData(completion: completion, wasAudioPrompt: true)
 
         // Begin
         task.resume()
@@ -199,6 +181,15 @@ public class ChatGPT: NSObject {
             messages.append([ "role": "assistant", "content": "\(response)" ])
             _payload["messages"] = messages
         }
+    }
+
+    private func printConversation() {
+        // Debug log conversation history
+        print("---")
+        for message in (_payload["messages"] as! [[String: String]]) {
+            print("  role=\(message["role"]!), content=\(message["content"]!)")
+        }
+        print("---")
     }
 
     private func extractContent(from data: Data) -> (Any?, AIError?, String?, String?) {
@@ -246,8 +237,8 @@ extension ChatGPT: URLSessionDelegate {
         // Deliver error for all outstanding tasks
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            for (_, completion) in self._completionByTask {
-                completion("", "", AIError.clientSideNetworkError(error: error))
+            for (_, completionData) in self._completionByTask {
+                completionData.completion("", "", AIError.clientSideNetworkError(error: error))
             }
             _completionByTask = [:]
         }
@@ -288,8 +279,8 @@ extension ChatGPT: URLSessionDataDelegate {
             // Deliver error
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                if let completion = self._completionByTask[task.taskIdentifier] {
-                    completion("", "", AIError.urlAuthenticationFailed)
+                if let completionData = self._completionByTask[task.taskIdentifier] {
+                    completionData.completion("", "", AIError.urlAuthenticationFailed)
                     self._completionByTask.removeValue(forKey: task.taskIdentifier)
                 }
             }
@@ -333,8 +324,8 @@ extension ChatGPT: URLSessionDataDelegate {
         // error or I am interpreting the task lifecycle incorrectly.
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            if let completion = self._completionByTask[task.taskIdentifier] {
-                completion("", "", AIError.clientSideNetworkError(error: error))
+            if let completionData = self._completionByTask[task.taskIdentifier] {
+                completionData.completion("", "", AIError.clientSideNetworkError(error: error))
                 self._completionByTask.removeValue(forKey: task.taskIdentifier)
             }
         }
@@ -361,6 +352,7 @@ extension ChatGPT: URLSessionDataDelegate {
         // Deliver response and append to chat session
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            guard let completionData = self._completionByTask[dataTask.taskIdentifier] else { return }
 
             // Append to chat session to maintain running dialog unless we've exceeded the context
             // window
@@ -368,8 +360,9 @@ extension ChatGPT: URLSessionDataDelegate {
                 clearHistory()
                 print("[ChatGPT] Cleared context history because total tokens used reached \(totalTokensUsed)")
             } else {
-                // Append the user prompt
-                if userPrompt != nil {
+                // Append the user prompt when in audio mode because we don't know the prompt until
+                // we get the full response back
+                if userPromptString.count > 0 && completionData.wasAudioPrompt {
                     appendUserQueryToChatSession(query: userPromptString)
                 }
 
@@ -380,9 +373,9 @@ extension ChatGPT: URLSessionDataDelegate {
             }
 
             // Deliver response
-            if let completion = self._completionByTask[dataTask.taskIdentifier] {
+            if let completionData = self._completionByTask[dataTask.taskIdentifier] {
                 // User prompt delivered in
-                completion(userPromptString, responseString, contentError)
+                completionData.completion(userPromptString, responseString, contentError)
                 self._completionByTask.removeValue(forKey: dataTask.taskIdentifier)
             } else {
                 print("[ChatGPT]: Error: No completion found for task \(dataTask.taskIdentifier)")

@@ -2,6 +2,8 @@
 // TODO: Whisper.swift -> Translate.swift (allowing only translation), ChatGPT.swift -> Assistant.swift, StableDiffusion.swift -> Image2Image.swift, remove DallE.
 //TODO: remove transcription acknowledged commands (pon:)
 // Fix Monocle state machine not to rely on the above
+//TODO: get new key, create a Key.swift file with a dummy key. Add it. THEN .gitignore it. Then modify the key locally so it isn't committed to repo.
+//TODO: pull green camera fix from the Android Monocle script repo (use that script and then modify it, it has _camera.wake() calls)
 
 //
 //  Controller.swift
@@ -415,38 +417,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _dfuBluetooth.start()
         }
         bluetoothEnabled = false
-
-
-
-//        let data = MockInputGenerator().loadRandomVoiceFile(english: true)!
-//        let url = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
-//        let imageData = try! Data(contentsOf: url)
-//        let image = UIImage(data: imageData)!
-//        print("SIZE=\(imageData.count + data.count)")
-//        printToChat("", picture: image, as: .user)
-//        _stableDiffusion.imageToImage(image: image, audio: data, model: "", strength: 0.4, guidance: 17, apiKey: "") { [weak self] (image: UIImage?, prompt: String, error: AIError?) in
-//            if let error = error {
-//                self?.printErrorToChat(error.description, as: .assistant)
-//            } else if let picture = image?.centerCropped(to: CGSize(width: 640, height: 400)) { // crop out the letterboxing we had to introduce and return to original size
-//                self?.printToChat(prompt, picture: picture, as: .assistant)
-//
-//                //TODO: this does not seem to work yet
-//                //self?.sendImageToMonocleInChunks(image: picture)
-//            } else {
-//                // No picture but also no explicit error
-//                self?.printErrorToChat("No image received", as: .assistant)
-//            }
-//        }
-
-        let url = Bundle.main.url(forResource: "Question_Tootsie", withExtension: "m4a")!
-        let audio = try! Data(contentsOf: url)
-        _chatGPT.send(mode: .assistant, audio: audio, apiKey: "", model: "gpt-3.5-turbo") { [weak self] (prompt: String, response: String, error: AIError?) in
-            if let error = error {
-                self?.printErrorToChat(error.description, as: .assistant)
-            } else {
-                self?.printToChat(response, as: .assistant)
-            }
-        }
     }
 
     /// Connect to the nearest device if one exists.
@@ -1035,7 +1005,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 _chatGPT.send(
                     mode: mode,
                     audio: fileData,
-                    apiKey: "",
                     model: _settings.gptModel
                 ) { [weak self] (userPrompt: String, response: String, error: AIError?) in
                     if let error = error {
@@ -1081,7 +1050,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         _chatGPT.send(
             mode: mode,
             query: query,
-            apiKey: _settings.openAIKey,
             model: _settings.gptModel
         ) { [weak self] (_: String, response: String, error: AIError?) in
             if let error = error {

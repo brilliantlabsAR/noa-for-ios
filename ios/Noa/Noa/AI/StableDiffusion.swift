@@ -71,9 +71,9 @@ class StableDiffusion: NSObject {
     private func sendImageToImageRequest(image: UIImage, audio: Data?, prompt: String?, model: String, strength: Float, guidance: Int, apiKey: String, completion: @escaping (UIImage?, String, AIError?) -> Void) {
         // Either audio or text prompt only
         if audio != nil && prompt != nil {
-            fatalError("sendImageToImageRequest cannot have both audio and text prompts")
+            fatalError("StableDiffusion.sendImageToImageRequest() cannot have both audio and text prompts")
         } else if audio == nil && prompt == nil {
-            fatalError("sendImageToImageRequest must have either an audio or text prompt")
+            fatalError("StableDiffusion.sendImageToImageRequest() must have either an audio or text prompt")
         }
 
         // Stable Diffusion wants images to be multiples of 64 pixels on each side
