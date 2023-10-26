@@ -33,7 +33,7 @@ def send_audio(state, gfx, send_message):
 
     if chunk1 == None:
         send_message(b"aen:")
-        state.after(0, state.WaitForPing)
+        state.after(0, state.WaitForResponse)
     elif chunk2 == None:
         send_message(b"dat:" + chunk1)
     else:

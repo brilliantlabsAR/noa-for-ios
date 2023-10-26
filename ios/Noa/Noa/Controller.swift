@@ -1,3 +1,4 @@
+
 // TODO: Whisper.swift -> Translate.swift (allowing only translation), ChatGPT.swift -> Assistant.swift, StableDiffusion.swift -> Image2Image.swift, remove DallE.
 //TODO: remove transcription acknowledged commands (pon:)
 // Fix Monocle state machine not to rely on the above
