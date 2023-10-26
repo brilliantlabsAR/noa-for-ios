@@ -50,7 +50,6 @@
 		CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF22A00C4180058AC20 /* MessageView.swift */; };
 		CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */; };
 		CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF62A01AA350058AC20 /* ChatView.swift */; };
-		CC68515A2A9933F8004EA777 /* DallE.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851592A9933F8004EA777 /* DallE.swift */; };
 		CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */; };
 		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
 		CCB2F9622A2568EE00F24F2D /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* Controller.swift */; };
@@ -141,7 +140,6 @@
 		CC4E3AF22A00C4180058AC20 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
 		CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageStore.swift; sourceTree = "<group>"; };
 		CC4E3AF62A01AA350058AC20 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
-		CC6851592A9933F8004EA777 /* DallE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DallE.swift; sourceTree = "<group>"; };
 		CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
 		CC6851672A9964C2004EA777 /* Tahoe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tahoe.jpg; sourceTree = "<group>"; };
 		CCB2F9612A2568EE00F24F2D /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
@@ -306,7 +304,6 @@
 			isa = PBXGroup;
 			children = (
 				CC3FE0352A0F12F700756941 /* ChatGPT.swift */,
-				CC6851592A9933F8004EA777 /* DallE.swift */,
 				CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */,
 				CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */,
 				CC212D672A9D34A90093479F /* StableDiffusion.swift */,
@@ -617,7 +614,6 @@
 				CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
 				CC212D6A2A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift in Sources */,
-				CC68515A2A9933F8004EA777 /* DallE.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
 				CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */,
 				CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */,
