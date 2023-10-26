@@ -42,7 +42,7 @@ class StableDiffusion: NSObject {
         }
     }
 
-    public func imageToImage(image: UIImage, prompt: String, model: String, strength: Float, guidance: Int, apiKey: String, completion: @escaping (UIImage?, String, AIError?) -> Void) {
+    public func imageToImage(image: UIImage, prompt: String, model: String, strength: Float, guidance: Int, completion: @escaping (UIImage?, String, AIError?) -> Void) {
         sendImageToImageRequest(
             image: image,
             audio: nil,
@@ -50,12 +50,11 @@ class StableDiffusion: NSObject {
             model: model,
             strength: strength,
             guidance: guidance,
-            apiKey: apiKey,
             completion: completion
         )
     }
 
-    public func imageToImage(image: UIImage, audio: Data, model: String, strength: Float, guidance: Int, apiKey: String, completion: @escaping (UIImage?, String, AIError?) -> Void) {
+    public func imageToImage(image: UIImage, audio: Data, model: String, strength: Float, guidance: Int, completion: @escaping (UIImage?, String, AIError?) -> Void) {
         return sendImageToImageRequest(
             image: image,
             audio: audio,
@@ -63,12 +62,11 @@ class StableDiffusion: NSObject {
             model: model,
             strength: strength,
             guidance: guidance,
-            apiKey: apiKey,
             completion: completion
         )
     }
 
-    private func sendImageToImageRequest(image: UIImage, audio: Data?, prompt: String?, model: String, strength: Float, guidance: Int, apiKey: String, completion: @escaping (UIImage?, String, AIError?) -> Void) {
+    private func sendImageToImageRequest(image: UIImage, audio: Data?, prompt: String?, model: String, strength: Float, guidance: Int, completion: @escaping (UIImage?, String, AIError?) -> Void) {
         // Either audio or text prompt only
         if audio != nil && prompt != nil {
             fatalError("StableDiffusion.sendImageToImageRequest() cannot have both audio and text prompts")

@@ -1,4 +1,3 @@
-// TODO: eliminate unused fields from Settings (such as GPT model) and add a hard-coded API key there
 // TODO: Whisper.swift -> Translate.swift (allowing only translation), ChatGPT.swift -> Assistant.swift, StableDiffusion.swift -> Image2Image.swift, remove DallE.
 //TODO: remove transcription acknowledged commands (pon:)
 // Fix Monocle state machine not to rely on the above
@@ -1021,8 +1020,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 _whisper.transcribe(
                     mode: .translation,
                     fileData: fileData,
-                    format: .m4a,
-                    apiKey: _settings.openAIKey
+                    format: .m4a
                 ) { [weak self] (query: String, error: AIError?) in
                     guard let self = self else { return }
                     if let error = error {
@@ -1081,8 +1079,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             audio: fileData,
             model: _settings.stableDiffusionModel,
             strength: _settings.imageStrength,
-            guidance: _settings.imageGuidance,
-            apiKey: _settings.stabilityAIKey
+            guidance: _settings.imageGuidance
         ) { [weak self] (image: UIImage?, prompt: String, error: AIError?) in
             if let error = error {
                 self?.printErrorToChat(error.description, as: .assistant)

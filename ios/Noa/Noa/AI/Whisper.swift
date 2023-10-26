@@ -100,7 +100,7 @@ class Whisper: NSObject {
         }
     }
 
-    public func transcribe(mode: Mode, fileData: Data, format: AudioFormat, apiKey: String, completion: @escaping (String, AIError?) -> Void) {
+    public func transcribe(mode: Mode, fileData: Data, format: AudioFormat, completion: @escaping (String, AIError?) -> Void) {
         let boundary = UUID().uuidString
 
         let url = URL(string: "https://api.brilliant.xyz/noa/translate")!
