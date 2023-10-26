@@ -1,5 +1,7 @@
 // TODO: eliminate unused fields from Settings (such as GPT model) and add a hard-coded API key there
 // TODO: Whisper.swift -> Translate.swift (allowing only translation), ChatGPT.swift -> Assistant.swift, StableDiffusion.swift -> Image2Image.swift, remove DallE.
+//TODO: remove transcription acknowledged commands (pon:)
+// Fix Monocle state machine not to rely on the above
 
 //
 //  Controller.swift
@@ -162,8 +164,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private let _whisper = Whisper(configuration: .backgroundData)
     private let _chatGPT = ChatGPT(configuration: .backgroundData)
     private let _stableDiffusion = StableDiffusion(configuration: .backgroundData)
-
-    private var _pendingQueryByID: [UUID: String] = [:]
 
     // Debug audio playback (use setupAudioSession() and playReceivedAudio() on PCM buffer decoded
     // from Monocle)
@@ -418,26 +418,35 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
 
 
-        let data = MockInputGenerator().loadRandomVoiceFile(english: true)!
-        let url = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
-        let imageData = try! Data(contentsOf: url)
-        let image = UIImage(data: imageData)!
-        print("SIZE=\(imageData.count + data.count)")
-        printToChat("", picture: image, as: .user)
-        _stableDiffusion.imageToImage(image: image, audio: data, model: "", strength: 0.4, guidance: 17, apiKey: "") { [weak self] (image: UIImage?, prompt: String, error: AIError?) in
+//        let data = MockInputGenerator().loadRandomVoiceFile(english: true)!
+//        let url = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
+//        let imageData = try! Data(contentsOf: url)
+//        let image = UIImage(data: imageData)!
+//        print("SIZE=\(imageData.count + data.count)")
+//        printToChat("", picture: image, as: .user)
+//        _stableDiffusion.imageToImage(image: image, audio: data, model: "", strength: 0.4, guidance: 17, apiKey: "") { [weak self] (image: UIImage?, prompt: String, error: AIError?) in
+//            if let error = error {
+//                self?.printErrorToChat(error.description, as: .assistant)
+//            } else if let picture = image?.centerCropped(to: CGSize(width: 640, height: 400)) { // crop out the letterboxing we had to introduce and return to original size
+//                self?.printToChat(prompt, picture: picture, as: .assistant)
+//
+//                //TODO: this does not seem to work yet
+//                //self?.sendImageToMonocleInChunks(image: picture)
+//            } else {
+//                // No picture but also no explicit error
+//                self?.printErrorToChat("No image received", as: .assistant)
+//            }
+//        }
+
+        let url = Bundle.main.url(forResource: "Question_Tootsie", withExtension: "m4a")!
+        let audio = try! Data(contentsOf: url)
+        _chatGPT.send(mode: .assistant, audio: audio, apiKey: "", model: "gpt-3.5-turbo") { [weak self] (prompt: String, response: String, error: AIError?) in
             if let error = error {
                 self?.printErrorToChat(error.description, as: .assistant)
-            } else if let picture = image?.centerCropped(to: CGSize(width: 640, height: 400)) { // crop out the letterboxing we had to introduce and return to original size
-                self?.printToChat(prompt, picture: picture, as: .assistant)
-
-                //TODO: this does not seem to work yet
-                //self?.sendImageToMonocleInChunks(image: picture)
             } else {
-                // No picture but also no explicit error
-                self?.printErrorToChat("No image received", as: .assistant)
+                self?.printToChat(response, as: .assistant)
             }
         }
-
     }
 
     /// Connect to the nearest device if one exists.
@@ -454,7 +463,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     public func submitQuery(query: String) {
         let fakeID = UUID()
         print("[Controller] Sending iOS query with transcription ID \(fakeID) to ChatGPT: \(query)")
-        submitQuery(query: query, transcriptionID: fakeID)
+        submitTextQuery(query: query)
     }
 
     /// Clear chat history, including ChatGPT context window.
@@ -994,13 +1003,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             } else {
                 print("[Controller] Error: Audio buffer is not a multiple of two bytes")
             }
-        } else if command.starts(with: "pon:") {
-            // Transcript acknowledgment
-            print("[Controller] Received pong (transcription acknowledgment)")
-            let uuidStr = String(decoding: data, as: UTF8.self)
-            if let uuid = UUID(uuidString: uuidStr) {
-                onTranscriptionAcknowledged(id: uuid)
-            }
         }
     }
 
@@ -1024,27 +1026,40 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }
     }
 
-    // Step 2a: Process voice (send to LLM, image generation, or translation) and send transcription UUID to Monocle (LLM mode only)
+    // Step 2: Send voice query (send to LLM, image generation, or translation)
     private func processVoice(audioFile fileData: Data, mode: ChatGPT.Mode) {
         if _imageData.isEmpty {
-            //TODO: chat_gpt_audio mode here, remove whisper.transcribe altogether
-
-            _whisper.transcribe(mode: mode == .assistant ? .transcription : .translation, fileData: fileData, format: .m4a, apiKey: _settings.openAIKey) { [weak self] (query: String, error: AIError?) in
-                guard let self = self else { return }
-                if let error = error {
-                    printErrorToChat(error.description, as: .user)
-                } else if _imageData.isEmpty {
-                    // No image data: normal operation (assistant or translator)
-                    if mode == .assistant {
-                        // Store query and send ID to Monocle. We need to do this because we cannot perform
-                        // back-to-back network requests in background mode. Monocle will reply back with
-                        // the ID, allowing us to perform a ChatGPT request.
-                        let id = UUID()
-                        _pendingQueryByID[id] = query
-                        send(text: "pin:" + id.uuidString, to: _monocleBluetooth, on: Self._dataRx)
-                        print("[Controller] Sent transcription ID to Monocle: \(id)")
+            // No image data, query GPT or Whisper (translation only)
+            let responder = mode == .assistant ? Participant.assistant : Participant.translator
+            if mode == .assistant {
+                _chatGPT.send(
+                    mode: mode,
+                    audio: fileData,
+                    apiKey: "",
+                    model: _settings.gptModel
+                ) { [weak self] (userPrompt: String, response: String, error: AIError?) in
+                    if let error = error {
+                        self?.printErrorToChat(error.description, as: responder)
                     } else {
-                        // Translation mode: No more network requests to do. Display translation.
+                        if mode == .assistant {
+                            self?.printToChat(userPrompt, as: .user)
+                        }
+                        self?.printToChat(response, as: responder)
+                        print("[Controller] Received response from ChatGPT")
+                    }
+                }
+            } else {
+                _whisper.transcribe(
+                    mode: .translation,
+                    fileData: fileData,
+                    format: .m4a,
+                    apiKey: _settings.openAIKey
+                ) { [weak self] (query: String, error: AIError?) in
+                    guard let self = self else { return }
+                    if let error = error {
+                        printErrorToChat(error.description, as: .user)
+                    } else {
+                        // Display translation
                         printToChat(query, as: .translator)
                         print("[Controller] Translation received: \(query)")
                     }
@@ -1056,31 +1071,24 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }
     }
 
-    // Step 3: Transcription UUID received, kick off ChatGPT request
-    private func onTranscriptionAcknowledged(id: UUID) {
-        // Fetch query
-        guard let query = _pendingQueryByID.removeValue(forKey: id) else {
-            return
-        }
-
-        print("[Controller] Sending transcript \(id) to ChatGPT as query: \(query)")
-
-        submitQuery(query: query, transcriptionID: id)
-    }
-
-    private func submitQuery(query: String, transcriptionID id: UUID) {
+    private func submitTextQuery(query: String) {
         // User message
         printToChat(query, as: .user)
 
         // Send to ChatGPT
         let responder = mode == .assistant ? Participant.assistant : Participant.translator
         printTypingIndicatorToChat(as: responder)
-        _chatGPT.send(mode: mode, query: query, apiKey: _settings.openAIKey, model: _settings.gptModel) { [weak self] (response: String, error: AIError?) in
+        _chatGPT.send(
+            mode: mode,
+            query: query,
+            apiKey: _settings.openAIKey,
+            model: _settings.gptModel
+        ) { [weak self] (_: String, response: String, error: AIError?) in
             if let error = error {
                 self?.printErrorToChat(error.description, as: responder)
             } else {
                 self?.printToChat(response, as: responder)
-                print("[Controller] Received response from ChatGPT for \(id): \(response)")
+                print("[Controller] Received response from ChatGPT")
             }
         }
     }
