@@ -1,5 +1,5 @@
 //
-//  ChatGPT.swift
+//  AIAssistant.swift
 //  Noa
 //
 //  Created by Bart Trzynadlowski on 5/12/23.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-public class ChatGPT: NSObject {
+public class AIAssistant: NSObject {
     public enum NetworkConfiguration {
         case normal
         case backgroundData
@@ -72,7 +72,7 @@ public class ChatGPT: NSObject {
            messages.count > 1 {
             messages.removeSubrange(1..<messages.count)
             _payload["messages"] = messages
-            print("[ChatGPT] Cleared history")
+            print("[AIAssistant] Cleared history")
         }
     }
 
@@ -196,7 +196,7 @@ public class ChatGPT: NSObject {
         do {
             let jsonString = String(decoding: data, as: UTF8.self)
             if jsonString.count > 0 {
-                print("[ChatGPT] Response payload: \(jsonString)")
+                print("[AIAssistant] Response payload: \(jsonString)")
             }
             let json = try JSONSerialization.jsonObject(with: data, options: [])
             if let response = json as? [String: AnyObject] {
@@ -211,9 +211,9 @@ public class ChatGPT: NSObject {
                     return (json, nil, userQuery, assistantResponse)
                 }
             }
-            print("[ChatGPT] Error: Unable to parse response")
+            print("[AIAssistant] Error: Unable to parse response")
         } catch {
-            print("[ChatGPT] Error: Unable to deserialize response: \(error)")
+            print("[AIAssistant] Error: Unable to deserialize response: \(error)")
         }
         return (nil, AIError.responsePayloadParseError, nil, nil)
     }
@@ -229,10 +229,10 @@ public class ChatGPT: NSObject {
     }
 }
 
-extension ChatGPT: URLSessionDelegate {
+extension AIAssistant: URLSessionDelegate {
     public func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
         let errorMessage = error == nil ? "unknown error" : error!.localizedDescription
-        print("[ChatGPT] URLSession became invalid: \(errorMessage)")
+        print("[AIAssistant] URLSession became invalid: \(errorMessage)")
 
         // Deliver error for all outstanding tasks
         DispatchQueue.main.async { [weak self] in
@@ -245,36 +245,36 @@ extension ChatGPT: URLSessionDelegate {
     }
 
     public func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
-        print("[ChatGPT] URLSession finished events")
+        print("[AIAssistant] URLSession finished events")
     }
 
     public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        print("[ChatGPT] URLSession received challenge")
+        print("[AIAssistant] URLSession received challenge")
         if let trust = challenge.protectionSpace.serverTrust {
             completionHandler(.useCredential, URLCredential(trust: trust))
         } else {
-            print("[ChatGPT] URLSession unable to use credential")
+            print("[AIAssistant] URLSession unable to use credential")
         }
     }
 }
 
-extension ChatGPT: URLSessionDataDelegate {
+extension AIAssistant: URLSessionDataDelegate {
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didBecome streamTask: URLSessionStreamTask) {
-        print("[ChatGPT] URLSessionDataTask became stream task")
+        print("[AIAssistant] URLSessionDataTask became stream task")
         streamTask.resume()
     }
 
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didBecome downloadTask: URLSessionDownloadTask) {
-        print("[ChatGPT] URLSessionDataTask became download task")
+        print("[AIAssistant] URLSessionDataTask became download task")
         downloadTask.resume()
     }
 
     public func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        print("[ChatGPT] URLSessionDataTask received challenge")
+        print("[AIAssistant] URLSessionDataTask received challenge")
         if let trust = challenge.protectionSpace.serverTrust {
             completionHandler(.useCredential, URLCredential(trust: trust))
         } else {
-            print("[ChatGPT] URLSessionDataTask unable to use credential")
+            print("[AIAssistant] URLSessionDataTask unable to use credential")
 
             // Deliver error
             DispatchQueue.main.async { [weak self] in
@@ -290,9 +290,9 @@ extension ChatGPT: URLSessionDataDelegate {
     public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
         // Original request was redirected somewhere else. Create a new task for redirection.
         if let urlString = request.url?.absoluteString {
-            print("[ChatGPT] URLSessionDataTask redirected to \(urlString)")
+            print("[AIAssistant] URLSessionDataTask redirected to \(urlString)")
         } else {
-            print("[ChatGPT] URLSessionDataTask redirected")
+            print("[AIAssistant] URLSessionDataTask redirected")
         }
 
         // New task
@@ -313,10 +313,10 @@ extension ChatGPT: URLSessionDataDelegate {
 
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error {
-            print("[ChatGPT] URLSessionDataTask failed to complete: \(error.localizedDescription)")
+            print("[AIAssistant] URLSessionDataTask failed to complete: \(error.localizedDescription)")
         } else {
             // Error == nil should indicate successful completion
-            print("[ChatGPT] URLSessionDataTask finished")
+            print("[AIAssistant] URLSessionDataTask finished")
         }
 
         // If there really was no error, we should have received data, triggered the completion,
@@ -334,12 +334,12 @@ extension ChatGPT: URLSessionDataDelegate {
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
         // Assume that regardless of any error (including non-200 status code), the didCompleteWithError
         // delegate method will eventually be called and we can report the error there
-        print("[ChatGPT] URLSessionDataTask received response headers")
+        print("[AIAssistant] URLSessionDataTask received response headers")
         guard let response = response as? HTTPURLResponse else {
-            print("[ChatGPT] URLSessionDataTask received unknown response type")
+            print("[AIAssistant] URLSessionDataTask received unknown response type")
             return
         }
-        print("[ChatGPT] URLSessionDataTask received response code \(response.statusCode)")
+        print("[AIAssistant] URLSessionDataTask received response code \(response.statusCode)")
         completionHandler(URLSession.ResponseDisposition.allow)
     }
 
@@ -358,7 +358,7 @@ extension ChatGPT: URLSessionDataDelegate {
             // window
             if totalTokensUsed >= Self._maxTokens {
                 clearHistory()
-                print("[ChatGPT] Cleared context history because total tokens used reached \(totalTokensUsed)")
+                print("[AIAssistant] Cleared context history because total tokens used reached \(totalTokensUsed)")
             } else {
                 // Append the user prompt when in audio mode because we don't know the prompt until
                 // we get the full response back
@@ -378,7 +378,7 @@ extension ChatGPT: URLSessionDataDelegate {
                 completionData.completion(userPromptString, responseString, contentError)
                 self._completionByTask.removeValue(forKey: dataTask.taskIdentifier)
             } else {
-                print("[ChatGPT]: Error: No completion found for task \(dataTask.taskIdentifier)")
+                print("[AIAssistant]: Error: No completion found for task \(dataTask.taskIdentifier)")
             }
         }
     }

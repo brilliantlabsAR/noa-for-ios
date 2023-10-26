@@ -1,9 +1,5 @@
 
-// TODO: Whisper.swift -> Translate.swift (allowing only translation), ChatGPT.swift -> Assistant.swift, StableDiffusion.swift -> Image2Image.swift, remove DallE.
-//TODO: remove transcription acknowledged commands (pon:)
-// Fix Monocle state machine not to rely on the above
 //TODO: get new key, create a Key.swift file with a dummy key. Add it. THEN .gitignore it. Then modify the key locally so it isn't committed to repo.
-//TODO: pull green camera fix from the Android Monocle script repo (use that script and then modify it, it has _camera.wake() calls)
 
 //
 //  Controller.swift
@@ -163,8 +159,8 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _imageData = Data()
 
     private let _m4aWriter = M4AWriter()
-    private let _whisper = Whisper(configuration: .backgroundData)
-    private let _chatGPT = ChatGPT(configuration: .backgroundData)
+    private let _voiceTranslator = WhisperTranslation(configuration: .backgroundData)
+    private let _aiAssistant = AIAssistant(configuration: .backgroundData)
     private let _stableDiffusion = StableDiffusion(configuration: .backgroundData)
 
     // Debug audio playback (use setupAudioSession() and playReceivedAudio() on PCM buffer decoded
@@ -206,11 +202,11 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     @Published private(set) var monocleState = MonocleState.notReady
     @Published private(set) var updateProgressPercent: Int = 0
 
-    public var mode = ChatGPT.Mode.assistant {
+    public var mode = AIAssistant.Mode.assistant {
         didSet {
             if mode != oldValue {
                 // Changed modes, clear context
-                _chatGPT.clearHistory()
+                _aiAssistant.clearHistory()
             }
         }
     }
@@ -417,6 +413,27 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _dfuBluetooth.start()
         }
         bluetoothEnabled = false
+
+//        let data = MockInputGenerator().loadRandomVoiceFile(english: true)!
+//        let url = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
+//        let imageData = try! Data(contentsOf: url)
+//        let image = UIImage(data: imageData)!
+//        print("SIZE=\(imageData.count + data.count)")
+//        printToChat("", picture: image, as: .user)
+//        _stableDiffusion.imageToImage(image: image, audio: data, model: "stable-diffusion-v1-5", strength: 0.4, guidance: 17) { [weak self] (image: UIImage?, prompt: String, error: AIError?) in
+//            if let error = error {
+//                self?.printErrorToChat(error.description, as: .assistant)
+//            } else if let picture = image?.centerCropped(to: CGSize(width: 640, height: 400)) { // crop out the letterboxing we had to introduce and return to original size
+//                self?.printToChat(prompt, picture: picture, as: .assistant)
+//
+//                //TODO: this does not seem to work yet
+//                //self?.sendImageToMonocleInChunks(image: picture)
+//            } else {
+//                // No picture but also no explicit error
+//                self?.printErrorToChat("No image received", as: .assistant)
+//            }
+//        }
+
     }
 
     /// Connect to the nearest device if one exists.
@@ -439,7 +456,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     /// Clear chat history, including ChatGPT context window.
     public func clearHistory() {
         _messages.clear()
-        _chatGPT.clearHistory()
+        _aiAssistant.clearHistory()
     }
 
     // MARK: State Transitions and Received Data Dispatch
@@ -997,12 +1014,12 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     // Step 2: Send voice query (send to LLM, image generation, or translation)
-    private func processVoice(audioFile fileData: Data, mode: ChatGPT.Mode) {
+    private func processVoice(audioFile fileData: Data, mode: AIAssistant.Mode) {
         if _imageData.isEmpty {
             // No image data, query GPT or Whisper (translation only)
             let responder = mode == .assistant ? Participant.assistant : Participant.translator
             if mode == .assistant {
-                _chatGPT.send(
+                _aiAssistant.send(
                     mode: mode,
                     audio: fileData,
                     model: _settings.gptModel
@@ -1018,8 +1035,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                     }
                 }
             } else {
-                _whisper.transcribe(
-                    mode: .translation,
+                _voiceTranslator.translate(
                     fileData: fileData,
                     format: .m4a
                 ) { [weak self] (query: String, error: AIError?) in
@@ -1046,7 +1062,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         // Send to ChatGPT
         let responder = mode == .assistant ? Participant.assistant : Participant.translator
         printTypingIndicatorToChat(as: responder)
-        _chatGPT.send(
+        _aiAssistant.send(
             mode: mode,
             query: query,
             model: _settings.gptModel

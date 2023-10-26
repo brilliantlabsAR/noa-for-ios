@@ -12,7 +12,7 @@ struct SettingsMenuView: View {
 
     @Binding var showPairingView: Bool
     @Binding var bluetoothEnabled: Bool
-    @Binding var mode: ChatGPT.Mode
+    @Binding var mode: AIAssistant.Mode
 
     @State private var _translateEnabled = false
 

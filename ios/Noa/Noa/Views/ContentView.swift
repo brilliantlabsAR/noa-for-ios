@@ -37,7 +37,7 @@ struct ContentView: View {
     @State private var _firstTimeConnecting = false
 
     /// Translation mode state
-    @State private var _mode: ChatGPT.Mode = .assistant
+    @State private var _mode: AIAssistant.Mode = .assistant
 
     var body: some View {
         VStack {

@@ -39,7 +39,7 @@
 		CC3FE0312A0EF81A00756941 /* Question_History.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE02B2A0EF81A00756941 /* Question_History.m4a */; };
 		CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */; };
 		CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */; };
-		CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0352A0F12F700756941 /* ChatGPT.swift */; };
+		CC3FE0362A0F12F700756941 /* AIAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0352A0F12F700756941 /* AIAssistant.swift */; };
 		CC4E3AC82A00BA4C0058AC20 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */; };
 		CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CC4E3ACA2A00BA4D0058AC20 /* Preview Assets.xcassets */; };
 		CC4E3AD52A00BA4D0058AC20 /* NoaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AD42A00BA4D0058AC20 /* NoaTests.swift */; };
@@ -56,7 +56,7 @@
 		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
 		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
 		CCBC46262A02101A00871C12 /* Participant.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCBC46252A02101A00871C12 /* Participant.swift */; };
-		CCCECE6B2A1EB4B100DBB7CA /* Whisper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */; };
+		CCCECE6B2A1EB4B100DBB7CA /* WhisperTranslation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6A2A1EB4B100DBB7CA /* WhisperTranslation.swift */; };
 		CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */; };
 		CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */; };
 		CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */; };
@@ -126,7 +126,7 @@
 		CC3FE02B2A0EF81A00756941 /* Question_History.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_History.m4a; sourceTree = "<group>"; };
 		CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_Nutrition.m4a; sourceTree = "<group>"; };
 		CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_CPU.m4a; sourceTree = "<group>"; };
-		CC3FE0352A0F12F700756941 /* ChatGPT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatGPT.swift; sourceTree = "<group>"; };
+		CC3FE0352A0F12F700756941 /* AIAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistant.swift; sourceTree = "<group>"; };
 		CC4E3AC02A00BA4C0058AC20 /* Noa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Noa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CC4E3ACA2A00BA4D0058AC20 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -146,7 +146,7 @@
 		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
 		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
 		CCBC46252A02101A00871C12 /* Participant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Participant.swift; sourceTree = "<group>"; };
-		CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Whisper.swift; sourceTree = "<group>"; };
+		CCCECE6A2A1EB4B100DBB7CA /* WhisperTranslation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperTranslation.swift; sourceTree = "<group>"; };
 		CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIError.swift; sourceTree = "<group>"; };
 		CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_History.wav; sourceTree = "<group>"; };
 		CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Movies.wav; sourceTree = "<group>"; };
@@ -303,8 +303,8 @@
 		CC3FE0342A0F12C800756941 /* AI */ = {
 			isa = PBXGroup;
 			children = (
-				CC3FE0352A0F12F700756941 /* ChatGPT.swift */,
-				CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */,
+				CC3FE0352A0F12F700756941 /* AIAssistant.swift */,
+				CCCECE6A2A1EB4B100DBB7CA /* WhisperTranslation.swift */,
 				CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */,
 				CC212D672A9D34A90093479F /* StableDiffusion.swift */,
 			);
@@ -615,7 +615,7 @@
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
 				CC212D6A2A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
-				CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */,
+				CC3FE0362A0F12F700756941 /* AIAssistant.swift in Sources */,
 				CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */,
 				CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */,
 				CCBC46262A02101A00871C12 /* Participant.swift in Sources */,
@@ -631,7 +631,7 @@
 				CC212D682A9D34A90093479F /* StableDiffusion.swift in Sources */,
 				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
-				CCCECE6B2A1EB4B100DBB7CA /* Whisper.swift in Sources */,
+				CCCECE6B2A1EB4B100DBB7CA /* WhisperTranslation.swift in Sources */,
 				CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */,
 				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,
 				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,

@@ -24,7 +24,7 @@ struct ChatView: View {
     @Binding private var _showPairingView: Bool
 
     // Which AI mode we are in
-    @Binding private var _mode: ChatGPT.Mode
+    @Binding private var _mode: AIAssistant.Mode
 
     // Stores text being input in text field
     @State private var _textInput: String = ""
@@ -119,7 +119,7 @@ struct ChatView: View {
         isMonocleConnected: Binding<Bool>,
         bluetoothEnabled: Binding<Bool>,
         showPairingView: Binding<Bool>,
-        mode: Binding<ChatGPT.Mode>,
+        mode: Binding<AIAssistant.Mode>,
         onTextSubmitted: ((String) -> Void)? = nil,
         onClearChatButtonPressed: (() -> Void)? = nil
     ) {
@@ -137,7 +137,7 @@ fileprivate struct ChatTitleBarView: View {
 
     @Binding var showPairingView: Bool
     @Binding var bluetoothEnabled: Bool
-    @Binding var mode: ChatGPT.Mode
+    @Binding var mode: AIAssistant.Mode
 
     var body: some View {
         HStack {
