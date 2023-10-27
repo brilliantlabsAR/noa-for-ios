@@ -109,7 +109,7 @@ public class AIAssistant: NSObject {
 
         // Build request
         let requestHeader = [
-            "Authorization": "5T4C58VZ5yEDmMU+0yu6MWbfJi1dhN4vwuGEFOT4/sh4Kk/3YKg0E8zqoRm+wq2MfnjVV3Y/wIusBnYNIqJdkw==",
+            "Authorization": brilliantAPIKey,
             "Content-Type": "multipart/form-data;boundary=\(boundary)"
         ]
         let service = audio != nil ? "audio_gpt" : "chat_gpt"

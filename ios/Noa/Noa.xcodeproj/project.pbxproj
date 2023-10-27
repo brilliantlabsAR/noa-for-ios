@@ -65,6 +65,7 @@
 		CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */; };
 		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
 		CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD4B9012A93EB47004E3ADD /* NoaApp.swift */; };
+		CCDEE1962AEB74C30093575B /* APIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDEE1952AEB74C30093575B /* APIKey.swift */; };
 		CCEE174F2ACF7E71000170F5 /* Tutorial.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEE174E2ACF7E71000170F5 /* Tutorial.swift */; };
 		CCEE17542ACF8CC1000170F5 /* Tutorial_2.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17502ACF8CC1000170F5 /* Tutorial_2.png */; };
 		CCEE17552ACF8CC1000170F5 /* Tutorial_5.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17512ACF8CC1000170F5 /* Tutorial_5.png */; };
@@ -155,6 +156,7 @@
 		CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_CPU.wav; sourceTree = "<group>"; };
 		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
 		CCD4B9012A93EB47004E3ADD /* NoaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaApp.swift; sourceTree = "<group>"; };
+		CCDEE1952AEB74C30093575B /* APIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.swift; sourceTree = "<group>"; };
 		CCEE174E2ACF7E71000170F5 /* Tutorial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tutorial.swift; sourceTree = "<group>"; };
 		CCEE17502ACF8CC1000170F5 /* Tutorial_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_2.png; sourceTree = "<group>"; };
 		CCEE17512ACF8CC1000170F5 /* Tutorial_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_5.png; sourceTree = "<group>"; };
@@ -307,6 +309,7 @@
 				CCCECE6A2A1EB4B100DBB7CA /* WhisperTranslation.swift */,
 				CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */,
 				CC212D672A9D34A90093479F /* StableDiffusion.swift */,
+				CCDEE1952AEB74C30093575B /* APIKey.swift */,
 			);
 			path = AI;
 			sourceTree = "<group>";
@@ -628,6 +631,7 @@
 				CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */,
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
 				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
+				CCDEE1962AEB74C30093575B /* APIKey.swift in Sources */,
 				CC212D682A9D34A90093479F /* StableDiffusion.swift in Sources */,
 				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,

@@ -88,7 +88,7 @@ class StableDiffusion: NSObject {
         let url = URL(string: "https://api.brilliant.xyz/noa/\(service)")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("5T4C58VZ5yEDmMU+0yu6MWbfJi1dhN4vwuGEFOT4/sh4Kk/3YKg0E8zqoRm+wq2MfnjVV3Y/wIusBnYNIqJdkw==", forHTTPHeaderField: "Authorization")
+        request.setValue(brilliantAPIKey, forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data;boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
         // Form data
