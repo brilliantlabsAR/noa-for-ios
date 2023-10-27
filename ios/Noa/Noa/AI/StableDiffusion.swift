@@ -102,7 +102,7 @@ class StableDiffusion: NSObject {
         formData.append("\r\n".data(using: .utf8)!)
 
         // Form parameter "model"
-        formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
         formData.append("Content-Disposition:form-data;name=\"model\"\r\n".data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
         formData.append(model.data(using: .utf8)!)
@@ -111,17 +111,17 @@ class StableDiffusion: NSObject {
         // Prompt, either audio or text
         if let prompt = prompt {
             // Form parameter "prompt"
-            formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
             formData.append("Content-Disposition:form-data;name=\"prompt\"\r\n".data(using: .utf8)!)
             formData.append("\r\n".data(using: .utf8)!)
             formData.append(prompt.data(using: .utf8)!)
             formData.append("\r\n".data(using: .utf8)!)
         } else if let fileData = audio {
-            formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
             formData.append("Content-Disposition:form-data;name=\"audio\";filename=\"audio.m4a\"\r\n".data(using: .utf8)!)  //TODO: temperature?
             formData.append("Content-Type:audio/m4a\r\n\r\n".data(using: .utf8)!)
             formData.append(fileData)
-            formData.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+            formData.append("\r\n".data(using: .utf8)!)
         }
 
         // Form parameter "image_strength"

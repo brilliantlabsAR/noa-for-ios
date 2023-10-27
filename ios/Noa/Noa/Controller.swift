@@ -413,27 +413,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _dfuBluetooth.start()
         }
         bluetoothEnabled = false
-
-//        let data = MockInputGenerator().loadRandomVoiceFile(english: true)!
-//        let url = Bundle.main.url(forResource: "Tahoe", withExtension: "jpg")!
-//        let imageData = try! Data(contentsOf: url)
-//        let image = UIImage(data: imageData)!
-//        print("SIZE=\(imageData.count + data.count)")
-//        printToChat("", picture: image, as: .user)
-//        _stableDiffusion.imageToImage(image: image, audio: data, model: "stable-diffusion-v1-5", strength: 0.4, guidance: 17) { [weak self] (image: UIImage?, prompt: String, error: AIError?) in
-//            if let error = error {
-//                self?.printErrorToChat(error.description, as: .assistant)
-//            } else if let picture = image?.centerCropped(to: CGSize(width: 640, height: 400)) { // crop out the letterboxing we had to introduce and return to original size
-//                self?.printToChat(prompt, picture: picture, as: .assistant)
-//
-//                //TODO: this does not seem to work yet
-//                //self?.sendImageToMonocleInChunks(image: picture)
-//            } else {
-//                // No picture but also no explicit error
-//                self?.printErrorToChat("No image received", as: .assistant)
-//            }
-//        }
-
     }
 
     /// Connect to the nearest device if one exists.
