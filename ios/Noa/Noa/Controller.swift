@@ -1,6 +1,3 @@
-
-//TODO: get new key, create a Key.swift file with a dummy key. Add it. THEN .gitignore it. Then modify the key locally so it isn't committed to repo.
-
 //
 //  Controller.swift
 //  Noa
@@ -10,12 +7,8 @@
 //  Notes
 //  -----
 //  - The state code is a bit much to have in one file. Future refactoring advice:
-//      - Rely more on data-carrying enums. When transitioning states, pass state as a variable or
-//        struct attached to the enum.
 //      - Try to collapse the firmware and FPGA update stuff into a couple of states and then farm
 //        the logic (including the original smaller states) into a separate object.
-//  - Move Bluetooth off the main queue because FPGA updates completely saturate it. Otherwise, all
-//    other communication is low bandwidth and safe to dispatch there.
 //  - StreamingStringMatcher is dumb. I don't know what I was thinking there. Better just to have
 //    some _serialBuffer string object that is appended to, checked, and occasionally reset. Should
 //    also look into how we would deal with responses coming across as multiple transfers if we had
