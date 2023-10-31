@@ -14,4 +14,4 @@
 //      git update-index --no-skip-worktree ios/Noa/Noa/AI/APIKey.swift
 //
 
-let brilliantAPIKey = "5T4C58VZ5yEDmMU+0yu6MWbfJi1dhN4vwuGEFOT4/sh4Kk/3YKg0E8zqoRm+wq2MfnjVV3Y/wIusBnYNIqJdkw=="
+let brilliantAPIKey = ""
