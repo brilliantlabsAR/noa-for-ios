@@ -65,7 +65,7 @@ struct MessageContentView: View {
                     .background(backgroundColor)
                     .cornerRadius(10)
             } else {
-                Text(_message.text)
+                Text(.init(_message.text))  // .init() is needed to parse markdown
                     .padding(10)
                     .foregroundColor(fontColor)
                     .background(

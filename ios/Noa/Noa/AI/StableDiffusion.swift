@@ -15,7 +15,7 @@ class StableDiffusion: NSObject {
     }
 
     private var _session: URLSession!
-    private var _completionByTask: [Int: (UIImage?, AIError?) -> Void] = [:]
+    private var _completionByTask: [Int: (UIImage?, String, AIError?) -> Void] = [:]
     private var _responseDataByTask: [Int: Data] = [:]
     private var _tempFileURL: URL?
 
@@ -42,23 +42,54 @@ class StableDiffusion: NSObject {
         }
     }
 
-    public func imageToImage(image: UIImage, prompt: String, model: String, strength: Float, guidance: Int, apiKey: String, completion: @escaping (UIImage?, AIError?) -> Void) {
+    public func imageToImage(image: UIImage, prompt: String, model: String, strength: Float, guidance: Int, completion: @escaping (UIImage?, String, AIError?) -> Void) {
+        sendImageToImageRequest(
+            image: image,
+            audio: nil,
+            prompt: prompt,
+            model: model,
+            strength: strength,
+            guidance: guidance,
+            completion: completion
+        )
+    }
+
+    public func imageToImage(image: UIImage, audio: Data, model: String, strength: Float, guidance: Int, completion: @escaping (UIImage?, String, AIError?) -> Void) {
+        return sendImageToImageRequest(
+            image: image,
+            audio: audio,
+            prompt: nil,
+            model: model,
+            strength: strength,
+            guidance: guidance,
+            completion: completion
+        )
+    }
+
+    private func sendImageToImageRequest(image: UIImage, audio: Data?, prompt: String?, model: String, strength: Float, guidance: Int, completion: @escaping (UIImage?, String, AIError?) -> Void) {
+        // Either audio or text prompt only
+        if audio != nil && prompt != nil {
+            fatalError("StableDiffusion.sendImageToImageRequest() cannot have both audio and text prompts")
+        } else if audio == nil && prompt == nil {
+            fatalError("StableDiffusion.sendImageToImageRequest() must have either an audio or text prompt")
+        }
+
         // Stable Diffusion wants images to be multiples of 64 pixels on each side
         guard let pngImageData = getPNGData(for: image) else {
             DispatchQueue.main.async {
-                completion(nil, AIError.dataFormatError(message: "Unable to crop image and convert to PNG"))
+                completion(nil, "", AIError.dataFormatError(message: "Unable to crop image and convert to PNG"))
             }
             return
         }
 
         // Prepare URL request
         let boundary = UUID().uuidString
-        let url = URL(string: "https://api.stability.ai/v1/generation/\(model)/image-to-image")!
+        let service = audio != nil ? "image_to_image_audio_prompt" : "image_to_image"
+        let url = URL(string: "https://api.brilliant.xyz/noa/\(service)")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(brilliantAPIKey, forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data;boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.setValue("Noa/iOS", forHTTPHeaderField: "Stability-Client-ID")
 
         // Form data
         var formData = Data()
@@ -70,19 +101,28 @@ class StableDiffusion: NSObject {
         formData.append(pngImageData)
         formData.append("\r\n".data(using: .utf8)!)
 
-        // Form parameter "text_prompts"
-        formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"text_prompts[0][text]\"\r\n".data(using: .utf8)!)
+        // Form parameter "model"
+        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
+        formData.append("Content-Disposition:form-data;name=\"model\"\r\n".data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
-        formData.append(prompt.data(using: .utf8)!)
+        formData.append(model.data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
 
-        // Form parameter "init_image_mode"
-        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"init_image_mode\"\r\n".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-        formData.append("IMAGE_STRENGTH".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
+        // Prompt, either audio or text
+        if let prompt = prompt {
+            // Form parameter "prompt"
+            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
+            formData.append("Content-Disposition:form-data;name=\"prompt\"\r\n".data(using: .utf8)!)
+            formData.append("\r\n".data(using: .utf8)!)
+            formData.append(prompt.data(using: .utf8)!)
+            formData.append("\r\n".data(using: .utf8)!)
+        } else if let fileData = audio {
+            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
+            formData.append("Content-Disposition:form-data;name=\"audio\";filename=\"audio.m4a\"\r\n".data(using: .utf8)!)  //TODO: temperature?
+            formData.append("Content-Type:audio/m4a\r\n\r\n".data(using: .utf8)!)
+            formData.append(fileData)
+            formData.append("\r\n".data(using: .utf8)!)
+        }
 
         // Form parameter "image_strength"
         formData.append("--\(boundary)\r\n".data(using: .utf8)!)
@@ -123,7 +163,7 @@ class StableDiffusion: NSObject {
         // Begin
         task.resume()
 
-        print("[StableDiffusion] Submitted image2image request with: model=\(model), strength=\(strength), guidance=\(guidance), prompt=\(prompt)")
+        print("[StableDiffusion] Submitted image2image request with: model=\(model), strength=\(strength), guidance=\(guidance)")
     }
 
     /// Given a UIImage, expands it so that each side is the next integral multiple of 64 (as
@@ -162,35 +202,32 @@ class StableDiffusion: NSObject {
             _responseDataByTask.removeValue(forKey: taskIdentifier)
 
             // Extract and deliver image
-            let (contentError, image) = self.extractContent(from: responseData)
-            completion(image, contentError)
+            let (image, prompt, contentError) = self.extractContent(from: responseData)
+            completion(image, prompt, contentError)
         }
     }
 
-    private func extractContent(from data: Data) -> (AIError?, UIImage?) {
+    private func extractContent(from data: Data) -> (UIImage?, String, AIError?) {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: [])
             if let response = json as? [String: AnyObject] {
-                if let errorType = response["name"] as? String {
-                    var errorMessage = "Stability AI request failed (\(errorType))"
-                    if let message = response["message"] as? String {
-                        errorMessage += ": \(message)"
-                    }
-                    return (AIError.apiError(message: errorMessage), nil)
+                if let errorMessage = response["message"] as? String {
+                   return (nil, "", AIError.apiError(message: "Error from service: \(errorMessage)"))
                 } else if let artifacts = response["artifacts"] as? [[String: AnyObject]],
+                          let prompt = response["prompt"] as? String,
                        artifacts.count > 0,
                        let base64String = artifacts[0]["base64"] as? String,
                        let base64Data = base64String.data(using: .utf8),
                        let imageData = Data(base64Encoded: base64Data),
                        let image = UIImage(data: imageData) {
-                    return (nil, image)
+                    return (image, prompt, nil)
                 }
             }
             print("[StableDiffusion] Error: Unable to parse response")
         } catch {
             print("[StableDiffusion] Error: Unable to deserialize response: \(error)")
         }
-        return (AIError.responsePayloadParseError, nil)
+        return (nil, "", AIError.responsePayloadParseError)
     }
 }
 
@@ -203,7 +240,7 @@ extension StableDiffusion: URLSessionDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             for (_, completion) in self._completionByTask {
-                completion(nil, AIError.clientSideNetworkError(error: error))
+                completion(nil, "", AIError.clientSideNetworkError(error: error))
             }
             _completionByTask = [:]
             _responseDataByTask = [:]
@@ -246,7 +283,7 @@ extension StableDiffusion: URLSessionDataDelegate {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if let completion = self._completionByTask[task.taskIdentifier] {
-                    completion(nil, AIError.urlAuthenticationFailed)
+                    completion(nil, "", AIError.urlAuthenticationFailed)
                     self._completionByTask.removeValue(forKey: task.taskIdentifier)
                     self._responseDataByTask.removeValue(forKey: task.taskIdentifier)
                 }
@@ -297,7 +334,7 @@ extension StableDiffusion: URLSessionDataDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let completion = self._completionByTask[task.taskIdentifier] {
-                completion(nil, AIError.clientSideNetworkError(error: error))
+                completion(nil, "", AIError.clientSideNetworkError(error: error))
                 self._completionByTask.removeValue(forKey: task.taskIdentifier)
                 self._responseDataByTask.removeValue(forKey: task.taskIdentifier)
             }

@@ -6,20 +6,9 @@
 //
 //  Notes
 //  -----
-//  - There is a bug where occasionally the firmware version cannot successfully be read. What
-//    appears to be happening is the "raw REPL; CTRL-B to exit" is transmitted twice, with the
-//    second one being intercepted by the code awaiting the firmware version. This is probably due
-//    to a race condition with the raw REPL retry timer. It *seems* to happen more frequently after
-//    a firmware or FPGA update has taken place. Need to investigate this further if it becomes a
-//    serious problem. Not sure why this doesn't also cause an FPGA update but if that is ever
-//    observed, this should become a top priority issue to resolve.
 //  - The state code is a bit much to have in one file. Future refactoring advice:
-//      - Rely more on data-carrying enums. When transitioning states, pass state as a variable or
-//        struct attached to the enum.
 //      - Try to collapse the firmware and FPGA update stuff into a couple of states and then farm
 //        the logic (including the original smaller states) into a separate object.
-//  - Move Bluetooth off the main queue because FPGA updates completely saturate it. Otherwise, all
-//    other communication is low bandwidth and safe to dispatch there.
 //  - StreamingStringMatcher is dumb. I don't know what I was thinking there. Better just to have
 //    some _serialBuffer string object that is appended to, checked, and occasionally reset. Should
 //    also look into how we would deal with responses coming across as multiple transfers if we had
@@ -72,6 +61,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         // them. If DFU was performed and Monocle had to reset, we detect that case so that when we
         // get to the firmware and FPGA update phase, we can compute the correct relative
         // percentage each contributes. We pass the DFU state along in the enums themselves.
+        case enterRawREPL(didFinishDFU: Bool)
         case waitingForRawREPL(didFinishDFU: Bool)
         case waitingForFirmwareVersion(didFinishDFU: Bool)
         case waitingForFPGAVersion(didFinishDFU: Bool)
@@ -148,7 +138,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     }
 
     private var _state = State.disconnected
-    private var _rawREPLTimer: Timer?
     private var _matcher: Util.StreamingStringMatcher?
 
     private static let _firmwareURL = Bundle.main.url(forResource: "monocle-micropython-v23.248.0754", withExtension: "zip")!
@@ -163,11 +152,9 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _imageData = Data()
 
     private let _m4aWriter = M4AWriter()
-    private let _whisper = Whisper(configuration: .backgroundData)
-    private let _chatGPT = ChatGPT(configuration: .backgroundData)
+    private let _voiceTranslator = WhisperTranslation(configuration: .backgroundData)
+    private let _aiAssistant = AIAssistant(configuration: .backgroundData)
     private let _stableDiffusion = StableDiffusion(configuration: .backgroundData)
-
-    private var _pendingQueryByID: [UUID: String] = [:]
 
     // Debug audio playback (use setupAudioSession() and playReceivedAudio() on PCM buffer decoded
     // from Monocle)
@@ -198,20 +185,21 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }
     }
 
-    public enum UpdateState {
-        case notUpdating
+    public enum MonocleState {
+        case notReady           // Monocle connection not yet firmly established
         case updatingFirmware
         case updatingFPGA
+        case ready              // connected, finished all updates, running state
     }
 
-    @Published private(set) var updateState = UpdateState.notUpdating
+    @Published private(set) var monocleState = MonocleState.notReady
     @Published private(set) var updateProgressPercent: Int = 0
 
-    public var mode = ChatGPT.Mode.assistant {
+    public var mode = AIAssistant.Mode.assistant {
         didSet {
             if mode != oldValue {
                 // Changed modes, clear context
-                _chatGPT.clearHistory()
+                _aiAssistant.clearHistory()
             }
         }
     }
@@ -325,27 +313,8 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                     self._settings.setPairedDeviceID(deviceID)
                 }
 
-                // Always enter raw REPL mode
-                transmitRawREPLCode()
-
-                // Wait for confirmation that raw REPL was activated
-                transitionState(to: .waitingForRawREPL(didFinishDFU: didFinishDFU))
-
-                // Since firmware v23.181.0720, some sort of Bluetooth race condition has been exposed.
-                // If the iOS app is running and then Monocle is powered on, or if Monocle is restarted
-                // while the app is running, the raw REPL code is not received and Controller hangs
-                // forever in the waitingForRawREPL state. Presumably, Monocle needs some time before
-                // its receive characteristic is actually ready to accept data but to my knowledge, we
-                // have no way to detect this using CoreBluetooth. The "solution" is to periodically
-                // re-transmit the raw REPL code.
-                _rawREPLTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] (timer: Timer) in
-                    if case .waitingForRawREPL(_) = self?._state {
-                        self?.transmitRawREPLCode()
-                    }
-                }
-
-                // Update public state
-                isMonocleConnected = true
+                // Enter raw REPL mode
+                transitionState(to: .enterRawREPL(didFinishDFU: didFinishDFU))
             }
         }.store(in: &_subscribers)
 
@@ -453,13 +422,13 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     public func submitQuery(query: String) {
         let fakeID = UUID()
         print("[Controller] Sending iOS query with transcription ID \(fakeID) to ChatGPT: \(query)")
-        submitQuery(query: query, transcriptionID: fakeID)
+        submitTextQuery(query: query)
     }
 
     /// Clear chat history, including ChatGPT context window.
     public func clearHistory() {
         _messages.clear()
-        _chatGPT.clearHistory()
+        _aiAssistant.clearHistory()
     }
 
     // MARK: State Transitions and Received Data Dispatch
@@ -472,8 +441,28 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         switch newState {
         case .disconnected:
             isMonocleConnected = false
-            updateState = .notUpdating
+            monocleState = .notReady
             _dfuController = nil
+
+        case .enterRawREPL(didFinishDFU: let didFinishDFU):
+            // Since firmware v23.181.0720, a Bluetooth race condition has been exposed. If the
+            // iOS app is running and then Monocle is powered on, or if Monocle is restarted
+            // while the app is running, the raw REPL code is not received and Controller hangs
+            // forever in the waitingForRawREPL state. Monocle probably needs some time before
+            // its receive characteristic is actually ready to accept data. Transmitting the
+            // raw REPL code periodically is unworkable because it can create a pile-up of
+            // responses that throws off the firmware detection logic. Instead, we use a delay.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                guard let self = self else { return }
+                guard case .enterRawREPL(didFinishDFU: _) = _state else { return }
+
+                // Transmit raw REPL code to enter raw REPL mode then wait for confirmation
+                transmitRawREPLCode()
+                transitionState(to: .waitingForRawREPL(didFinishDFU: didFinishDFU))
+
+                // Update public state
+                isMonocleConnected = true
+            }
 
         case .waitingForRawREPL(didFinishDFU: let didFinishDFU):
             _matcher = nil
@@ -481,7 +470,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _currentFPGAVersion = nil
             if !didFinishDFU {
                 // Just connected, we are not currently updating
-                updateState = .notUpdating
+                monocleState = .notReady
             }
 
         case .waitingForFirmwareVersion:
@@ -506,7 +495,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             send(data: Data([ 0x04 ]), to: _monocleBluetooth, on: Self._serialRx)
 
             // Not updating anymore
-            updateState = .notUpdating
+            monocleState = .ready
 
         case .initiateDFUAndWaitForDFUTarget:
             // Kick off firmware update. We will then get a disconnect event when Monocle switches
@@ -517,7 +506,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _dfuBluetooth.enabled = true
 
             // Update the firmware...
-            updateState = .updatingFirmware
+            monocleState = .updatingFirmware
             updateProgressPercent = 0
 
             print("[Controller] Firmware update initiated")
@@ -525,7 +514,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         case .performDFU(peripheral: let peripheral, rescaleUpdatePercentage: _):
             // We may enter this state at any time (e.g., if app starts up when Monocle is in DFU
             // state due to a previously failed update, etc.). Set the external state.
-            updateState = .updatingFirmware
+            monocleState = .updatingFirmware
             updateProgressPercent = 0
 
             // Instantiate Nordic DFU library object that will handle the firmware update
@@ -533,7 +522,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             _dfuController = _dfuInitiator.start(target: peripheral)
 
         case .initiateFPGAUpdate(maximumDataLength: let maximumDataLength, rescaleUpdatePercentage: let rescaleUpdatePercentage):
-            updateState = .updatingFPGA
+            monocleState = .updatingFPGA
             updateProgressPercent = rescaleUpdatePercentage ? 50 : 0
             _matcher = nil
             let updateState = FPGAUpdateState(maximumDataLength: maximumDataLength, rescaleUpdatePercentage: rescaleUpdatePercentage)
@@ -611,10 +600,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         if _matcher!.matchExists(afterAppending: str) {
             print("[Controller] Raw REPL detected")
             _matcher = nil
-
-            // Stop transmiting the raw REPL code
-            _rawREPLTimer?.invalidate()
-            _rawREPLTimer = nil
 
             // Next, check firmware
             transitionState(to: .waitingForFirmwareVersion(didFinishDFU: didFinishDFU))
@@ -977,13 +962,6 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             } else {
                 print("[Controller] Error: Audio buffer is not a multiple of two bytes")
             }
-        } else if command.starts(with: "pon:") {
-            // Transcript acknowledgment
-            print("[Controller] Received pong (transcription acknowledgment)")
-            let uuidStr = String(decoding: data, as: UTF8.self)
-            if let uuid = UUID(uuidString: uuidStr) {
-                onTranscriptionAcknowledged(id: uuid)
-            }
         }
     }
 
@@ -1003,70 +981,74 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 self?.printErrorToChat("Unable to process audio!", as: .user)
                 return
             }
-            transcribe(audioFile: fileData, mode: mode)
+            processVoice(audioFile: fileData, mode: mode)
         }
     }
 
-    // Step 2a: Transcribe speech to text using Whisper and send transcription UUID to Monocle
-    private func transcribe(audioFile fileData: Data, mode: ChatGPT.Mode) {
-        print("[Controller] Transcribing voice...")
-
-        _whisper.transcribe(mode: mode == .assistant ? .transcription : .translation, fileData: fileData, format: .m4a, apiKey: _settings.openAIKey) { [weak self] (query: String, error: AIError?) in
-            guard let self = self else { return }
-            if let error = error {
-                printErrorToChat(error.description, as: .user)
-            } else if _imageData.isEmpty {
-                // No image data: normal operation (assistant or translator)
-                if mode == .assistant {
-                    // Store query and send ID to Monocle. We need to do this because we cannot perform
-                    // back-to-back network requests in background mode. Monocle will reply back with
-                    // the ID, allowing us to perform a ChatGPT request.
-                    let id = UUID()
-                    _pendingQueryByID[id] = query
-                    send(text: "pin:" + id.uuidString, to: _monocleBluetooth, on: Self._dataRx)
-                    print("[Controller] Sent transcription ID to Monocle: \(id)")
-                } else {
-                    // Translation mode: No more network requests to do. Display translation.
-                    printToChat(query, as: .translator)
-                    print("[Controller] Translation received: \(query)")
+    // Step 2: Send voice query (send to LLM, image generation, or translation)
+    private func processVoice(audioFile fileData: Data, mode: AIAssistant.Mode) {
+        if _imageData.isEmpty {
+            // No image data, query GPT or Whisper (translation only)
+            let responder = mode == .assistant ? Participant.assistant : Participant.translator
+            if mode == .assistant {
+                _aiAssistant.send(
+                    mode: mode,
+                    audio: fileData,
+                    model: _settings.gptModel
+                ) { [weak self] (userPrompt: String, response: String, error: AIError?) in
+                    if let error = error {
+                        self?.printErrorToChat(error.description, as: responder)
+                    } else {
+                        if mode == .assistant {
+                            self?.printToChat(userPrompt, as: .user)
+                        }
+                        self?.printToChat(response, as: responder)
+                        print("[Controller] Received response from ChatGPT")
+                    }
                 }
             } else {
-                // Have image data, perform image generation
-                generateImage(prompt: query)
+                _voiceTranslator.translate(
+                    fileData: fileData,
+                    format: .m4a
+                ) { [weak self] (query: String, error: AIError?) in
+                    guard let self = self else { return }
+                    if let error = error {
+                        printErrorToChat(error.description, as: .user)
+                    } else {
+                        // Display translation
+                        printToChat(query, as: .translator)
+                        print("[Controller] Translation received: \(query)")
+                    }
+                }
             }
+        } else {
+            // Have image data, perform image generation
+            generateImage(audioFile: fileData)
         }
     }
 
-    // Step 3: Transcription UUID received, kick off ChatGPT request
-    private func onTranscriptionAcknowledged(id: UUID) {
-        // Fetch query
-        guard let query = _pendingQueryByID.removeValue(forKey: id) else {
-            return
-        }
-
-        print("[Controller] Sending transcript \(id) to ChatGPT as query: \(query)")
-
-        submitQuery(query: query, transcriptionID: id)
-    }
-
-    private func submitQuery(query: String, transcriptionID id: UUID) {
+    private func submitTextQuery(query: String) {
         // User message
         printToChat(query, as: .user)
 
         // Send to ChatGPT
         let responder = mode == .assistant ? Participant.assistant : Participant.translator
         printTypingIndicatorToChat(as: responder)
-        _chatGPT.send(mode: mode, query: query, apiKey: _settings.openAIKey, model: _settings.gptModel) { [weak self] (response: String, error: AIError?) in
+        _aiAssistant.send(
+            mode: mode,
+            query: query,
+            model: _settings.gptModel
+        ) { [weak self] (_: String, response: String, error: AIError?) in
             if let error = error {
                 self?.printErrorToChat(error.description, as: responder)
             } else {
                 self?.printToChat(response, as: responder)
-                print("[Controller] Received response from ChatGPT for \(id): \(response)")
+                print("[Controller] Received response from ChatGPT")
             }
         }
     }
 
-    private func generateImage(prompt: String) {
+    private func generateImage(audioFile fileData: Data) {
         // Monocle will not receive anything, tell it to go back to idle (ick = image ack)
         send(text: "ick:", to: _monocleBluetooth, on: Self._dataRx)
 
@@ -1076,19 +1058,18 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             return
         }
 
-        // Display image as user
-        printToChat(prompt, picture: picture, as: .user)
+        // Display image as user immediately
+        printToChat("", picture: picture, as: .user)
 
         // Submit to Stable Diffusion
         printTypingIndicatorToChat(as: .assistant)
         _stableDiffusion.imageToImage(
             image: picture,
-            prompt: prompt,
+            audio: fileData,
             model: _settings.stableDiffusionModel,
             strength: _settings.imageStrength,
-            guidance: _settings.imageGuidance,
-            apiKey: _settings.stabilityAIKey
-        ) { [weak self] (image: UIImage?, error: AIError?) in
+            guidance: _settings.imageGuidance
+        ) { [weak self] (image: UIImage?, prompt: String, error: AIError?) in
             if let error = error {
                 self?.printErrorToChat(error.description, as: .assistant)
             } else if let picture = image?.centerCropped(to: CGSize(width: 640, height: 400)) { // crop out the letterboxing we had to introduce and return to original size

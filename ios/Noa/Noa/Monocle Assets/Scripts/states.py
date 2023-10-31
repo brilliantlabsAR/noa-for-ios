@@ -26,9 +26,6 @@ class State:
     class SendAudio:
         pass
 
-    class WaitForPing:
-        pass
-
     class WaitForResponse:
         pass
 

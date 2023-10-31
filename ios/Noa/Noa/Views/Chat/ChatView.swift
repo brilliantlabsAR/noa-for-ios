@@ -24,14 +24,10 @@ struct ChatView: View {
     @Binding private var _showPairingView: Bool
 
     // Which AI mode we are in
-    @Binding private var _mode: ChatGPT.Mode
+    @Binding private var _mode: AIAssistant.Mode
 
     // Stores text being input in text field
     @State private var _textInput: String = ""
-
-    // Popup API box state
-    @State private var popUpApiBox: Bool = false
-    @State private var popupApiBoxScale: CGFloat = 0   // animation
 
     // Image detail view
     @State private var _expandedPicture: UIImage?
@@ -49,7 +45,6 @@ struct ChatView: View {
                 // Title/navigation bar
                 if _expandedPicture == nil {
                     ChatTitleBarView(
-                        popUpApiBox: $popUpApiBox,
                         showPairingView: $_showPairingView,
                         bluetoothEnabled: $_bluetoothEnabled,
                         mode: $_mode
@@ -104,35 +99,13 @@ struct ChatView: View {
                 }
             }
             .background(colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255) : Color(red: 242/255, green: 242/255, blue: 247/255))
-            .blur(radius: popUpApiBox ? 1 : 0)
 
-            // Top layer of ZStack: API pop-up box or expanded picture
-            if popUpApiBox {
-                Rectangle()
-                    .fill(Color.black.opacity(0.4))
-                    .edgesIgnoringSafeArea(.all)
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            self.popupApiBoxScale = 0
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                self.popupApiBoxScale = 0
-                                self.popUpApiBox = false
-                            }
-                        }
-                    }
-                APIKeyPopupBoxView(scale: $popupApiBoxScale, popUpApiBox: $popUpApiBox)
-                    .environmentObject(_settings)
-            } else if let picture = _expandedPicture {
+            // Top layer of ZStack: Expanded picture
+            if let picture = _expandedPicture {
                 Image(uiImage: picture)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
             }
-        }
-        .onAppear {
-            // When view appears, check whether we need an API key (only OpenAI is required)
-            popUpApiBox = _settings.openAIKey.isEmpty
         }
         .onChange(of: _expandedPicture) {
             let opacity: CGFloat = $0 == nil ? 0 : 1
@@ -146,7 +119,7 @@ struct ChatView: View {
         isMonocleConnected: Binding<Bool>,
         bluetoothEnabled: Binding<Bool>,
         showPairingView: Binding<Bool>,
-        mode: Binding<ChatGPT.Mode>,
+        mode: Binding<AIAssistant.Mode>,
         onTextSubmitted: ((String) -> Void)? = nil,
         onClearChatButtonPressed: (() -> Void)? = nil
     ) {
@@ -162,10 +135,9 @@ struct ChatView: View {
 fileprivate struct ChatTitleBarView: View {
     @EnvironmentObject private var _settings: Settings
 
-    @Binding var popUpApiBox: Bool
     @Binding var showPairingView: Bool
     @Binding var bluetoothEnabled: Bool
-    @Binding var mode: ChatGPT.Mode
+    @Binding var mode: AIAssistant.Mode
 
     var body: some View {
         HStack {
@@ -179,7 +151,6 @@ fileprivate struct ChatTitleBarView: View {
 
             // Settings menu
             SettingsMenuView(
-                popUpApiBox: $popUpApiBox,
                 showPairingView: $showPairingView,
                 bluetoothEnabled: $bluetoothEnabled,
                 mode: $mode
