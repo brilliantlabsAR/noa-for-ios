@@ -25,11 +25,13 @@
 			<array>
 				<string>GPT-3.5 Turbo</string>
 				<string>GPT-4</string>
+				<string>GPT-4 Turbo (Preview)</string>
 			</array>
 			<key>Values</key>
 			<array>
 				<string>gpt-3.5-turbo</string>
 				<string>gpt-4</string>
+				<string>gpt-4-1106-preview</string>
 			</array>
 		</dict>
 		<dict>
