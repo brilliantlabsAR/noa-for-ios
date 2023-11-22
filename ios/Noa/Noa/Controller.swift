@@ -1066,7 +1066,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         _stableDiffusion.imageToImage(
             image: picture,
             audio: fileData,
-            model: _settings.stableDiffusionModel,
+            model: "stable-diffusion-512-v2-1",
             strength: _settings.imageStrength,
             guidance: _settings.imageGuidance
         ) { [weak self] (image: UIImage?, prompt: String, error: AIError?) in
