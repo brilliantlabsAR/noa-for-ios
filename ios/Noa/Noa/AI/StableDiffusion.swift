@@ -82,76 +82,38 @@ class StableDiffusion: NSObject {
             return
         }
 
+        // Form data
+        var fields: [Util.MultipartForm.Field] = [
+            .init(name: "init_image", filename: "image.png", contentType: "image/png", data: pngImageData),
+            .init(name: "model", text: model),
+            .init(name: "image_strength", text: "\(strength)"),
+            .init(name: "cfg_scale", text: "\(guidance)"),
+            .init(name: "samples", text: "1")
+        ]
+        if let prompt = prompt {
+            fields.append(.init(name: "prompt", text: prompt))
+        } else if let fileData = audio {
+            fields.append(.init(name: "audio", filename: "audio.m4a", contentType: "audio/m4a", data: fileData))
+        }
+        let form = Util.MultipartForm(fields: fields)
+
         // Prepare URL request
-        let boundary = UUID().uuidString
         let service = audio != nil ? "image_to_image_audio_prompt" : "image_to_image"
         let url = URL(string: "https://api.brilliant.xyz/noa/\(service)")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue(brilliantAPIKey, forHTTPHeaderField: "Authorization")
-        request.setValue("multipart/form-data;boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-
-        // Form data
-        var formData = Data()
-
-        // Form parameter "init_image"
-        formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"init_image\";filename=\"image.png\"\r\n".data(using: .utf8)!)
-        formData.append("Content-Type:image/png\r\n\r\n".data(using: .utf8)!)
-        formData.append(pngImageData)
-        formData.append("\r\n".data(using: .utf8)!)
-
-        // Form parameter "model"
-        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"model\"\r\n".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-        formData.append(model.data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-
-        // Prompt, either audio or text
-        if let prompt = prompt {
-            // Form parameter "prompt"
-            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-            formData.append("Content-Disposition:form-data;name=\"prompt\"\r\n".data(using: .utf8)!)
-            formData.append("\r\n".data(using: .utf8)!)
-            formData.append(prompt.data(using: .utf8)!)
-            formData.append("\r\n".data(using: .utf8)!)
-        } else if let fileData = audio {
-            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-            formData.append("Content-Disposition:form-data;name=\"audio\";filename=\"audio.m4a\"\r\n".data(using: .utf8)!)  //TODO: temperature?
-            formData.append("Content-Type:audio/m4a\r\n\r\n".data(using: .utf8)!)
-            formData.append(fileData)
-            formData.append("\r\n".data(using: .utf8)!)
-        }
-
-        // Form parameter "image_strength"
-        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"image_strength\"\r\n".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-        formData.append("\(strength)".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-
-        // Form parameter "cfg_scale"
-        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"cfg_scale\"\r\n".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-        formData.append("\(guidance)".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-
-        // Form parameter "samples"
-        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"samples\"\r\n".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-        formData.append("1".data(using: .utf8)!)
-        formData.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        request.setValue("multipart/form-data;boundary=\(form.boundary)", forHTTPHeaderField: "Content-Type")
 
         // If this is a background task using a file, write that file, else attach to request
         if let fileURL = _tempFileURL {
             //TODO: error handling
-            try? formData.write(to: fileURL)
+            try? form.serialize().write(to: fileURL)
         } else {
-            request.httpBody = formData
+            request.httpBody = form.serialize()
         }
+
+        Util.hexDump(form.serialize())
 
         // Create task
         let task = _tempFileURL == nil ? _session.dataTask(with: request) : _session.uploadTask(with: request, fromFile: _tempFileURL!)

@@ -98,28 +98,24 @@ class WhisperTranslation: NSObject {
     }
 
     public func translate(fileData: Data, format: AudioFormat, completion: @escaping (String, AIError?) -> Void) {
-        let boundary = UUID().uuidString
+        // Form data
+        let form = Util.MultipartForm(fields: [
+            .init(name: "audio", filename: "audio.\(format.rawValue)", contentType: "audio/\(format.rawValue)", data: fileData)
+        ])
 
+        // Create request
         let url = URL(string: "https://api.brilliant.xyz/noa/translate")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue(brilliantAPIKey, forHTTPHeaderField: "Authorization")
-        request.setValue("multipart/form-data;boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-
-        // Form data
-        var formData = Data()
-        formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"audio\";filename=\"audio.\(format.rawValue)\"\r\n".data(using: .utf8)!)  //TODO: temperature
-        formData.append("Content-Type:audio/\(format.rawValue)\r\n\r\n".data(using: .utf8)!)
-        formData.append(fileData)
-        formData.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        request.setValue("multipart/form-data;boundary=\(form.boundary)", forHTTPHeaderField: "Content-Type")
 
         // If this is a background task using a file, write that file, else attach to request
         if let fileURL = _tempFileURL {
             //TODO: error handling
-            try? formData.write(to: fileURL)
+            try? form.serialize().write(to: fileURL)
         } else {
-            request.httpBody = formData
+            request.httpBody = form.serialize()
         }
 
         // Create task

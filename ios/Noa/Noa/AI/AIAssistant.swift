@@ -107,10 +107,19 @@ public class AIAssistant: NSObject {
             return
         }
 
+        // Form data
+        var fields: [Util.MultipartForm.Field] = [
+            .init(name: "json", data: historyPayload, isJSON: true)
+        ]
+        if let audio = audio {
+            fields.append(.init(name: "audio", filename: "audio.m4a", contentType: "audio/m4a", data: audio))
+        }
+        let form = Util.MultipartForm(fields: fields)
+
         // Build request
         let requestHeader = [
             "Authorization": brilliantAPIKey,
-            "Content-Type": "multipart/form-data;boundary=\(boundary)"
+            "Content-Type": "multipart/form-data;boundary=\(form.boundary)"
         ]
         let service = audio != nil ? "audio_gpt" : "chat_gpt"
         let url = URL(string: "https://api.brilliant.xyz/noa/\(service)")!
@@ -118,35 +127,12 @@ public class AIAssistant: NSObject {
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = requestHeader
 
-        // Form data
-        var formData = Data()
-
-        // Conversation history thus far using "json" field. If no audio, this must also contain
-        // the current user query.
-        formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"json\"\r\n".data(using: .utf8)!)
-        formData.append("Content-Type:application/json\r\n\r\n".data(using: .utf8)!)
-        formData.append(historyPayload)
-        formData.append("\r\n".data(using: .utf8)!)
-
-        // Audio data representing next user query
-        if let audio = audio {
-            formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-            formData.append("Content-Disposition:form-data;name=\"audio\";filename=\"audio.m4a\"\r\n".data(using: .utf8)!)  //TODO: temperature?
-            formData.append("Content-Type:audio/m4a\r\n\r\n".data(using: .utf8)!)
-            formData.append(audio)
-            formData.append("\r\n".data(using: .utf8)!)
-        }
-
-        // Terminate form data
-        formData.append("--\(boundary)--\r\n".data(using: .utf8)!)
-
         // If this is a background task using a file, write that file, else attach to request
         if let fileURL = _tempFileURL {
             //TODO: error handling
-            try? formData.write(to: fileURL)
+            try? form.serialize().write(to: fileURL)
         } else {
-            request.httpBody = formData
+            request.httpBody = form.serialize()
         }
 
         // Create task

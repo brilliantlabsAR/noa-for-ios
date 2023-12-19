@@ -65,6 +65,7 @@
 		CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */; };
 		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
 		CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD4B9012A93EB47004E3ADD /* NoaApp.swift */; };
+		CCDCFEF92B322845008EDB1D /* MultipartForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDCFEF82B322845008EDB1D /* MultipartForm.swift */; };
 		CCDEE1962AEB74C30093575B /* APIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDEE1952AEB74C30093575B /* APIKey.swift */; };
 		CCEE174F2ACF7E71000170F5 /* Tutorial.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEE174E2ACF7E71000170F5 /* Tutorial.swift */; };
 		CCEE17542ACF8CC1000170F5 /* Tutorial_2.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17502ACF8CC1000170F5 /* Tutorial_2.png */; };
@@ -156,6 +157,7 @@
 		CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_CPU.wav; sourceTree = "<group>"; };
 		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
 		CCD4B9012A93EB47004E3ADD /* NoaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaApp.swift; sourceTree = "<group>"; };
+		CCDCFEF82B322845008EDB1D /* MultipartForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartForm.swift; sourceTree = "<group>"; };
 		CCDEE1952AEB74C30093575B /* APIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.swift; sourceTree = "<group>"; };
 		CCEE174E2ACF7E71000170F5 /* Tutorial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tutorial.swift; sourceTree = "<group>"; };
 		CCEE17502ACF8CC1000170F5 /* Tutorial_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_2.png; sourceTree = "<group>"; };
@@ -443,6 +445,7 @@
 				CC07BD9A2A1962DC0082999A /* M4AWriter.swift */,
 				CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */,
 				CC16323F2AA6A0AC006A8E6A /* RGB343.swift */,
+				CCDCFEF82B322845008EDB1D /* MultipartForm.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -622,6 +625,7 @@
 				CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */,
 				CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */,
 				CCBC46262A02101A00871C12 /* Participant.swift in Sources */,
+				CCDCFEF92B322845008EDB1D /* MultipartForm.swift in Sources */,
 				CCB2F9622A2568EE00F24F2D /* Controller.swift in Sources */,
 				CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */,
 				CC4E3AF12A00BC8A0058AC20 /* MessageContentView.swift in Sources */,
