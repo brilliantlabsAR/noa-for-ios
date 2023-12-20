@@ -22,7 +22,6 @@
 		CC200A512A37E396005C67E0 /* graphics.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4F2A37E396005C67E0 /* graphics.py */; };
 		CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */; };
 		CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC202CBF2A9036C400A71EE4 /* TimestampView.swift */; };
-		CC212D682A9D34A90093479F /* StableDiffusion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC212D672A9D34A90093479F /* StableDiffusion.swift */; };
 		CC212D6A2A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */; };
 		CC212D6E2A9E6F130093479F /* monocle-fpga.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6D2A9E6F130093479F /* monocle-fpga.bin */; };
 		CC212D702A9E74870093479F /* audio.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6F2A9E74870093479F /* audio.py */; };
@@ -56,7 +55,6 @@
 		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
 		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
 		CCBC46262A02101A00871C12 /* Participant.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCBC46252A02101A00871C12 /* Participant.swift */; };
-		CCCECE6B2A1EB4B100DBB7CA /* WhisperTranslation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6A2A1EB4B100DBB7CA /* WhisperTranslation.swift */; };
 		CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */; };
 		CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */; };
 		CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */; };
@@ -110,7 +108,6 @@
 		CC200A4F2A37E396005C67E0 /* graphics.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = graphics.py; sourceTree = "<group>"; };
 		CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingStringMatcher.swift; sourceTree = "<group>"; };
 		CC202CBF2A9036C400A71EE4 /* TimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampView.swift; sourceTree = "<group>"; };
-		CC212D672A9D34A90093479F /* StableDiffusion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableDiffusion.swift; sourceTree = "<group>"; };
 		CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CVPixelBuffer+Extensions.swift"; sourceTree = "<group>"; };
 		CC212D6D2A9E6F130093479F /* monocle-fpga.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga.bin"; sourceTree = "<group>"; };
 		CC212D6F2A9E74870093479F /* audio.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = audio.py; sourceTree = "<group>"; };
@@ -148,7 +145,6 @@
 		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
 		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
 		CCBC46252A02101A00871C12 /* Participant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Participant.swift; sourceTree = "<group>"; };
-		CCCECE6A2A1EB4B100DBB7CA /* WhisperTranslation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperTranslation.swift; sourceTree = "<group>"; };
 		CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIError.swift; sourceTree = "<group>"; };
 		CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_History.wav; sourceTree = "<group>"; };
 		CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Movies.wav; sourceTree = "<group>"; };
@@ -308,9 +304,7 @@
 			isa = PBXGroup;
 			children = (
 				CC3FE0352A0F12F700756941 /* AIAssistant.swift */,
-				CCCECE6A2A1EB4B100DBB7CA /* WhisperTranslation.swift */,
 				CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */,
-				CC212D672A9D34A90093479F /* StableDiffusion.swift */,
 				CCDEE1952AEB74C30093575B /* APIKey.swift */,
 			);
 			path = AI;
@@ -636,10 +630,8 @@
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
 				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
 				CCDEE1962AEB74C30093575B /* APIKey.swift in Sources */,
-				CC212D682A9D34A90093479F /* StableDiffusion.swift in Sources */,
 				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
-				CCCECE6B2A1EB4B100DBB7CA /* WhisperTranslation.swift in Sources */,
 				CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */,
 				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,
 				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,

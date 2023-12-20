@@ -8,39 +8,40 @@
 import UIKit
 
 public class AIAssistant: NSObject {
+    public enum Mode {
+        case assistant
+        case translator
+    }
+
     public enum NetworkConfiguration {
         case normal
         case backgroundData
         case backgroundUpload
     }
 
-    public enum Mode {
-        case assistant
-        case translator
-    }
-
     private static let _maxTokens = 4000    // 4096 for gpt-3.5-turbo and larger for gpt-4, but we use a conservative number to avoid hitting that limit
 
-    private struct CompletionData {
-        let completion: (String, String, AIError?) -> Void
-        let wasAudioPrompt: Bool
+    private class CompletionData {
+        let completion: (UIImage?, String, String, AIError?) -> Void
+        var receivedData = Data()
+
+        init(completion: @escaping (UIImage?, String, String, AIError?) -> Void) {
+            self.completion = completion
+        }
     }
 
     private var _session: URLSession!
     private var _completionByTask: [Int: CompletionData] = [:]
     private var _tempFileURL: URL?
 
-    private static let _assistantPrompt = "You are a smart assistant that answers all user queries, questions, and statements with a single sentence."
-    private static let _translatorPrompt = "You are a smart assistant that translates user input to English. Translate as faithfully as you can and do not add any other commentary."
-
-    private var _payload: [String: Any] = [
-        "model": "gpt-3.5-turbo",
-        "messages": [
-            [
-                "role": "system",
-                "content": ""   // remember to set
-            ]
-        ]
+    // We maintain the message history ourselves and are unaware of server-side tool use.
+    // Therefore, no images will ever appear in the conversation history and the server-side
+    // version of this will differ slightly (image attachments -> higher token count).
+    private var _messageHistory: [[String: Any]] = [
+        [
+            "role": "system",
+            "content": "You are a smart assistant named Noa that answers all user queries, questions, and statements with a single sentence."
+        ],
     ]
 
     public init(configuration: NetworkConfiguration) {
@@ -68,52 +69,40 @@ public class AIAssistant: NSObject {
 
     public func clearHistory() {
         // To clear history, remove all but the very first message
-        if var messages = _payload["messages"] as? [[String: String]],
-           messages.count > 1 {
-            messages.removeSubrange(1..<messages.count)
-            _payload["messages"] = messages
+        if _messageHistory.count > 1 {
+            _messageHistory.removeSubrange(1..<_messageHistory.count)
             print("[AIAssistant] Cleared history")
         }
     }
 
-    public func send(mode: Mode, audio: Data, model: String, completion: @escaping (String, String, AIError?) -> Void) {
-        send(mode: mode, audio: audio, query: nil, model: model, completion: completion)
-    }
-
-    public func send(mode: Mode, query: String, model: String, completion: @escaping (String, String, AIError?) -> Void) {
-        send(mode: mode, audio: nil, query: query, model: model, completion: completion)
-    }
-
-    private func send(mode: Mode, audio: Data?, query: String?, model: String, completion: @escaping (String, String, AIError?) -> Void) {
-        // Either audio or text prompt only
-        if audio != nil && query != nil {
-            fatalError("ChatGPT.send() cannot have both audio and text prompts")
-        } else if audio == nil && query == nil {
-            fatalError("ChatGPT.send() must have either an audio or text prompt")
-        }
-
-        let boundary = UUID().uuidString
-
-        // Set up conversation details and append user prompt if we know it now. If input is audio,
-        // we will not be able to do this until we get the response.
-        _payload["model"] = model
-        setSystemPrompt(for: mode)
-        if let query = query {
-            appendUserQueryToChatSession(query: query)
-        }
-
-        guard let historyPayload = try? JSONSerialization.data(withJSONObject: _payload) else {
-            completion("", "", AIError.internalError(message: "Internal error: Conversation history cannot be serialized"))
+    public func mmSend(prompt: String?, audio: Data?, image: UIImage?, strength: Float, guidance: Int, completion: @escaping (UIImage?, String, String, AIError?) -> Void) {
+        // Get conversation history. We will append user prompt once we receive it back in the
+        // response (as all or part of the prompt may be contained in the audio attachment, which
+        // must be transcribed on the server).
+        guard let messageHistoryPayload = try? JSONSerialization.data(withJSONObject: _messageHistory) else {
+            completion(nil, "", "", AIError.internalError(message: "Internal error: Conversation history cannot be serialized"))
             return
         }
 
-        // Form data
+        // Create form data
         var fields: [Util.MultipartForm.Field] = [
-            .init(name: "json", data: historyPayload, isJSON: true)
+            .init(name: "messages", data: messageHistoryPayload, isJSON: true)
         ]
+        if let prompt = prompt {
+            fields.append(.init(name: "prompt", text: prompt))
+        }
         if let audio = audio {
             fields.append(.init(name: "audio", filename: "audio.m4a", contentType: "audio/m4a", data: audio))
         }
+        if let image = image {
+            // Stable Diffusion wants images to be multiples of 64 pixels on each side
+            guard let pngImageData = getPNGData(for: image) else {
+                completion(nil, "", "", AIError.dataFormatError(message: "Unable to crop image and convert to PNG"))
+                return
+            }
+            fields.append(.init(name: "image", filename: "image.png", contentType: "image/png", data: pngImageData))
+        }
+
         let form = Util.MultipartForm(fields: fields)
 
         // Build request
@@ -121,8 +110,8 @@ public class AIAssistant: NSObject {
             "Authorization": brilliantAPIKey,
             "Content-Type": "multipart/form-data;boundary=\(form.boundary)"
         ]
-        let service = audio != nil ? "audio_gpt" : "chat_gpt"
-        let url = URL(string: "https://api.brilliant.xyz/noa/\(service)")!
+//        let url = URL(string: "https://api.brilliant.xyz/noa/mm")!
+        let url = URL(string: "https://86ff-2600-1700-46f-9800-4417-c557-4fce-463d.ngrok-free.app/dev/noa/mm")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = requestHeader
@@ -139,69 +128,95 @@ public class AIAssistant: NSObject {
         let task = _tempFileURL == nil ? _session.dataTask(with: request) : _session.uploadTask(with: request, fromFile: _tempFileURL!)
 
         // Associate completion handler with this task
-        _completionByTask[task.taskIdentifier] = CompletionData(completion: completion, wasAudioPrompt: true)
+        _completionByTask[task.taskIdentifier] = CompletionData(completion: completion)
 
         // Begin
         task.resume()
+
     }
 
-    private func setSystemPrompt(for mode: Mode) {
-        if var messages = _payload["messages"] as? [[String: String]],
-           messages.count >= 1 {
-            messages[0]["content"] = mode == .assistant ? Self._assistantPrompt : Self._translatorPrompt
-            _payload["messages"] = messages
-        }
+    /// Given a UIImage, expands it so that each side is the next integral multiple of 64 (as
+    /// required by Stable Diffusion), letterboxing and centering the original content. Monocle
+    /// sends images that are 640x400. Cropping them down to 640x384 produces an image
+    /// that is *too small* for Stable Diffusion but bumping the size up *just* works.
+    /// - Parameter for: Image to expand and obtain PNG data for.
+    /// - Returns: PNG data of an expanded copy of the image or `nil` if there was an error.
+    private func getPNGData(for image: UIImage) -> Data? {
+        // Expand each dimension to multiple of 64 that is equal or greater than current size
+        let currentWidth = Int(image.size.width)
+        let currentHeight = Int(image.size.height)
+        let newWidth = (currentWidth + 63) & ~63
+        let newHeight = (currentHeight + 63) & ~63
+        let newSize = CGSize(width: CGFloat(newWidth), height: CGFloat(newHeight))
+        return image.expandImageWithLetterbox(to: newSize)?.pngData()
     }
 
     private func appendUserQueryToChatSession(query: String) {
-        if var messages = _payload["messages"] as? [[String: String]] {
-            // Append user prompts to maintain some sort of state. Note that we do not send back the agent responses because
-            // they won't add much.
-            messages.append([ "role": "user", "content": "\(query)" ])
-            _payload["messages"] = messages
-        }
+        // Append user prompts to maintain some sort of state. Note that we do not send back the agent responses because
+        // they won't add much.
+        _messageHistory.append([ "role": "user", "content": "\(query)" ])
     }
 
     private func appendAIResponseToChatSession(response: String) {
-        if var messages = _payload["messages"] as? [[String: String]] {
-            messages.append([ "role": "assistant", "content": "\(response)" ])
-            _payload["messages"] = messages
-        }
+        _messageHistory.append([ "role": "assistant", "content": "\(response)" ])
     }
 
     private func printConversation() {
         // Debug log conversation history
         print("---")
-        for message in (_payload["messages"] as! [[String: String]]) {
+        for message in _messageHistory {
             print("  role=\(message["role"]!), content=\(message["content"]!)")
         }
         print("---")
     }
 
-    private func extractContent(from data: Data) -> (Any?, AIError?, String?, String?) {
-        do {
-            let jsonString = String(decoding: data, as: UTF8.self)
-            if jsonString.count > 0 {
-                print("[AIAssistant] Response payload: \(jsonString)")
-            }
-            let json = try JSONSerialization.jsonObject(with: data, options: [])
-            if let response = json as? [String: AnyObject] {
-                if let errorMessage = response["message"] as? String {
-                   return (json, AIError.apiError(message: "Error from service: \(errorMessage)"), nil, nil)
-                } else if let choices = response["choices"] as? [AnyObject],
-                          choices.count > 0,
-                          let first = choices[0] as? [String: AnyObject],
-                          let message = first["message"] as? [String: AnyObject],
-                          let assistantResponse = message["content"] as? String,
-                          let userQuery = response["prompt"] as? String {
-                    return (json, nil, userQuery, assistantResponse)
-                }
-            }
-            print("[AIAssistant] Error: Unable to parse response")
-        } catch {
-            print("[AIAssistant] Error: Unable to deserialize response: \(error)")
+    private func extractContent(from data: Data) -> (UIImage?, String?, String?, AIError?, Int) {
+        struct ErrorResponse: Decodable {
+            let message: String
         }
-        return (nil, AIError.responsePayloadParseError, nil, nil)
+
+        struct MultimodalResponse: Decodable {
+            let user_prompt: String
+            let response: String
+            let image: String
+            let total_tokens: Int
+        }
+
+        // Debug print raw JSON payload
+//        let jsonString = String(decoding: data, as: UTF8.self)
+//        if jsonString.count > 0 {
+//            print("[AIAssistant] Response payload: \(jsonString)")
+//        }
+
+        // Was there an error from server?
+        if let error = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
+            return (nil, nil, nil, AIError.apiError(message: error.message), 0)
+        }
+
+        // We should have a valid response object
+        guard let mmResponse = try? JSONDecoder().decode(MultimodalResponse.self, from: data) else {
+            print("[AIAssistant] Error: Unable to deserialize response")
+            return (nil, nil, nil, AIError.responsePayloadParseError, 0)
+        }
+
+        // If an image exists, try to decode it
+        var image: UIImage?
+        if mmResponse.image.count > 0 {
+            if let base64Data = mmResponse.image.data(using: .utf8),
+               let imageData = Data(base64Encoded: base64Data) {
+                image = UIImage(data: imageData)
+            } else {
+                print("[AIAssistant] Error: Unable to decode image")
+                return (nil, nil, nil, AIError.dataFormatError(message: "Unable to decode image received from server"), 0)
+            }
+        }
+
+        // Extract user prompt and response
+        let userPrompt = mmResponse.user_prompt.count > 0 ? mmResponse.user_prompt : nil
+        let response = mmResponse.response.count > 0 ? mmResponse.response : nil
+
+        // Return response data
+        return (image, userPrompt, response, nil, mmResponse.total_tokens)
     }
 
     private func extractTotalTokensUsed(from json: Any?) -> Int {
@@ -212,6 +227,37 @@ public class AIAssistant: NSObject {
             return totalTokens
         }
         return 0
+    }
+
+    private func processCompleteResponse(completionData: CompletionData) {
+        let (image, userPrompt, response, contentError, totalTokensUsed) = extractContent(from: completionData.receivedData)
+        let userPromptString = userPrompt ?? ""
+        let responseString = response ?? "" // if response is nill, contentError will be set
+
+        // Deliver response and append to chat session
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            // Append to chat session to maintain running dialog unless we've exceeded the context
+            // window
+            if totalTokensUsed >= Self._maxTokens {
+                clearHistory()
+                print("[AIAssistant] Cleared context history because total tokens used reached \(totalTokensUsed)")
+            } else {
+                // Append the user prompt to the message history
+                if userPromptString.count > 0 {
+                    appendUserQueryToChatSession(query: userPromptString)
+                }
+
+                // And also the response
+                if responseString.count > 0 || image != nil {
+                    appendAIResponseToChatSession(response: "\(image != nil ? "[image] " : "")\(responseString)")
+                }
+            }
+
+            // Deliver response
+            completionData.completion(image, userPromptString, responseString, contentError)
+        }
     }
 }
 
@@ -224,7 +270,7 @@ extension AIAssistant: URLSessionDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             for (_, completionData) in self._completionByTask {
-                completionData.completion("", "", AIError.clientSideNetworkError(error: error))
+                completionData.completion(nil, "", "", AIError.clientSideNetworkError(error: error))
             }
             _completionByTask = [:]
         }
@@ -266,7 +312,7 @@ extension AIAssistant: URLSessionDataDelegate {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if let completionData = self._completionByTask[task.taskIdentifier] {
-                    completionData.completion("", "", AIError.urlAuthenticationFailed)
+                    completionData.completion(nil, "", "", AIError.urlAuthenticationFailed)
                     self._completionByTask.removeValue(forKey: task.taskIdentifier)
                 }
             }
@@ -301,8 +347,12 @@ extension AIAssistant: URLSessionDataDelegate {
         if let error = error {
             print("[AIAssistant] URLSessionDataTask failed to complete: \(error.localizedDescription)")
         } else {
-            // Error == nil should indicate successful completion
+            // Success!
             print("[AIAssistant] URLSessionDataTask finished")
+            if let completionData = _completionByTask[task.taskIdentifier] {
+                processCompleteResponse(completionData: completionData)
+                _completionByTask.removeValue(forKey: task.taskIdentifier)
+            }
         }
 
         // If there really was no error, we should have received data, triggered the completion,
@@ -311,7 +361,7 @@ extension AIAssistant: URLSessionDataDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let completionData = self._completionByTask[task.taskIdentifier] {
-                completionData.completion("", "", AIError.clientSideNetworkError(error: error))
+                completionData.completion(nil, "", "", AIError.clientSideNetworkError(error: error))
                 self._completionByTask.removeValue(forKey: task.taskIdentifier)
             }
         }
@@ -330,42 +380,8 @@ extension AIAssistant: URLSessionDataDelegate {
     }
 
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        let (json, contentError, userPrompt, response) = extractContent(from: data)
-        let userPromptString = userPrompt ?? ""
-        let responseString = response ?? "" // if response is nill, contentError will be set
-        let totalTokensUsed = extractTotalTokensUsed(from: json)
-
-        // Deliver response and append to chat session
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            guard let completionData = self._completionByTask[dataTask.taskIdentifier] else { return }
-
-            // Append to chat session to maintain running dialog unless we've exceeded the context
-            // window
-            if totalTokensUsed >= Self._maxTokens {
-                clearHistory()
-                print("[AIAssistant] Cleared context history because total tokens used reached \(totalTokensUsed)")
-            } else {
-                // Append the user prompt when in audio mode because we don't know the prompt until
-                // we get the full response back
-                if userPromptString.count > 0 && completionData.wasAudioPrompt {
-                    appendUserQueryToChatSession(query: userPromptString)
-                }
-
-                // And also the response
-                if let response = response {
-                    appendAIResponseToChatSession(response: response)
-                }
-            }
-
-            // Deliver response
-            if let completionData = self._completionByTask[dataTask.taskIdentifier] {
-                // User prompt delivered in
-                completionData.completion(userPromptString, responseString, contentError)
-                self._completionByTask.removeValue(forKey: dataTask.taskIdentifier)
-            } else {
-                print("[AIAssistant]: Error: No completion found for task \(dataTask.taskIdentifier)")
-            }
-        }
+        guard let completionData = _completionByTask[dataTask.taskIdentifier] else { return }
+        completionData.receivedData.append(data)
+        print("[AIAssistant] Received \(data.count) bytes")
     }
 }

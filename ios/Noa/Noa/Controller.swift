@@ -152,9 +152,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
     private var _imageData = Data()
 
     private let _m4aWriter = M4AWriter()
-    private let _voiceTranslator = WhisperTranslation(configuration: .backgroundData)
     private let _aiAssistant = AIAssistant(configuration: .backgroundData)
-    private let _stableDiffusion = StableDiffusion(configuration: .backgroundData)
 
     // Debug audio playback (use setupAudioSession() and playReceivedAudio() on PCM buffer decoded
     // from Monocle)
@@ -987,43 +985,52 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
 
     // Step 2: Send voice query (send to LLM, image generation, or translation)
     private func processVoice(audioFile fileData: Data, mode: AIAssistant.Mode) {
-        if _imageData.isEmpty {
-            // No image data, query GPT or Whisper (translation only)
-            let responder = mode == .assistant ? Participant.assistant : Participant.translator
-            if mode == .assistant {
-                _aiAssistant.send(
-                    mode: mode,
-                    audio: fileData,
-                    model: _settings.gptModel
-                ) { [weak self] (userPrompt: String, response: String, error: AIError?) in
-                    if let error = error {
-                        self?.printErrorToChat(error.description, as: responder)
-                    } else {
-                        if mode == .assistant {
-                            self?.printToChat(userPrompt, as: .user)
-                        }
-                        self?.printToChat(response, as: responder)
-                        print("[Controller] Received response from ChatGPT")
-                    }
-                }
-            } else {
-                _voiceTranslator.translate(
-                    fileData: fileData,
-                    format: .m4a
-                ) { [weak self] (query: String, error: AIError?) in
-                    guard let self = self else { return }
-                    if let error = error {
-                        printErrorToChat(error.description, as: .user)
-                    } else {
-                        // Display translation
-                        printToChat(query, as: .translator)
-                        print("[Controller] Translation received: \(query)")
-                    }
+        // Attempt to decode image
+        var picture: UIImage?
+        if _imageData.count > 0 {
+            picture = UIImage(data: _imageData)
+            if picture == nil {
+                printErrorToChat("Photo could not be decoded", as: .user)
+                return
+            }
+        }
+
+        // If in translator mode, add additional pre-prompt asking for translation.
+        let extraPrompt: String? = mode == .translator ? "Translate this to English." : nil
+
+        // Print typing indicator as user or translator
+        printTypingIndicatorToChat(as: mode == .assistant ? .user : .translator)
+
+        // Make multimodal request
+        _aiAssistant.mmSend(
+            prompt: extraPrompt,
+            audio: fileData,
+            image: picture,
+            strength: _settings.imageStrength,
+            guidance: _settings.imageGuidance
+        ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
+            guard let self = self else { return }
+
+            if let error = error {
+                printErrorToChat(error.description, as: mode == .assistant ? .assistant : .translator)
+                return
+            }
+
+            if userPrompt.count > 0 && mode == .assistant {
+                // In assistant mode (not translator mode), show what user said, including image
+                // attached
+                printToChat(userPrompt, picture: picture, as: .user)
+            }
+
+            if response.count > 0 || responseImage != nil {
+                if mode == .assistant {
+                    printToChat(response, picture: responseImage, as: .assistant)
+                } else {
+                    // Translator: should never return an image but we may have sent an image to
+                    // translate, so show that input image if it exists
+                    printToChat(response, picture: picture, as: .translator)
                 }
             }
-        } else {
-            // Have image data, perform image generation
-            generateImage(audioFile: fileData)
         }
     }
 
@@ -1031,55 +1038,28 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         // User message
         printToChat(query, as: .user)
 
+        // If translation mode, add a pre-prompt.
+        let prompt = mode == .translator ? "Translate the following to English (NO QUOTES, just pick the best response): \(query)" : query
+
+        // Assistant is thinking...
+        printTypingIndicatorToChat(as: mode == .translator ? .translator : .assistant)
+
         // Send to ChatGPT
-        let responder = mode == .assistant ? Participant.assistant : Participant.translator
-        printTypingIndicatorToChat(as: responder)
-        _aiAssistant.send(
-            mode: mode,
-            query: query,
-            model: _settings.gptModel
-        ) { [weak self] (_: String, response: String, error: AIError?) in
-            if let error = error {
-                self?.printErrorToChat(error.description, as: responder)
-            } else {
-                self?.printToChat(response, as: responder)
-                print("[Controller] Received response from ChatGPT")
-            }
-        }
-    }
-
-    private func generateImage(audioFile fileData: Data) {
-        // Monocle will not receive anything, tell it to go back to idle (ick = image ack)
-        send(text: "ick:", to: _monocleBluetooth, on: Self._dataRx)
-
-        // Attempt to decode image
-        guard let picture = UIImage(data: _imageData) else {
-            printErrorToChat("Photo could not be decoded", as: .user)
-            return
-        }
-
-        // Display image as user immediately
-        printToChat("", picture: picture, as: .user)
-
-        // Submit to Stable Diffusion
-        printTypingIndicatorToChat(as: .assistant)
-        _stableDiffusion.imageToImage(
-            image: picture,
-            audio: fileData,
-            model: "stable-diffusion-512-v2-1",
+        _aiAssistant.mmSend(
+            prompt: prompt,
+            audio: nil,
+            image: nil,
             strength: _settings.imageStrength,
             guidance: _settings.imageGuidance
-        ) { [weak self] (image: UIImage?, prompt: String, error: AIError?) in
-            if let error = error {
-                self?.printErrorToChat(error.description, as: .assistant)
-            } else if let picture = image?.centerCropped(to: CGSize(width: 640, height: 400)) { // crop out the letterboxing we had to introduce and return to original size
-                self?.printToChat(prompt, picture: picture, as: .assistant)
+        ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
+            guard let self = self else { return }
 
-                //TODO: this does not seem to work yet
-                //self?.sendImageToMonocleInChunks(image: picture)
+            if let error = error {
+                printErrorToChat(error.description, as: mode == .translator ? .translator : .assistant)
             } else {
-                // No picture but also no explicit error
-                self?.printErrorToChat("No image received", as: .assistant)
+                if response.count > 0 || responseImage != nil {
+                    printToChat(response, picture: responseImage, as: mode == .translator ? .translator : .assistant)
+                }
             }
         }
     }
