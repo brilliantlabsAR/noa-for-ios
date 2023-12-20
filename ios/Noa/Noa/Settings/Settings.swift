@@ -14,9 +14,6 @@ import Combine
 import Foundation
 
 class Settings: ObservableObject {
-    @Published private(set) var gptModel: String = ""
-    private static let k_gptModel = "model"
-
     @Published private(set) var imageStrength: Float = 0
     private static let k_imageStrength = "stability_image_strength"
 
@@ -26,41 +23,10 @@ class Settings: ObservableObject {
     @Published private(set) var pairedDeviceID: UUID?
     private static let k_pairedDeviceID = "paired_device_id"    // this key should *not* appear in Root.plist (therefore cannot be edited in Settings by user directly; only from app)
 
-    public let supportedGPTModels: [String]
-
-    private let _gptModelToPrintableName: [String: String]
-
     public init() {
         Self.registerDefaults()
-
-        let (modelNames, supportedModels) = Self.getPossibleTitlesAndValuesForMultiValueItem(withKey: Self.k_gptModel)
-        self.supportedGPTModels = supportedModels
-
-        var modelToPrintableName: [String: String] = [:]
-        for i in 0..<min(modelNames.count, supportedModels.count) {
-            modelToPrintableName[supportedModels[i]] = modelNames[i]
-        }
-        _gptModelToPrintableName = modelToPrintableName
-
         NotificationCenter.default.addObserver(self, selector: #selector(Self.onSettingsChanged), name: UserDefaults.didChangeNotification, object: nil)
         onSettingsChanged()
-    }
-
-    public func printableGPTModelName(model: String) -> String {
-        guard let name = _gptModelToPrintableName[model] else {
-            return "?"
-        }
-        return name
-    }
-
-    /// Sets the value of the model setting. Currently does not perform validation to ensure an allowed value is used.
-    /// - Parameter value: The new value.
-    public func setGPTModel(_ value: String) {
-        if gptModel != value {
-            gptModel = value
-            UserDefaults.standard.set(value, forKey: Self.k_gptModel)
-            print("[Settings] Set: \(Self.k_gptModel) = \(gptModel)")
-        }
     }
 
     /// Sets the value of the paired device ID.
@@ -141,11 +107,6 @@ class Settings: ObservableObject {
 
     @objc private func onSettingsChanged() {
         // Publish changes when settings have been edited
-        let model = UserDefaults.standard.string(forKey: Self.k_gptModel) ?? "gpt-3.5-turbo"
-        if model != self.gptModel {
-            self.gptModel = model
-        }
-
         let imageStrength = UserDefaults.standard.float(forKey: Self.k_imageStrength)
         if imageStrength != self.imageStrength {
             self.imageStrength = imageStrength

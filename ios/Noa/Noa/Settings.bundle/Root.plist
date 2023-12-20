@@ -10,34 +10,6 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
-			<string>OpenAI API</string>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSMultiValueSpecifier</string>
-			<key>Title</key>
-			<string>Model</string>
-			<key>Key</key>
-			<string>model</string>
-			<key>DefaultValue</key>
-			<string>gpt-3.5-turbo</string>
-			<key>Titles</key>
-			<array>
-				<string>GPT-3.5 Turbo</string>
-				<string>GPT-4</string>
-				<string>GPT-4 Turbo (Preview)</string>
-			</array>
-			<key>Values</key>
-			<array>
-				<string>gpt-3.5-turbo</string>
-				<string>gpt-4</string>
-				<string>gpt-4-1106-preview</string>
-			</array>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
 			<string>Stability AI API</string>
 		</dict>
 		<dict>
