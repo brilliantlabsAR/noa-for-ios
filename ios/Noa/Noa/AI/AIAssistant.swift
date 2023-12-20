@@ -110,7 +110,8 @@ public class AIAssistant: NSObject {
             "Authorization": brilliantAPIKey,
             "Content-Type": "multipart/form-data;boundary=\(form.boundary)"
         ]
-        let url = URL(string: "https://api.brilliant.xyz/noa/mm")!
+        //let url = URL(string: "https://api.brilliant.xyz/noa/mm")!
+        let url = URL(string: "https://api.brilliant.xyz/dev/noa/mm")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = requestHeader
