@@ -75,7 +75,15 @@ public class AIAssistant: NSObject {
         }
     }
 
-    public func mmSend(prompt: String?, audio: Data?, image: UIImage?, strength: Float, guidance: Int, completion: @escaping (UIImage?, String, String, AIError?) -> Void) {
+    public func send(
+        prompt: String?,
+        audio: Data?,
+        image: UIImage?,
+        resizeImageTo200px: Bool,
+        imageStrength: Float,
+        imageGuidance: Int,
+        completion: @escaping (UIImage?, String, String, AIError?) -> Void
+    ) {
         // Get conversation history. We will append user prompt once we receive it back in the
         // response (as all or part of the prompt may be contained in the audio attachment, which
         // must be transcribed on the server).
@@ -86,7 +94,9 @@ public class AIAssistant: NSObject {
 
         // Create form data
         var fields: [Util.MultipartForm.Field] = [
-            .init(name: "messages", data: messageHistoryPayload, isJSON: true)
+            .init(name: "messages", data: messageHistoryPayload, isJSON: true),
+            .init(name: "image_strength", text: "\(imageStrength)"),
+            .init(name: "cfg_scale", text: "\(imageGuidance)")
         ]
         if let prompt = prompt {
             fields.append(.init(name: "prompt", text: prompt))
@@ -96,7 +106,7 @@ public class AIAssistant: NSObject {
         }
         if let image = image {
             // Stable Diffusion wants images to be multiples of 64 pixels on each side
-            guard let pngImageData = getPNGData(for: image) else {
+            guard let pngImageData = getPNGData(for: image, resizeTo200px: resizeImageTo200px) else {
                 completion(nil, "", "", AIError.dataFormatError(message: "Unable to crop image and convert to PNG"))
                 return
             }
@@ -141,7 +151,10 @@ public class AIAssistant: NSObject {
     /// that is *too small* for Stable Diffusion but bumping the size up *just* works.
     /// - Parameter for: Image to expand and obtain PNG data for.
     /// - Returns: PNG data of an expanded copy of the image or `nil` if there was an error.
-    private func getPNGData(for image: UIImage) -> Data? {
+    private func getPNGData(for originalImage: UIImage, resizeTo200px: Bool) -> Data? {
+        // Debug: resize if necessary to simulate smaller images from Frame
+        let image = resizeTo200px ? originalImage.resized(to: CGSize(width: CGFloat(200), height: CGFloat(200))) : originalImage
+
         // Expand each dimension to multiple of 64 that is equal or greater than current size
         let currentWidth = Int(image.size.width)
         let currentHeight = Int(image.size.height)

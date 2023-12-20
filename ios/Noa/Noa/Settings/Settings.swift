@@ -23,6 +23,9 @@ class Settings: ObservableObject {
     @Published private(set) var pairedDeviceID: UUID?
     private static let k_pairedDeviceID = "paired_device_id"    // this key should *not* appear in Root.plist (therefore cannot be edited in Settings by user directly; only from app)
 
+    @Published private(set) var debug200pxImageMode: Bool = false
+    private static let k_debug200pxImageMode = "debug_200px_images"
+
     public init() {
         Self.registerDefaults()
         NotificationCenter.default.addObserver(self, selector: #selector(Self.onSettingsChanged), name: UserDefaults.didChangeNotification, object: nil)
@@ -115,6 +118,11 @@ class Settings: ObservableObject {
         let imageGuidance = UserDefaults.standard.integer(forKey: Self.k_imageGuidance)
         if imageGuidance != self.imageGuidance {
             self.imageGuidance = imageGuidance
+        }
+
+        let debug200pxImageMode = UserDefaults.standard.bool(forKey: Self.k_debug200pxImageMode)
+        if debug200pxImageMode != self.debug200pxImageMode {
+            self.debug200pxImageMode = debug200pxImageMode
         }
 
         // This property is not exposed to users in Settings and so may be absent

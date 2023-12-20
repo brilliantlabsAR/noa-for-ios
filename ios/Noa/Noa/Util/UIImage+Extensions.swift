@@ -42,6 +42,13 @@ extension UIImage {
         return UIImage(cgImage: croppedImage, scale: self.imageRendererFormat.scale, orientation: self.imageOrientation)
     }
 
+    public func resized(to newSize: CGSize) -> UIImage {
+        let image = UIGraphicsImageRenderer(size: newSize).image { _ in
+            draw(in: CGRect(origin: .zero, size: newSize))
+        }
+        return image.withRenderingMode(renderingMode)
+    }
+
     public func expandImageWithLetterbox(to newSize: CGSize) -> UIImage? {
         assert(newSize.width >= self.size.width && newSize.height >= self.size.height, "Image can only be expanded")
 

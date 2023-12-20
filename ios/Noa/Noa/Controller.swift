@@ -1002,12 +1002,13 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         printTypingIndicatorToChat(as: mode == .assistant ? .user : .translator)
 
         // Make multimodal request
-        _aiAssistant.mmSend(
+        _aiAssistant.send(
             prompt: extraPrompt,
             audio: fileData,
             image: picture,
-            strength: _settings.imageStrength,
-            guidance: _settings.imageGuidance
+            resizeImageTo200px: _settings.debug200pxImageMode,
+            imageStrength: _settings.imageStrength,
+            imageGuidance: _settings.imageGuidance
         ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
             guard let self = self else { return }
 
@@ -1045,12 +1046,13 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         printTypingIndicatorToChat(as: mode == .translator ? .translator : .assistant)
 
         // Send to ChatGPT
-        _aiAssistant.mmSend(
+        _aiAssistant.send(
             prompt: prompt,
             audio: nil,
             image: nil,
-            strength: _settings.imageStrength,
-            guidance: _settings.imageGuidance
+            resizeImageTo200px: false,
+            imageStrength: _settings.imageStrength,
+            imageGuidance: _settings.imageGuidance
         ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
             guard let self = self else { return }
 
