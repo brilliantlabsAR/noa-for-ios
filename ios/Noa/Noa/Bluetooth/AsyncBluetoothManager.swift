@@ -40,7 +40,7 @@
 //
 //      for await data in connection.receivedData {
 //          print("Received \(data.count) bytes")
-//          connection.send(data: "My reply".data(using: .utf8)!)
+//          connection.send(text: "My reply")
 //      }
 //
 // Programmer Notes
@@ -66,6 +66,8 @@
 // - Scanning is expensive. We stop it when connecting and then resume it on disconnect.
 // - Be careful with threads. We create a queue and all CoreBluetooth calls must happen there. All
 //   class members must be accessed consistently on this queue alone.
+// - Thanks to Yasuhito Nagamoto for his async Bluetooth example here:
+//   https://github.com/ynagatomo/microbit-swift-controller
 //
 
 import CoreBluetooth
@@ -73,8 +75,8 @@ import CoreBluetooth
 class AsyncBluetoothManager: NSObject {
     // MARK: Internal state
 
-    private let _queue = DispatchQueue(label: "com.cambrianmoment.robophone.bluetooth", qos: .default)
-    
+    private let _queue = DispatchQueue(label: "xyz.brilliant.argpt.bluetooth", qos: .default)
+
     private lazy var _manager: CBCentralManager = {
         return CBCentralManager(delegate: self, queue: _queue)
     }()
@@ -151,6 +153,14 @@ class AsyncBluetoothManager: NSObject {
                     let endIdx = min(idx + chunkSize, data.count)
                     peripheral.writeValue(data.subdata(in: idx..<endIdx), for: tx, type: writeType)
                     idx = endIdx
+                }
+            }
+        }
+
+        func send(text: String, response: Bool = false) {
+            _queue?.async { [weak self] in
+                if let data = text.data(using: .utf8) {
+                    self?.send(data: data, response: response)
                 }
             }
         }

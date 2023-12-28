@@ -162,8 +162,9 @@ struct ContentView: View {
                 let connection = try await connectToDevice()
                 isConnected = true
 
+                connection.send(text: "print('hello, world!')")
                 for try await data in connection.receivedData {
-                    print("[Bluetooth Task] Received \(data.count) bytes from device")
+                    Util.hexDump(data)
                 }
             } catch let error as AsyncBluetoothManager.StreamError {
                 // Disconnection falls through to loop around again
@@ -171,7 +172,7 @@ struct ContentView: View {
                 print("[Bluetooth Task] Connection lost: \(error.localizedDescription)")
             } catch is CancellationError {
                 // Task was canceled, exit it entirely
-                print("[Bluetooth Task] Bluetooth task canceled!")
+                print("[Bluetooth Task] Task canceled!")
                 break
             } catch {
                 print("[Bluetooth Task] Unknown error: \(error.localizedDescription)")
@@ -200,7 +201,6 @@ struct ContentView: View {
             var buttonHysteresisTime = Date.distantPast
 
             while chosenDevice == nil {
-
                 if let pairedDeviceID = _settings.pairedDeviceID {
                     // Paired case: wait for paired device to appear, auto-connect to it
                     if let targetDevice = _nearbyDevices.first(where: { $0.peripheral.identifier == pairedDeviceID })?.peripheral {
