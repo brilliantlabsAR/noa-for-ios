@@ -8,6 +8,8 @@
 //
 // API Overview
 // ------------
+// - Supports one service with a single characteristic to read on (rx) and another to transmit on
+//   (tx).
 // - When not connected, the manager is always scanning and periodically returns devices found
 //   via the discoveredDevices async stream. The stream never ends and can be iterated forever.
 //   Updates will stop when a connection is established and the stream will periodically return
