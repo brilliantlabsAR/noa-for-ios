@@ -38,9 +38,24 @@
 //
 // - The connection reference contains methods for reading and sending data.
 //
-//      for await data in connection.receivedData {
+//      for try await data in connection.receivedData {
 //          print("Received \(data.count) bytes")
 //          connection.send(text: "My reply")
+//      }
+//
+// - Disconnects are detected by catching errors on receivedData or through completions on the
+//   send methods.
+//
+//      do {
+//          response = try await connection.receivedData
+//      } catch let error as AsyncBluetoothManager.StreamError {
+//          print("Disconnected: \(error.localizedDescription)")
+//      }
+//
+//      connection.send(text: "Hello") { (error: AsyncBluetoothManager.StreamError?) in
+//          if let error = error {
+//              print("DIsconnected: \(error.localizedDescription)")
+//          }
 //      }
 //
 // Programmer Notes
@@ -102,6 +117,7 @@ class AsyncBluetoothManager: NSObject {
         case connectionLost         // closed because underlying connection to peripheral was lost somehow
         case connectionReplaced     // closed because connect() was called again
         case connectionClosed       // closed intentionally by e.g. a disconnect() call
+        case utf8EncodingFailed     // failed to convert string to data and could not send
     }
 
     // MARK: API - Connection object
@@ -114,6 +130,7 @@ class AsyncBluetoothManager: NSObject {
         private weak var _tx: CBCharacteristic?
         private weak var _asyncManager: AsyncBluetoothManager?
         fileprivate let connectionID = UUID()
+        private var _error: StreamError?
 
         fileprivate init(queue: DispatchQueue, asyncManager: AsyncBluetoothManager, peripheral: CBPeripheral, rx: CBCharacteristic, tx: CBCharacteristic) {
             _queue = queue
@@ -137,15 +154,24 @@ class AsyncBluetoothManager: NSObject {
 
         fileprivate func closeStream(with error: StreamError) {
             _receivedDataContinuation?.finish(throwing: error)
+            _error = error
         }
 
-        func send(data: Data, response: Bool = false) {
+        func send(data: Data, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((StreamError?) -> Void)? = nil) {
             _queue?.async { [weak self] in
+                if let error = self?._error, let completion = completion {
+                    // Connection is already closed
+                    completionQueue.async {
+                        completion(error)
+                    }
+                }
+
                 guard let self = self,
                       let peripheral = _peripheral,
                       let tx = _tx else {
                     return
                 }
+
                 let writeType: CBCharacteristicWriteType = response ? .withResponse : .withoutResponse
                 let chunkSize = peripheral.maximumWriteValueLength(for: writeType)
                 var idx = 0
@@ -154,13 +180,25 @@ class AsyncBluetoothManager: NSObject {
                     peripheral.writeValue(data.subdata(in: idx..<endIdx), for: tx, type: writeType)
                     idx = endIdx
                 }
+
+                if let completion = completion {
+                    // Indicate successful send
+                    completionQueue.async {
+                        completion(nil)
+                    }
+                }
             }
         }
 
-        func send(text: String, response: Bool = false) {
+        func send(text: String, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((StreamError?) -> Void)? = nil) {
             _queue?.async { [weak self] in
                 if let data = text.data(using: .utf8) {
-                    self?.send(data: data, response: response)
+                    self?.send(data: data, response: response, completionQueue: completionQueue, completion: completion)
+                } else {
+                    // Indicate encoding failure
+                    completionQueue.async {
+                        completion?(.utf8EncodingFailed)
+                    }
                 }
             }
         }
@@ -538,6 +576,8 @@ extension AsyncBluetoothManager.StreamError: LocalizedError {
             return "Connection replaced by subsequent call to connect()"
         case .connectionClosed:
             return "Connection closed by application"
+        case .utf8EncodingFailed:
+            return "Failed to encode and send UTF-8 string"
         }
     }
 }
