@@ -12,7 +12,12 @@ import SwiftUI
 struct NoaApp: App {
     private let _settings = Settings()
     private let _chatMessageStore = ChatMessageStore()
-    private var _controller: Controller!
+    private let _bluetooth = AsyncBluetoothManager(
+        service: FrameController.serviceUUID,
+        rxCharacteristic: FrameController.rxUUID,
+        txCharacteristic: FrameController.txUUID
+    )
+    private var _frameController: FrameController!
 
     @UIApplicationDelegateAdaptor private var _appDelegate: AppDelegate
 
@@ -21,12 +26,13 @@ struct NoaApp: App {
             ContentView(
                 settings: _settings,
                 chatMessageStore: _chatMessageStore,
-                controller: _controller
+                frameController: _frameController,
+                bluetooth: _bluetooth
             )
         }
     }
 
     init() {
-        _controller = Controller(settings: _settings, messages: _chatMessageStore)
+        _frameController = FrameController()
     }
 }

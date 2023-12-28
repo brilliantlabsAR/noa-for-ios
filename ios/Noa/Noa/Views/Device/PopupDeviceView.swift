@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct PopupDeviceView: View {
-    @Binding var showDeviceSheet: Bool
-    @Binding var deviceSheetType: DeviceSheetType
-    @Binding var monocleWithinPairingRange: Bool
+    @Binding var deviceSheetState: DeviceSheetState
+    @Binding var connectButtonState: DeviceSheetConnectButtonState
     @Binding var updateProgressPercent: Int
     private let _onConnectPressed: (() -> Void)?
-    
-    //Video logic
+    private let _onCancelPressed: (() -> Void)?
+
+    // Video logic
     @State private var triggerUpdate = false
     let videoURL = Bundle.main.url(forResource: "SpinningMonocle", withExtension: "mp4")!
     
@@ -27,12 +27,12 @@ struct PopupDeviceView: View {
                 HStack {
                     Spacer()
 
-                    if deviceSheetType == .pairing {
+                    if deviceSheetState == .searching {
                         // Only the pairing sheet may be dismissed. Updates cannot be interrupted
                         // and the app would be in an undefined state if the device sheet was
                         // hidden while an update was in progress.
                         Button(action: {
-                            showDeviceSheet = false
+                            _onCancelPressed?()
                         }) {
                             ZStack {
                                 Circle()
@@ -57,7 +57,7 @@ struct PopupDeviceView: View {
             // Other stuff
             VStack {
             
-                Text(deviceSheetType == .pairing
+                Text(deviceSheetState == .searching
                      ? "Bring your device close."
                      : "Updating Software \(updateProgressPercent)%")
                     .font(.system(size: 24, weight: .bold))
@@ -75,19 +75,14 @@ struct PopupDeviceView: View {
                             .id(triggerUpdate)
                     )
 
-                let buttonEnabled = monocleWithinPairingRange && deviceSheetType == .pairing
-                
+                let buttonEnabled = connectButtonState == .canConnect && deviceSheetState == .searching
+
                 Button(action: {
                     if buttonEnabled {
                         _onConnectPressed?()
-                        showDeviceSheet = false // dismiss view
                     }
                 }) {
-                    Text(deviceSheetType == .pairing
-                         ? (monocleWithinPairingRange
-                            ? "Monocle. Connect"
-                            : "Searching")
-                         : "Keep the app open")
+                    Text(getButtonLabel())
                         .font(.system(size: 22, weight: .medium))
                         .frame(width: 306, height: 50)
                 }
@@ -101,12 +96,26 @@ struct PopupDeviceView: View {
     }
 
 
-    init(showDeviceSheet: Binding<Bool>, deviceSheetType: Binding<DeviceSheetType>, monocleWithinPairingRange: Binding<Bool>, updateProgressPercent: Binding<Int>, onConnectPressed: (() -> Void)?) {
-        _showDeviceSheet = showDeviceSheet
-        _deviceSheetType = deviceSheetType
-        _monocleWithinPairingRange = monocleWithinPairingRange
+    init(deviceSheetState: Binding<DeviceSheetState>, connectButtonState: Binding<DeviceSheetConnectButtonState>, updateProgressPercent: Binding<Int>, onConnectPressed: (() -> Void)?, onCancelPressed: (() -> Void)?) {
+        _deviceSheetState = deviceSheetState
+        _connectButtonState = connectButtonState
         _updateProgressPercent = updateProgressPercent
         _onConnectPressed = onConnectPressed
+        _onCancelPressed = onCancelPressed
+    }
+
+    private func getButtonLabel() -> String {
+        if deviceSheetState != .searching {
+            return "Keep the app open"
+        }
+        switch connectButtonState {
+        case .searching:
+            return "Searching"
+        case .canConnect:
+            return "Monocle. Connect"
+        case .connecting:
+            return "Connecting..."
+        }
     }
 }
 

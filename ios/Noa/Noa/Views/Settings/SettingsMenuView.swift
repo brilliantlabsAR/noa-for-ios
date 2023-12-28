@@ -9,33 +9,25 @@ import SwiftUI
 
 struct SettingsMenuView: View {
     @EnvironmentObject private var _settings: Settings
-
-    @Binding var showPairingView: Bool
-    @Binding var bluetoothEnabled: Bool
-    @Binding var mode: AIAssistant.Mode
-
     @State private var _translateEnabled = false
+
+    private let _onAssistantModeChanged: ((AIAssistant.Mode) ->Void)?
+    private let _onPairToggled: ((Bool) -> Void)?
 
     var body: some View {
         Menu {
-            let isMonoclePaired = _settings.pairedDeviceID != nil
+            let isDevicePaired = _settings.pairedDeviceID != nil
 
             Toggle(isOn: $_translateEnabled) {
                 Label("Translate", systemImage: "globe")
             }
             .toggleStyle(.button)
 
-            Button(role: isMonoclePaired ? .destructive : .none, action: {
-                if isMonoclePaired {
-                    // Unpair
-                    _settings.setPairedDeviceID(nil)
-                }
-
-                // Always return to pairing screen right after unpairing or when pairing requested
-                showPairingView = true
+            Button(role: isDevicePaired ? .destructive : .none, action: {
+                _onPairToggled?(!isDevicePaired)
             }) {
                 // Unpair/pair Monocle
-                if isMonoclePaired {
+                if isDevicePaired {
                     Label("Unpair Monocle", systemImage: "wake")
                 } else {
                     Label("Pair Monocle", systemImage: "wake")
@@ -46,20 +38,24 @@ struct SettingsMenuView: View {
                 .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))
         }
         .onAppear {
-            _translateEnabled = mode == .translator
+            _onAssistantModeChanged?(_translateEnabled ? .translator : .assistant)
         }
         .onChange(of: _translateEnabled) {
-            mode = $0 ? .translator : .assistant
+            _onAssistantModeChanged?($0 ? .translator : .assistant)
         }
+    }
+
+    init(onAssistantModeChanged: ((AIAssistant.Mode) ->Void)?, onPairToggled: ((Bool) -> Void)?) {
+        _onAssistantModeChanged = onAssistantModeChanged
+        _onPairToggled = onPairToggled
     }
 }
 
 struct SettingsMenuView_Previews: PreviewProvider {
     static var previews: some View {
         SettingsMenuView(
-            showPairingView: .constant(false),
-            bluetoothEnabled: .constant(true),
-            mode: .constant(.assistant)
+            onAssistantModeChanged: { print("Assistant mode changed to: \($0)") },
+            onPairToggled: { print("Pair toggled: \($0)") }
         )
             .environmentObject(Settings())
     }

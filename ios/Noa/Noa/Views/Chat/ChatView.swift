@@ -17,15 +17,6 @@ struct ChatView: View {
     // Monocle state
     @Binding private var _isMonocleConnected: Bool
 
-    // Bluetooth state
-    @Binding private var _bluetoothEnabled: Bool
-
-    // Allows pairing view to be brought up (replacing this one)
-    @Binding private var _showPairingView: Bool
-
-    // Which AI mode we are in
-    @Binding private var _mode: AIAssistant.Mode
-
     // Stores text being input in text field
     @State private var _textInput: String = ""
 
@@ -36,7 +27,11 @@ struct ChatView: View {
     // Chat callbacks
     private let _onTextSubmitted: ((String) -> Void)?
     private let _onClearChatButtonPressed: (() -> Void)?
-    
+
+    // Settings callbacks
+    private let _onAssistantModeChanged: ((AIAssistant.Mode) ->Void)?
+    private let _onPairToggled: ((Bool) -> Void)?
+
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
@@ -44,11 +39,7 @@ struct ChatView: View {
             VStack(alignment: .center) {
                 // Title/navigation bar
                 if _expandedPicture == nil {
-                    ChatTitleBarView(
-                        showPairingView: $_showPairingView,
-                        bluetoothEnabled: $_bluetoothEnabled,
-                        mode: $_mode
-                    )
+                    ChatTitleBarView(onAssistantModeChanged: _onAssistantModeChanged, onPairToggled: _onPairToggled)
                 } else {
                     PictureTitleBarView(expandedPicture: $_expandedPicture)
                 }
@@ -117,27 +108,24 @@ struct ChatView: View {
 
     public init(
         isMonocleConnected: Binding<Bool>,
-        bluetoothEnabled: Binding<Bool>,
-        showPairingView: Binding<Bool>,
-        mode: Binding<AIAssistant.Mode>,
         onTextSubmitted: ((String) -> Void)? = nil,
-        onClearChatButtonPressed: (() -> Void)? = nil
+        onClearChatButtonPressed: (() -> Void)? = nil,
+        onAssistantModeChanged: ((AIAssistant.Mode) ->Void)? = nil,
+        onPairToggled: ((Bool) -> Void)? = nil
     ) {
         __isMonocleConnected = isMonocleConnected
-        __bluetoothEnabled = bluetoothEnabled
-        __showPairingView = showPairingView
-        __mode = mode
         _onTextSubmitted = onTextSubmitted
         _onClearChatButtonPressed = onClearChatButtonPressed
+        _onAssistantModeChanged = onAssistantModeChanged
+        _onPairToggled = onPairToggled
     }
 }
 
 fileprivate struct ChatTitleBarView: View {
     @EnvironmentObject private var _settings: Settings
 
-    @Binding var showPairingView: Bool
-    @Binding var bluetoothEnabled: Bool
-    @Binding var mode: AIAssistant.Mode
+    private let _onAssistantModeChanged: ((AIAssistant.Mode) ->Void)?
+    private let _onPairToggled: ((Bool) -> Void)?
 
     var body: some View {
         HStack {
@@ -151,15 +139,19 @@ fileprivate struct ChatTitleBarView: View {
 
             // Settings menu
             SettingsMenuView(
-                showPairingView: $showPairingView,
-                bluetoothEnabled: $bluetoothEnabled,
-                mode: $mode
+                onAssistantModeChanged: _onAssistantModeChanged,
+                onPairToggled: _onPairToggled
             )
             .environmentObject(_settings)
             .padding(.trailing)
         }
         .padding(.top)
         .frame(maxWidth: .infinity, alignment: .top)
+    }
+
+    init(onAssistantModeChanged: ((AIAssistant.Mode) ->Void)?, onPairToggled: ((Bool) -> Void)?) {
+        _onAssistantModeChanged = onAssistantModeChanged
+        _onPairToggled = onPairToggled
     }
 }
 
@@ -278,10 +270,7 @@ struct ChatView_Previews: PreviewProvider {
 
     static var previews: some View {
         ChatView(
-            isMonocleConnected: .constant(false),
-            bluetoothEnabled: .constant(false),
-            showPairingView: .constant(false),
-            mode: .constant(.assistant)
+            isMonocleConnected: .constant(false)
         )
             .environmentObject(ChatView_Previews._chatMessageStore)
             .environmentObject(Settings())

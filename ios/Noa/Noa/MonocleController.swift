@@ -1,5 +1,5 @@
 //
-//  Controller.swift
+//  MonocleController.swift
 //  Noa
 //
 //  Created by Bart Trzynadlowski on 5/29/23.
@@ -24,7 +24,7 @@ import UIKit
 
 import NordicDFU
 
-class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgressDelegate {
+class MonocleController: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgressDelegate {
     // MARK: Internal State
 
     // Bluetooth communication happens on a background thread
@@ -101,7 +101,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         let rescaleUpdatePercentage: Bool
 
         init(maximumDataLength: Int, rescaleUpdatePercentage: Bool) {
-            image = Controller.loadFPGAImageAsBase64()
+            image = MonocleController.loadFPGAImageAsBase64()
             chunkSize = (((maximumDataLength - 45) / 3) / 4) * 4 * 3    // update string must be 45 characters!
             chunks = image.count / chunkSize + ((image.count % chunkSize) == 0 ? 0 : 1)
             chunk = 0
@@ -114,7 +114,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
         }
 
         /// Compare whether objects are the same
-        static func == (lhs: Controller.FPGAUpdateState, rhs: Controller.FPGAUpdateState) -> Bool {
+        static func == (lhs: MonocleController.FPGAUpdateState, rhs: MonocleController.FPGAUpdateState) -> Bool {
             return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
         }
     }
@@ -132,7 +132,7 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
             return filesToTransmit.removeFirst()
         }
 
-        static func == (lhs: Controller.ScriptTransmissionState, rhs: Controller.ScriptTransmissionState) -> Bool {
+        static func == (lhs: MonocleController.ScriptTransmissionState, rhs: MonocleController.ScriptTransmissionState) -> Bool {
             return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
         }
     }
@@ -217,12 +217,12 @@ class Controller: ObservableObject, LoggerDelegate, DFUServiceDelegate, DFUProgr
                 CBUUID(string: "e5700001-7bac-429a-b4ce-57ff900f479d"): "Data"
             ],
             receiveCharacteristics: [
-                Controller._serialTx: "SerialTx",
-                Controller._dataTx: "DataTx",
+                MonocleController._serialTx: "SerialTx",
+                MonocleController._dataTx: "DataTx",
             ],
             transmitCharacteristics: [
-                Controller._serialRx: "SerialRx",
-                Controller._dataRx: "DataRx"
+                MonocleController._serialRx: "SerialRx",
+                MonocleController._dataRx: "DataRx"
             ],
             queue: _bluetoothQueue
         )

@@ -17,22 +17,30 @@
 import SwiftUI
 
 /// Device sheet types
-enum DeviceSheetType {
-    case pairing
+enum DeviceSheetState {
+    case hidden
+    case searching
     case firmwareUpdate
     case fpgaUpdate
 }
 
+/// State of connect button (used for pairing)
+enum DeviceSheetConnectButtonState {
+    case searching
+    case canConnect
+    case connecting
+}
+
 struct DeviceScreenView: View {
-    @Binding var showDeviceSheet: Bool
-    @Binding var deviceSheetType: DeviceSheetType
-    @Binding var monocleWithinPairingRange: Bool
+    @Binding var state: DeviceSheetState
+    @Binding var connectButtonState: DeviceSheetConnectButtonState
     @Binding var updateProgressPercent: Int
     @Environment(\.openURL) var openURL
     @Environment(\.colorScheme) var colorScheme
 
     private let _onConnectPressed: (() -> Void)?
-    
+    private let _onCancelPressed: (() -> Void)?
+
     var body: some View {
         ZStack {
             colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255).edgesIgnoringSafeArea(.all) : Color(red: 242/255, green: 242/255, blue: 247/255).edgesIgnoringSafeArea(.all)
@@ -69,18 +77,18 @@ struct DeviceScreenView: View {
                 }
 
                 VStack {
-                    if showDeviceSheet {
+                    if state != .hidden {
                         RoundedRectangle(cornerRadius: 40)
                             .fill(Color.white)
                             .frame(height: 350)
                             .padding(10)
                             .overlay(
                                 PopupDeviceView(
-                                    showDeviceSheet: $showDeviceSheet,
-                                    deviceSheetType: $deviceSheetType,
-                                    monocleWithinPairingRange: $monocleWithinPairingRange,
+                                    deviceSheetState: $state,
+                                    connectButtonState: $connectButtonState,
                                     updateProgressPercent: $updateProgressPercent,
-                                    onConnectPressed: _onConnectPressed
+                                    onConnectPressed: _onConnectPressed,
+                                    onCancelPressed: _onCancelPressed
                                 )
                             )
                     }
@@ -90,23 +98,23 @@ struct DeviceScreenView: View {
         .ignoresSafeArea(.all)
     }
 
-    init(showDeviceSheet: Binding<Bool>, deviceSheetType: Binding<DeviceSheetType>, monocleWithinPairingRange: Binding<Bool>, updateProgressPercent: Binding<Int>, onConnectPressed: (() -> Void)?) {
-        _showDeviceSheet = showDeviceSheet
-        _deviceSheetType = deviceSheetType
-        _monocleWithinPairingRange = monocleWithinPairingRange
+    init(deviceSheetState: Binding<DeviceSheetState>, connectButtonState: Binding<DeviceSheetConnectButtonState>, updateProgressPercent: Binding<Int>, onConnectPressed: (() -> Void)?, onCancelPressed: (() -> Void)?) {
+        _state = deviceSheetState
+        _connectButtonState = connectButtonState
         _updateProgressPercent = updateProgressPercent
         _onConnectPressed = onConnectPressed
+        _onCancelPressed = onCancelPressed
     }
 }
 
 struct DeviceScreenView_Previews: PreviewProvider {
     static var previews: some View {
         DeviceScreenView(
-            showDeviceSheet: .constant(true),
-            deviceSheetType: .constant(.firmwareUpdate),
-            monocleWithinPairingRange: .constant(false),
+            deviceSheetState: .constant(.firmwareUpdate),
+            connectButtonState: .constant(.searching),
             updateProgressPercent: .constant(50),
-            onConnectPressed: { print("Connect pressed") }
+            onConnectPressed: { print("Connect pressed") },
+            onCancelPressed: { print("Cancel pressed")}
         )
     }
 }
