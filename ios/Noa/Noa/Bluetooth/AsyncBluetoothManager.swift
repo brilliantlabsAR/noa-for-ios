@@ -129,6 +129,8 @@ class AsyncBluetoothManager: NSObject {
         fileprivate var _receivedDataContinuation: AsyncThrowingStream<Data, Error>.Continuation?
         private weak var _queue: DispatchQueue?
         private weak var _peripheral: CBPeripheral?
+        private let _maximumWriteLengthWithResponse: Int
+        private let _maximumWriteLengthWithoutResponse: Int
         private weak var _tx: CBCharacteristic?
         private weak var _asyncManager: AsyncBluetoothManager?
         fileprivate let connectionID = UUID()
@@ -139,6 +141,8 @@ class AsyncBluetoothManager: NSObject {
             _peripheral = peripheral
             _tx = tx
             _asyncManager = asyncManager
+            _maximumWriteLengthWithResponse = peripheral.maximumWriteValueLength(for: .withResponse)
+            _maximumWriteLengthWithoutResponse = peripheral.maximumWriteValueLength(for: .withoutResponse)
             receivedData = AsyncThrowingStream<Data, Error> { [weak self] continuation in
                 self?._receivedDataContinuation = continuation
             }
@@ -157,6 +161,10 @@ class AsyncBluetoothManager: NSObject {
         fileprivate func closeStream(with error: StreamError) {
             _receivedDataContinuation?.finish(throwing: error)
             _error = error
+        }
+
+        func maximumWriteLength(for writeType: CBCharacteristicWriteType) -> Int {
+            return writeType == .withResponse ? _maximumWriteLengthWithResponse : _maximumWriteLengthWithoutResponse
         }
 
         func send(data: Data, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((StreamError?) -> Void)? = nil) {

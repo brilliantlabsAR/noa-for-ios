@@ -162,7 +162,18 @@ struct ContentView: View {
                 let connection = try await connectToDevice()
                 isConnected = true
 
-                connection.send(text: "print('hello, world!')")
+                try await _frameController.loadScript(named: "states.lua", on: connection)
+                try await _frameController.loadScript(named: "graphics.lua", on: connection)
+                try await _frameController.loadScript(named: "audio.lua", on: connection)
+                try await _frameController.loadScript(named: "photo.lua", on: connection)
+                try await _frameController.loadScript(named: "main.lua", on: connection)
+
+                print("Starting...")
+
+                connection.send(text: "\u{4}")
+
+                //connection.send(text: "print('hello, world!')")
+                //try await _frameController.loadScript(named: "test.lua", on: connection, run: true)
                 for try await data in connection.receivedData {
                     Util.hexDump(data)
                 }
