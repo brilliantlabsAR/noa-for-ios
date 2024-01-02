@@ -56,6 +56,8 @@ class FrameController: ObservableObject {
             let response = String(decoding: data, as: UTF8.self)
             if response == "nil" {
                 break
+            } else {
+                print("Unexpected response: \(response)")
             }
         }
         print("[FrameController] Executed: \(command)")
