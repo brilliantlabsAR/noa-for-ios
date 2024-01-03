@@ -33,6 +33,6 @@ struct NoaApp: App {
     }
 
     init() {
-        _frameController = FrameController()
+        _frameController = FrameController(settings: _settings, messages: _chatMessageStore)
     }
 }

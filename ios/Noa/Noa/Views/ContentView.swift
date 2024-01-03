@@ -161,22 +161,27 @@ struct ContentView: View {
             do {
                 let connection = try await connectToDevice()
                 isConnected = true
+                _frameController.onConnect()
 
                 // Send scripts and issue ^D to execute main.lua
-                try await _frameController.loadScript(named: "states.lua", on: connection)
-                try await _frameController.loadScript(named: "graphics.lua", on: connection)
-                try await _frameController.loadScript(named: "audio.lua", on: connection)
-                try await _frameController.loadScript(named: "photo.lua", on: connection)
-                try await _frameController.loadScript(named: "main.lua", on: connection)
+//                try await _frameController.loadScript(named: "states.lua", on: connection)
+//                try await _frameController.loadScript(named: "graphics.lua", on: connection)
+//                try await _frameController.loadScript(named: "audio.lua", on: connection)
+//                try await _frameController.loadScript(named: "photo.lua", on: connection)
+//                try await _frameController.loadScript(named: "main.lua", on: connection)
+//                print("Starting...")
+//                connection.send(text: "\u{4}")
+                try await _frameController.loadScript(named: "test.lua", on: connection, run: true)
                 print("Starting...")
-                connection.send(text: "\u{4}")
 
                 for try await data in connection.receivedData {
                     Util.hexDump(data)
+                    _frameController.onDataReceived(data: data)
                 }
             } catch let error as AsyncBluetoothManager.StreamError {
                 // Disconnection falls through to loop around again
                 isConnected = false
+                _frameController.onDisconnect()
                 print("[Bluetooth Task] Connection lost: \(error.localizedDescription)")
             } catch is CancellationError {
                 // Task was canceled, exit it entirely
