@@ -200,7 +200,7 @@ class FrameController: ObservableObject {
 
         // RGB332 -> UIImage
         var photo: UIImage? = nil
-        if _photoBuffer.count > 0,
+        if _photoBuffer.count == 200 * 200, // require a complete image to decode
            let pixelBuffer = CVPixelBuffer.fromRGB332(_photoBuffer, width: 200, height: 200) {
             photo = UIImage(pixelBuffer: pixelBuffer)?.resized(to: CGSize(width: 512, height: 512))
         }
