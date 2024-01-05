@@ -176,7 +176,7 @@ struct ContentView: View {
 
                 for try await data in connection.receivedData {
                     Util.hexDump(data)
-                    _frameController.onDataReceived(data: data)
+                    _frameController.onDataReceived(data: data, on: connection)
                 }
             } catch let error as AsyncBluetoothManager.StreamError {
                 // Disconnection falls through to loop around again

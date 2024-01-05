@@ -1,3 +1,9 @@
+MultimodalStartID = "\x10"
+MultimodalTextChunkID = "\x01"
+MultimodalAudioChunkID = "\x12"
+MultimodalPhotoChunkID = "\x13"
+MultimodalEndID = "\x14"
+
 function BluetoothSendMessage(message)
     while true do
         local success, error_message = pcall(frame.bluetooth.send, message)
@@ -11,16 +17,36 @@ function BluetoothSendMessage(message)
     end
 end
 
+textResponse = ""
+
+function BluetoothMessageHandler(message)
+    local id = message:sub(1,1)
+    if id == MultimodalStartID then
+        print("Multimodal start")
+        textResponse = ""
+    elseif id == MultimodalEndID then
+        print("Multimodal end")
+        print("Text response was: " .. textResponse)
+    elseif id == MultimodalTextChunkID then
+        print("Multimodal text")
+        textResponse = textResponse .. string.sub(message,2)
+    else
+        print("Unknown message")
+    end
+end
+
+frame.bluetooth.receive_callback(BluetoothMessageHandler)
+
 function SendMMStart()
-    BluetoothSendMessage(string.char(0x00))
+    BluetoothSendMessage(MultimodalStartID)
 end
 
 function SendMMEnd()
-    BluetoothSendMessage(string.char(0x04))
+    BluetoothSendMessage(MultimodalEndID)
 end
 
 function SendMMTextChunk(message)
-    BluetoothSendMessage(string.char(0x01) .. message)
+    BluetoothSendMessage(MultimodalTextChunkID .. message)
 end
 
 function SendTestImage()

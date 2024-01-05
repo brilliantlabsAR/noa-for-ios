@@ -51,6 +51,7 @@
 		CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF62A01AA350058AC20 /* ChatView.swift */; };
 		CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */; };
 		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
+		CC6C99D82B464AEE00D84312 /* ColorQuantization.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6C99D72B464AEE00D84312 /* ColorQuantization.swift */; };
 		CCB2F9622A2568EE00F24F2D /* MonocleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* MonocleController.swift */; };
 		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
 		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
@@ -149,6 +150,7 @@
 		CC4E3AF62A01AA350058AC20 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
 		CC6851672A9964C2004EA777 /* Tahoe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tahoe.jpg; sourceTree = "<group>"; };
+		CC6C99D72B464AEE00D84312 /* ColorQuantization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorQuantization.swift; sourceTree = "<group>"; };
 		CCB2F9612A2568EE00F24F2D /* MonocleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonocleController.swift; sourceTree = "<group>"; };
 		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
 		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
@@ -459,6 +461,7 @@
 				CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */,
 				CC16323F2AA6A0AC006A8E6A /* RGB343.swift */,
 				CCDCFEF82B322845008EDB1D /* MultipartForm.swift */,
+				CC6C99D72B464AEE00D84312 /* ColorQuantization.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -669,6 +672,7 @@
 				CCB2F9622A2568EE00F24F2D /* MonocleController.swift in Sources */,
 				CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */,
 				CC4E3AF12A00BC8A0058AC20 /* MessageContentView.swift in Sources */,
+				CC6C99D82B464AEE00D84312 /* ColorQuantization.swift in Sources */,
 				CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */,
 				CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */,
 				CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */,

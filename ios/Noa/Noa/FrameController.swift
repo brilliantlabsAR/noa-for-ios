@@ -26,22 +26,23 @@ class FrameController: ObservableObject {
     /// Message IDs must be kept in sync with Lua scripts
     private enum MessageID: UInt8 {
         /// Start a multimodal message (containing any of text, audio, photo data)
-        case multimodalStart = 0x00
+        case multimodalStart = 0x10
 
         /// Text chunk. All text chunks are concatenated and terminated with `MultimodalEnd`. May
         /// safely be interleaved with other chunk types.
         case multimodalTextChunk = 0x01
 
         /// Audio chunk. Concatenated with other audio chunks and terminated with `MultimodalEnd`.
-        /// May safely be interleaved with other chunk types.
-        case multimodalAudioChunk = 0x02
+        /// May safely be interleaved with other chunk types. This chunk can only be sent from 
+        /// Frame to phone.
+        case multimodalAudioChunk = 0x12
 
         /// Photo chunk. Concatenated with other photo chunks and terminated with `MultimodalEnd`.
-        /// May safely be interleaved with other chunk types.
-        case multimodalPhotoChunk = 0x03
+        /// May safely be interleaved with other chunk types. May only be sent from Frame to phone.
+        case multimodalPhotoChunk = 0x13
 
         /// Ends a multimodal message. All data attachments must have been transmitted.
-        case multimodalEnd = 0x04
+        case multimodalEnd = 0x14
     }
 
     private let _settings: Settings
@@ -52,6 +53,9 @@ class FrameController: ObservableObject {
     private var _audioBuffer = Data()
     private var _photoBuffer = Data()
     private var _receiveMultimodalInProgress = false
+
+    private let _multimodalStartMessage = Data([UInt8]([ 0x01, MessageID.multimodalStart.rawValue ] ))
+    private let _multimodalEndMessage = Data([UInt8]([ 0x01, MessageID.multimodalEnd.rawValue ]))
 
     // MARK: API
 
@@ -68,12 +72,12 @@ class FrameController: ObservableObject {
         _receiveMultimodalInProgress = false
     }
 
-    func onDataReceived(data: Data) {
+    func onDataReceived(data: Data, on connection: AsyncBluetoothManager.Connection) {
         guard data.count > 0 else { return }
 
         if data[0] == 0x01 {
             // Binary data: a message from the Noa app
-            handleMessage(data: data.subdata(in: 1..<data.count))
+            handleMessage(data: data.subdata(in: 1..<data.count), on: connection)
         } else {
             // Frame's console stdout
             log("Frame said: \(String(decoding: data, as: UTF8.self))")
@@ -144,7 +148,7 @@ class FrameController: ObservableObject {
 
     // MARK: Noa messages from Frame
 
-    private func handleMessage(data: Data) {
+    private func handleMessage(data: Data, on connection: AsyncBluetoothManager.Connection) {
         guard let id = MessageID(rawValue: data[0]) else {
             log("Unknown message type: \(data[0])")
             return
@@ -177,14 +181,14 @@ class FrameController: ObservableObject {
             log("Received message: MultimodalPhotoChunk (\(data.count) bytes)")
 
         case .multimodalEnd:
-            submitMultimodal()
+            submitMultimodal(connection: connection)
             log("Received message: MultimodalEnd")
         }
     }
 
     // MARK: AI
 
-    private func submitMultimodal() {
+    private func submitMultimodal(connection: AsyncBluetoothManager.Connection) {
         //TEMPORARY: construct a fake image
         _photoBuffer = Data(count: 200 * 200)
         let red: UInt8 = 0xe0
@@ -215,17 +219,17 @@ class FrameController: ObservableObject {
             _m4aWriter.write(buffer: pcmBuffer) { [weak self] (fileData: Data?) in
                 guard let self = self,
                       let fileData = fileData else {
-                    self?.printErrorToChat("Unable to process audio!", as: .user)
+                    self?.printErrorToChat("Unable to process audio!", as: .user, connection: connection)
                     return
                 }
-                submitMultimodal(prompt: prompt, audioFile: fileData, image: photo)
+                submitMultimodal(prompt: prompt, audioFile: fileData, image: photo, connection: connection)
             }
         } else {
-            submitMultimodal(prompt: prompt, audioFile: nil, image: photo)
+            submitMultimodal(prompt: prompt, audioFile: nil, image: photo, connection: connection)
         }
     }
 
-    private func submitMultimodal(prompt: String?, audioFile: Data?, image: UIImage?) {
+    private func submitMultimodal(prompt: String?, audioFile: Data?, image: UIImage?, connection: AsyncBluetoothManager.Connection) {
         _ai.send(
             prompt: prompt,
             audio: audioFile,
@@ -237,31 +241,53 @@ class FrameController: ObservableObject {
             guard let self = self else { return }
 
             if let error = error {
-                printErrorToChat(error.description, as: .assistant)
+                printErrorToChat(error.description, as: .assistant, connection: connection)
                 return
             }
 
             if userPrompt.count > 0 {
                 // Now that we know what user said, print it
-                printToChat(userPrompt, picture: image, as: .user)
+                printToChat(userPrompt, picture: image, as: .user, connection: connection)
             }
 
             if response.count > 0 || responseImage != nil {
-               printToChat(response, picture: responseImage, as: .assistant)
+                printToChat(response, picture: responseImage, as: .assistant, connection: connection)
             }
         }
     }
 
     // MARK: Frame response
 
-    private func sendResponseToFrame(text: String, image: UIImage? = nil, isError: Bool = false) {
+    private func sendResponseToFrame(on connection: AsyncBluetoothManager.Connection, text: String, image: UIImage? = nil, isError: Bool = false) {
+        guard let textData = text.data(using: .utf8) else {
+            log("Error: Unable to encode text response as UTF-8")
+            return
+        }
+
+        connection.send(data: _multimodalStartMessage)
+
+        let payloadSize = connection.maximumWriteLength(for: .withoutResponse)
+        let maxChunkSize = payloadSize - 2  // 0x01 (data packet) and message ID bytes
+
+        // Send text response in chunks
+        var startIdx = 0
+        while startIdx < textData.count {
+            var message = Data([0x01, MessageID.multimodalTextChunk.rawValue])
+            let endIdx = min(textData.count, startIdx + maxChunkSize)
+            message.append(textData[startIdx..<endIdx])
+            //Util.hexDump(message)
+            connection.send(data: message)
+            startIdx = endIdx
+        }
+
+        connection.send(data: _multimodalEndMessage)
     }
 
     // MARK: iOS chat window
 
-    private func printErrorToChat(_ message: String, as participant: Participant) {
+    private func printErrorToChat(_ message: String, as participant: Participant, connection: AsyncBluetoothManager.Connection) {
         _messages.putMessage(Message(text: message, isError: true, participant: participant))
-        sendResponseToFrame(text: message, isError: true)
+        sendResponseToFrame(on: connection, text: message, isError: true)
         log("Error printed: \(message)")
     }
 
@@ -269,10 +295,10 @@ class FrameController: ObservableObject {
         _messages.putMessage(Message(text: "", typingInProgress: true, participant: participant))
     }
 
-    private func printToChat(_ text: String, picture: UIImage? = nil, as participant: Participant) {
+    private func printToChat(_ text: String, picture: UIImage? = nil, as participant: Participant, connection: AsyncBluetoothManager.Connection) {
         _messages.putMessage(Message(text: text, picture: picture, participant: participant))
         if participant != .user {
-            sendResponseToFrame(text: text, image: picture, isError: false)
+            sendResponseToFrame(on: connection, text: text, image: picture, isError: false)
         }
     }
 }
