@@ -17,22 +17,11 @@ function BluetoothSendMessage(message)
     end
 end
 
-textResponse = ""
+received_messages = {}
 
 function BluetoothMessageHandler(message)
-    local id = message:sub(1,1)
-    if id == MultimodalStartID then
-        print("Multimodal start")
-        textResponse = ""
-    elseif id == MultimodalEndID then
-        print("Multimodal end")
-        print("Text response was: " .. textResponse)
-    elseif id == MultimodalTextChunkID then
-        print("Multimodal text")
-        textResponse = textResponse .. string.sub(message,2)
-    else
-        print("Unknown message")
-    end
+    -- Place in receive queue
+    received_messages[#received_messages + 1] = message
 end
 
 frame.bluetooth.receive_callback(BluetoothMessageHandler)
@@ -95,7 +84,32 @@ SendMMTextChunk("this?")
 -- SendTestImage()
 SendMMEnd()
 
-a = {}    -- new array, test [] escape
-for i=1, 1000 do
-    a[i] = 0
+
+--
+-- Wait and handle inbound
+--
+
+function HandleMessage(msg)
+    local id = msg:sub(1,1)
+    if id == MultimodalStartID then
+        print("Multimodal start")
+        textResponse = ""
+    elseif id == MultimodalEndID then
+        print("Multimodal end")
+        print("Text response was: " .. textResponse)
+    elseif id == MultimodalTextChunkID then
+        print("Multimodal text")
+        textResponse = textResponse .. string.sub(msg,2)
+    else
+        print("Unknown message")
+    end
+end
+
+textResponse = ""
+
+while true do
+    if #received_messages >= 1 then
+        msg = table.remove(received_messages, 1)
+        HandleMessage(msg)
+    end
 end

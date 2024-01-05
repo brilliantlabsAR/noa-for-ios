@@ -161,7 +161,7 @@ struct ContentView: View {
             do {
                 let connection = try await connectToDevice()
                 isConnected = true
-                _frameController.onConnect()
+                try await _frameController.onConnect(on: connection)
 
                 // Send scripts and issue ^D to execute main.lua
 //                try await _frameController.loadScript(named: "states.lua", on: connection)

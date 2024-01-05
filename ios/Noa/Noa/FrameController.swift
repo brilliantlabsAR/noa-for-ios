@@ -64,8 +64,12 @@ class FrameController: ObservableObject {
         _messages = messages
     }
 
-    func onConnect() {
+    func onConnect(on connection: AsyncBluetoothManager.Connection) async throws {
         _receiveMultimodalInProgress = false
+
+        // Send ^C to kill current running app
+        //TODO: not working
+        //try await runCommand("\u{3}", on: connection)
     }
 
     func onDisconnect() {
