@@ -50,10 +50,10 @@ struct ContentView: View {
                 ChatView(
                     isMonocleConnected: $isConnected,
                     onTextSubmitted: { (query: String) in
-                        //_controller?.submitQuery(query: query)
+                        _frameController.submitQuery(query: query)
                     },
                     onClearChatButtonPressed: {
-                        //_controller?.clearHistory()
+                        _frameController.clearHistory()
                     },
                     onAssistantModeChanged: { (mode: AIAssistant.Mode) in
                         //TODO

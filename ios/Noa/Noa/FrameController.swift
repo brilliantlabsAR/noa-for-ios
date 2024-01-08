@@ -7,6 +7,8 @@
 //  TODO:
 //  -----
 //  - Multimodal response back. Need a different type of image chunk for palettized image.
+//  - Clear internal history whenever a Frame message arrives N minutes after last Frame or GUI
+//    message.
 //
 
 import AVFoundation
@@ -86,6 +88,19 @@ class FrameController: ObservableObject {
             // Frame's console stdout
             log("Frame said: \(String(decoding: data, as: UTF8.self))")
         }
+    }
+
+    /// Submit a query from the iOS app directly.
+    /// - Parameter query: Query string.
+    public func submitQuery(query: String) {
+        log("Sending iOS query to assistant: \(query)")
+        submitMultimodal(prompt: query, audioFile: nil, image: nil, connection: nil)
+    }
+
+    /// Clear chat history, including ChatGPT context window.
+    public func clearHistory() {
+        _messages.clear()
+        _ai.clearHistory()
     }
 
     /// Loads a script from the iPhone's file system and writes it to the Frame's file system.
@@ -233,7 +248,15 @@ class FrameController: ObservableObject {
         }
     }
 
-    private func submitMultimodal(prompt: String?, audioFile: Data?, image: UIImage?, connection: AsyncBluetoothManager.Connection) {
+    private func submitMultimodal(prompt: String?, audioFile: Data?, image: UIImage?, connection: AsyncBluetoothManager.Connection?) {
+        let alreadyPrintedUser = prompt != nil && audioFile == nil
+        if alreadyPrintedUser,
+           let prompt = prompt {
+            // Special case: if only text prompt, give immediate feedback
+            printToChat(prompt, picture: image, as: .user, connection: connection)
+            printTypingIndicatorToChat(as: .assistant)
+        }
+
         _ai.send(
             prompt: prompt,
             audio: audioFile,
@@ -249,7 +272,7 @@ class FrameController: ObservableObject {
                 return
             }
 
-            if userPrompt.count > 0 {
+            if userPrompt.count > 0, !alreadyPrintedUser {
                 // Now that we know what user said, print it
                 printToChat(userPrompt, picture: image, as: .user, connection: connection)
             }
@@ -289,9 +312,11 @@ class FrameController: ObservableObject {
 
     // MARK: iOS chat window
 
-    private func printErrorToChat(_ message: String, as participant: Participant, connection: AsyncBluetoothManager.Connection) {
+    private func printErrorToChat(_ message: String, as participant: Participant, connection: AsyncBluetoothManager.Connection?) {
         _messages.putMessage(Message(text: message, isError: true, participant: participant))
-        sendResponseToFrame(on: connection, text: message, isError: true)
+        if let connection = connection {
+            sendResponseToFrame(on: connection, text: message, isError: true)
+        }
         log("Error printed: \(message)")
     }
 
@@ -299,9 +324,10 @@ class FrameController: ObservableObject {
         _messages.putMessage(Message(text: "", typingInProgress: true, participant: participant))
     }
 
-    private func printToChat(_ text: String, picture: UIImage? = nil, as participant: Participant, connection: AsyncBluetoothManager.Connection) {
+    private func printToChat(_ text: String, picture: UIImage? = nil, as participant: Participant, connection: AsyncBluetoothManager.Connection?) {
         _messages.putMessage(Message(text: text, picture: picture, participant: participant))
-        if participant != .user {
+        if participant != .user,
+           let connection = connection {
             sendResponseToFrame(on: connection, text: text, image: picture, isError: false)
         }
     }
