@@ -38,6 +38,10 @@ function SendMMTextChunk(message)
     BluetoothSendMessage(MultimodalTextChunkID .. message)
 end
 
+function SendMMAudioChunk(samples)
+    BluetoothSendMessage(MultimodalAudioChunkID .. samples)
+end
+
 function SendTestImage()
     local red = string.char(0xe0)
     local green = string.char(0x1c)
@@ -78,10 +82,28 @@ function SendTestImage()
 
 end
 
+--
+-- Send messages to iOS, including microphone readout
+--
+
 SendMMStart()
 SendMMTextChunk("what is ")
 SendMMTextChunk("this?")
 -- SendTestImage()
+
+mtu = frame.bluetooth.max_length()
+seconds = 2
+frame.microphone.record(seconds, 8000, 8)
+expected_bytes = seconds * 8000
+bytes_read_from_mic = 0
+while bytes_read_from_mic < expected_bytes do
+    local samples = frame.microphone.read(mtu - 4)
+    if samples ~= nil then
+        SendMMAudioChunk(samples)
+        bytes_read_from_mic = bytes_read_from_mic + #samples
+    end
+end
+
 SendMMEnd()
 
 

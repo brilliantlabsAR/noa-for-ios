@@ -162,6 +162,7 @@ struct ContentView: View {
                 let connection = try await connectToDevice()
                 isConnected = true
                 try await _frameController.onConnect(on: connection)
+                print("MTU size: \(connection.maximumWriteLength(for: .withoutResponse)) bytes")
 
                 // Send scripts and issue ^D to execute main.lua
 //                try await _frameController.loadScript(named: "states.lua", on: connection)
