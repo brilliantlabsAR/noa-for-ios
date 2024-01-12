@@ -41,7 +41,7 @@ private struct Pixel {
     }
 }
 
-func quantizeColors(pixelBuffer: CVPixelBuffer, colors: Int) -> (Data, [[UInt8]])? {
+func quantizeColors(pixelBuffer: CVPixelBuffer, colors: Int) -> Data? {
     let format = CVPixelBufferGetPixelFormatType(pixelBuffer)
     guard format == kCVPixelFormatType_32ABGR || format == kCVPixelFormatType_32ARGB else {
         print("[ColorQuantization] Error: Pixel buffer must be ARGB or ABGR format")
@@ -73,17 +73,61 @@ func quantizeColors(pixelBuffer: CVPixelBuffer, colors: Int) -> (Data, [[UInt8]]
     }
 
     // Median cut algorithm
-    let (idx, channel) = bucketWithHighestColorVariation(&buckets)
+    while true {
+        if let (idx, channel) = bucketWithHighestColorVariation(&buckets) {
+            // Sort bucket with largest range in any color channel by that color channel
+            buckets[idx].sort(by: { $0[keyPath: channel] < $1[keyPath: channel] })
+
+            // Dump half into a new bucket
+            if buckets[idx].count < 2 {
+                break
+            }
+            let halfIdx = buckets[idx].count / 2
+            var newBucket: [Pixel] = []
+            for i in 0..<halfIdx {
+                // Take from back side of old bucket and put into new
+                newBucket.append(buckets[idx][buckets[idx].count - 1 - i])
+            }
+            buckets[idx].removeLast(halfIdx)
+            buckets.append(newBucket)
+
+            // Stop when we have the required number of buckets
+            if buckets.count == colors {
+                break
+            }
+        }
+    }
+
+    // Number of buckets
+    print("Buckets = \(buckets.count)")
+    print("Total pixels: \(height * width)")
+    for i in 0..<16 {
+        print("Bucket[\(i)] = \(buckets[i].count) pixels")
+    }
 
 
     
 
 
-    return (Data(), [])
+    return nil
 }
 
-private func bucketWithHighestColorVariation(_ buckets: inout [[Pixel]]) -> (Int, Int) {
-    
-    //let varianceChannel0 = computeChannelVariance(bucket)
-    return (0,0)
+private func bucketWithHighestColorVariation(_ buckets: inout [[Pixel]]) -> (Int, KeyPath<Pixel, UInt8>)? {
+    // Compute rangs for each color channel in each bucket
+    var ranges: [(Int, KeyPath<Pixel, UInt8>, UInt8)] = []    // (bucket idx, color channel, range)
+    for i in 0..<buckets.count {
+        for channel in [ \Pixel.r, \Pixel.g, \Pixel.b ] {
+            guard let min = buckets[i].map({ $0[keyPath: channel] }).min(),
+                  let max = buckets[i].map({ $0[keyPath: channel] }).max() else {
+                continue
+            }
+            ranges.append((i, channel, max - min))
+        }
+    }
+
+    // Get the largest
+    guard let maxRange = ranges.sorted(by: { $0.2 > $1.2 }).first else {
+        return nil
+    }
+    return (maxRange.0, maxRange.1)
 }

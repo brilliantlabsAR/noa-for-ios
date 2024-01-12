@@ -64,6 +64,11 @@ class FrameController: ObservableObject {
     init(settings: Settings, messages: ChatMessageStore) {
         _settings = settings
         _messages = messages
+
+        let test = UIImage(named: "Tahoe.jpg")
+        if let pb = test?.toPixelBuffer() {
+            quantizeColors(pixelBuffer: pb, colors: 16)
+        }
     }
 
     func onConnect(on connection: AsyncBluetoothManager.Connection) async throws {
