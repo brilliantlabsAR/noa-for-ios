@@ -67,7 +67,11 @@ class FrameController: ObservableObject {
 
         let test = UIImage(named: "Tahoe.jpg")
         if let pb = test?.toPixelBuffer() {
-            quantizeColors(pixelBuffer: pb, colors: 16)
+            if let newPB = quantizeColors(pixelBuffer: pb, colors: 16) {
+                if let image = UIImage(pixelBuffer: newPB) {
+                    printToChat("", picture: image, as: .user, connection: nil)
+                }
+            }
         }
     }
 

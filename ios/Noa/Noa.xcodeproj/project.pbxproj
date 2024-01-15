@@ -26,6 +26,7 @@
 		CC212D6E2A9E6F130093479F /* monocle-fpga.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6D2A9E6F130093479F /* monocle-fpga.bin */; };
 		CC212D702A9E74870093479F /* audio.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6F2A9E74870093479F /* audio.py */; };
 		CC212D722A9E764B0093479F /* photo.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D712A9E764B0093479F /* photo.py */; };
+		CC21C12E2B55BFA500DEAAEC /* Stopwatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */; };
 		CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */; };
 		CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE00A2A09C0BF00756941 /* Settings.bundle */; };
 		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
@@ -121,6 +122,7 @@
 		CC212D6D2A9E6F130093479F /* monocle-fpga.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga.bin"; sourceTree = "<group>"; };
 		CC212D6F2A9E74870093479F /* audio.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = audio.py; sourceTree = "<group>"; };
 		CC212D712A9E764B0093479F /* photo.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = photo.py; sourceTree = "<group>"; };
+		CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stopwatch.swift; sourceTree = "<group>"; };
 		CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorView.swift; sourceTree = "<group>"; };
 		CC3FE00A2A09C0BF00756941 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		CC3FE00C2A09C8A400756941 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -462,6 +464,7 @@
 				CC16323F2AA6A0AC006A8E6A /* RGB343.swift */,
 				CCDCFEF82B322845008EDB1D /* MultipartForm.swift */,
 				CC6C99D72B464AEE00D84312 /* ColorQuantization.swift */,
+				CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -677,6 +680,7 @@
 				CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */,
 				CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */,
 				CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */,
+				CC21C12E2B55BFA500DEAAEC /* Stopwatch.swift in Sources */,
 				CCF4F3552B3CC7EB00146A59 /* FrameController.swift in Sources */,
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
 				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
