@@ -242,9 +242,6 @@ class FrameController: ObservableObject {
            let pixelBuffer = CVPixelBuffer.fromRGB332(_photoBuffer, width: 200, height: 200) {
             photo = UIImage(pixelBuffer: pixelBuffer)?.resized(to: CGSize(width: 512, height: 512))
         }
-        if photo == nil {
-            print("No photo")
-        }
 
         // Text
         let prompt: String? = _textBuffer.count > 0 ? String(decoding: _textBuffer, as: UTF8.self) : nil
