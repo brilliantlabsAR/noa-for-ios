@@ -1,0 +1,11 @@
+//
+//  module.map.modulemap
+//  Noa
+//
+//  Created by Bart Trzynadlowski on 1/15/24.
+//
+
+module ColorQuantization {
+    header "ColorQuantization.hpp"
+    requires cplusplus
+}

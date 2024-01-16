@@ -92,7 +92,7 @@ class Settings: ObservableObject {
             return ([], [])
         }
 
-        guard let settings = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any],
+        guard let settings = try? PropertyListSerialization.propertyList(from: data, options: PropertyListSerialization.ReadOptions(), format: nil) as? [String: Any],
               let preferenceSpecifiers = settings["PreferenceSpecifiers"] as? [[String: Any]] else {
             print("[Settings] Unable to access preference specifiers")
             return ([], [])

@@ -27,6 +27,7 @@
 		CC212D702A9E74870093479F /* audio.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6F2A9E74870093479F /* audio.py */; };
 		CC212D722A9E764B0093479F /* photo.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D712A9E764B0093479F /* photo.py */; };
 		CC21C12E2B55BFA500DEAAEC /* Stopwatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */; };
+		CC21C1322B55E5EF00DEAAEC /* ColorQuantization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC21C1302B55E5EF00DEAAEC /* ColorQuantization.cpp */; };
 		CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */; };
 		CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE00A2A09C0BF00756941 /* Settings.bundle */; };
 		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
@@ -52,7 +53,6 @@
 		CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF62A01AA350058AC20 /* ChatView.swift */; };
 		CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */; };
 		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
-		CC6C99D82B464AEE00D84312 /* ColorQuantization.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6C99D72B464AEE00D84312 /* ColorQuantization.swift */; };
 		CCB2F9622A2568EE00F24F2D /* MonocleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* MonocleController.swift */; };
 		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
 		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
@@ -123,6 +123,9 @@
 		CC212D6F2A9E74870093479F /* audio.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = audio.py; sourceTree = "<group>"; };
 		CC212D712A9E764B0093479F /* photo.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = photo.py; sourceTree = "<group>"; };
 		CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stopwatch.swift; sourceTree = "<group>"; };
+		CC21C1302B55E5EF00DEAAEC /* ColorQuantization.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ColorQuantization.cpp; sourceTree = "<group>"; };
+		CC21C1312B55E5EF00DEAAEC /* ColorQuantization.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ColorQuantization.hpp; sourceTree = "<group>"; };
+		CC21C1332B55E69400DEAAEC /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorView.swift; sourceTree = "<group>"; };
 		CC3FE00A2A09C0BF00756941 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		CC3FE00C2A09C8A400756941 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -152,7 +155,6 @@
 		CC4E3AF62A01AA350058AC20 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
 		CC6851672A9964C2004EA777 /* Tahoe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tahoe.jpg; sourceTree = "<group>"; };
-		CC6C99D72B464AEE00D84312 /* ColorQuantization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorQuantization.swift; sourceTree = "<group>"; };
 		CCB2F9612A2568EE00F24F2D /* MonocleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonocleController.swift; sourceTree = "<group>"; };
 		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
 		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
@@ -293,6 +295,16 @@
 				F8B8D4782A71761700817A24 /* LoopingVideoPlayer.swift */,
 			);
 			path = Device;
+			sourceTree = "<group>";
+		};
+		CC21C12F2B55E5BD00DEAAEC /* ColorQuantization */ = {
+			isa = PBXGroup;
+			children = (
+				CC21C1302B55E5EF00DEAAEC /* ColorQuantization.cpp */,
+				CC21C1312B55E5EF00DEAAEC /* ColorQuantization.hpp */,
+				CC21C1332B55E69400DEAAEC /* module.modulemap */,
+			);
+			path = ColorQuantization;
 			sourceTree = "<group>";
 		};
 		CC3FE0072A098DBC00756941 /* Settings */ = {
@@ -454,6 +466,7 @@
 		CCB2F9642A2598E900F24F2D /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				CC21C12F2B55E5BD00DEAAEC /* ColorQuantization */,
 				CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */,
 				CCB2F9652A2598F600F24F2D /* HexDump.swift */,
 				CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */,
@@ -463,7 +476,6 @@
 				CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */,
 				CC16323F2AA6A0AC006A8E6A /* RGB343.swift */,
 				CCDCFEF82B322845008EDB1D /* MultipartForm.swift */,
-				CC6C99D72B464AEE00D84312 /* ColorQuantization.swift */,
 				CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */,
 			);
 			path = Util;
@@ -561,6 +573,7 @@
 				TargetAttributes = {
 					CC4E3ABF2A00BA4C0058AC20 = {
 						CreatedOnToolsVersion = 14.2;
+						LastSwiftMigration = 1520;
 					};
 					CC4E3ACF2A00BA4D0058AC20 = {
 						CreatedOnToolsVersion = 14.2;
@@ -675,9 +688,9 @@
 				CCB2F9622A2568EE00F24F2D /* MonocleController.swift in Sources */,
 				CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */,
 				CC4E3AF12A00BC8A0058AC20 /* MessageContentView.swift in Sources */,
-				CC6C99D82B464AEE00D84312 /* ColorQuantization.swift in Sources */,
 				CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */,
 				CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */,
+				CC21C1322B55E5EF00DEAAEC /* ColorQuantization.cpp in Sources */,
 				CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */,
 				CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */,
 				CC21C12E2B55BFA500DEAAEC /* Stopwatch.swift in Sources */,
@@ -855,6 +868,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Noa/Preview Content\"";
@@ -875,12 +889,15 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 4.0;
+				OTHER_SWIFT_FLAGS = "-cxx-interoperability-mode=default";
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = ./Noa/Util/ColorQuantization;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -891,6 +908,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Noa/Preview Content\"";
@@ -911,12 +929,14 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 4.0;
+				OTHER_SWIFT_FLAGS = "-cxx-interoperability-mode=default";
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = ./Noa/Util/ColorQuantization;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

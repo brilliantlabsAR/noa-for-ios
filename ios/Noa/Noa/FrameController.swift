@@ -16,6 +16,8 @@ import CoreBluetooth
 import Foundation
 import UIKit
 
+import ColorQuantization
+
 class FrameController: ObservableObject {
     // MARK: Bluetooth IDs
 
@@ -65,14 +67,16 @@ class FrameController: ObservableObject {
         _settings = settings
         _messages = messages
 
-        let test = UIImage(named: "Tahoe.jpg")
-        if let pb = test?.toPixelBuffer() {
-            if let newPB = quantizeColors(pixelBuffer: pb, colors: 16) {
-                if let image = UIImage(pixelBuffer: newPB) {
+        let time = Util.Stopwatch.measure {
+            let test = UIImage(named: "Tahoe.jpg")
+            if let pb = test?.toPixelBuffer() {
+                quantizeColors(pb, 16)
+                if let image = UIImage(pixelBuffer: pb) {
                     printToChat("", picture: image, as: .user, connection: nil)
                 }
             }
         }
+        print("Time = \(time)")
     }
 
     func onConnect(on connection: AsyncBluetoothManager.Connection) async throws {
