@@ -155,9 +155,10 @@ void sortBucketByColorChannel(std::vector<Pixel> &bucket, ColorChannel channel)
     }
 }
 
-std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixelBufferRef pixelBuffer, size_t numColors)
+std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixelBufferRef pixelBuffer, size_t numColors, size_t outputBitDepth)
 {
-    assert(numColors <= 256);   // for now, we output to an 8-bit buffer
+    assert(numColors <= 16);    // for now, we output to a 4-bit buffer
+    assert(outputBitDepth == 4);
 
     CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
     size_t byteStride = CVPixelBufferGetBytesPerRow(pixelBuffer);
@@ -182,7 +183,7 @@ std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixe
     CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
 
     std::vector<PaletteValue> palette(numColors);
-    std::vector<uint8_t> outputPixels(width * height);
+    std::vector<uint8_t> outputPixels(width * height / 2);  // 4 bits per pixel
 
     // Populate initial bucket with all pixels
     std::vector<std::vector<Pixel>> buckets;
@@ -245,18 +246,24 @@ std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixe
         // Store in palette
         palette[colorIdx] = { .r = uint8_t(r), .g = uint8_t(g), .b = uint8_t(b) };
 
-        // Write back palettized pixels
+        // Write back palettized pixels to 4-bit bitmap
         for (Pixel &pixel: bucket)
         {
-            outputPixels[pixel.y * width + pixel.x] = uint8_t(colorIdx);
+            size_t pixelIdx = pixel.y * width + pixel.x;
+            size_t byteIdx = pixelIdx / 2;
+            size_t shiftAmount = (~pixelIdx & 1) * 4;   // even pixel in high nibble, odd in low
+            uint8_t mask = 0xf0 >> shiftAmount;         // mask if reverse: mask off low nibble when writing high nibble, etc.
+            outputPixels[byteIdx] = (outputPixels[byteIdx] & mask) | (colorIdx << shiftAmount);
         }
     }
 
     return std::pair(palette, outputPixels);
 }
 
-void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<PaletteValue> &palette, const std::vector<uint8_t> &pixels)
+void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<PaletteValue> &palette, const std::vector<uint8_t> &pixels, size_t bitDepth)
 {
+    assert(bitDepth == 4);
+
     CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
     size_t byteStride = CVPixelBufferGetBytesPerRow(pixelBuffer);
     size_t width = CVPixelBufferGetWidth(pixelBuffer);
@@ -276,7 +283,7 @@ void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<Pa
         goto exit;
     }
     
-    if (width * height != pixels.size())
+    if (width * height != pixels.size() * 2)    // pixels is 4bpp
     {
         puts("[ColorQuantization] Error: Source and destination pixel buffers must have same number of pixels");
         goto exit;
@@ -289,7 +296,10 @@ void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<Pa
         {
             for (size_t x = 0; x < width; x++)
             {
-                uint8_t colorIdx = pixels[y * width + x];
+                size_t pixelIdx = y * width + x;
+                size_t byteIdx = pixelIdx / 2;
+                size_t shiftAmount = (~pixelIdx & 1) * 4;                   // even pixel in high nibble, odd in low
+                uint8_t colorIdx = (pixels[byteIdx] >> shiftAmount) & 0xf;  // extract color value in nibble
                 PaletteValue color = palette[colorIdx];
                 bytes[y * byteStride + x * 4 + 3] = color.r;
                 bytes[y * byteStride + x * 4 + 2] = color.g;
@@ -302,7 +312,10 @@ void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<Pa
         {
             for (size_t x = 0; x < width; x++)
             {
-                uint8_t colorIdx = pixels[y * width + x];
+                size_t pixelIdx = y * width + x;
+                size_t byteIdx = pixelIdx / 2;
+                size_t shiftAmount = (~pixelIdx & 1) * 4;                   // even pixel in high nibble, odd in low
+                uint8_t colorIdx = (pixels[byteIdx] >> shiftAmount) & 0xf;  // extract color value in nibble
                 PaletteValue color = palette[colorIdx];
                 bytes[y * byteStride + x * 4 + 1] = color.r;
                 bytes[y * byteStride + x * 4 + 2] = color.g;

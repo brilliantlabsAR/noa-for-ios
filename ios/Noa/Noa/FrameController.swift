@@ -70,9 +70,9 @@ class FrameController: ObservableObject {
         let time = Util.Stopwatch.measure {
             let test = UIImage(named: "Tahoe.jpg")
             if let pb = test?.toPixelBuffer() {
-                let quantized = quantizeColors(pb, 16)
+                let quantized = quantizeColors(pb, 16, 4)
                 print("palette=\(quantized.first.size()), pixels=\(quantized.second.size())")
-                applyColorsToPixelBuffer(pb, quantized.first, quantized.second)
+                applyColorsToPixelBuffer(pb, quantized.first, quantized.second, 4)
                 if let image = UIImage(pixelBuffer: pb) {
                     printToChat("", picture: image, as: .user, connection: nil)
                 }
