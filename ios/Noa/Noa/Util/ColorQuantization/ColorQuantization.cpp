@@ -13,9 +13,9 @@
 
 enum ColorChannel
 {
-    R,
-    G,
-    B
+    Red,
+    Green,
+    Blue
 };
 
 #pragma pack(push, 1)
@@ -55,26 +55,6 @@ struct Pixel
         }
     }
 
-    void write(uint8_t r, uint8_t g, uint8_t b, uint8_t *pixels, size_t stride, OSType format)
-    {
-        switch (format)
-        {
-        case kCVPixelFormatType_32ABGR:
-            pixels[size_t(y) * stride + x * 4 + 3] = r;
-            pixels[size_t(y) * stride + x * 4 + 2] = g;
-            pixels[size_t(y) * stride + x * 4 + 1] = b;
-            break;
-        case kCVPixelFormatType_32ARGB:
-            pixels[size_t(y) * stride + size_t(x) * 4 + 1] = r;
-            pixels[size_t(y) * stride + size_t(x) * 4 + 2] = g;
-            pixels[size_t(y) * stride + size_t(x) * 4 + 3] = b;
-            break;
-        default:
-            puts("[ColorQuantization]: Invalid pixel format passed to Pixel()");
-            break;
-        }
-    }
-
     static inline bool compareRedChannel(const Pixel &pixel1, const Pixel &pixel2)
     {
         return pixel1.r < pixel2.r;
@@ -96,7 +76,7 @@ std::pair<size_t, ColorChannel> findBucketWithLargestColorRange(const std::vecto
 {
     size_t bestBucketIdx = 0;
     uint8_t bestRange = 0;
-    ColorChannel bestChannel = R;
+    ColorChannel bestChannel = Red;
 
     for (size_t i = 0; i < buckets.size(); i++)
     {
@@ -133,7 +113,7 @@ std::pair<size_t, ColorChannel> findBucketWithLargestColorRange(const std::vecto
             {
                 bestBucketIdx = i;
                 bestRange = rangeR;
-                bestChannel = R;
+                bestChannel = Red;
             }
         }
         else if (rangeG > rangeR && rangeG > rangeB)
@@ -142,7 +122,7 @@ std::pair<size_t, ColorChannel> findBucketWithLargestColorRange(const std::vecto
             {
                 bestBucketIdx = i;
                 bestRange = rangeG;
-                bestChannel = G;
+                bestChannel = Green;
             }
         }
         else
@@ -151,7 +131,7 @@ std::pair<size_t, ColorChannel> findBucketWithLargestColorRange(const std::vecto
             {
                 bestBucketIdx = i;
                 bestRange = rangeB;
-                bestChannel = B;
+                bestChannel = Blue;
             }
         }
     }
@@ -163,13 +143,13 @@ void sortBucketByColorChannel(std::vector<Pixel> &bucket, ColorChannel channel)
 {
     switch (channel)
     {
-    case R:
+    case Red:
         std::sort(bucket.begin(), bucket.end(), Pixel::compareRedChannel);
         break;
-    case G:
+    case Green:
         std::sort(bucket.begin(), bucket.end(), Pixel::compareGreenChannel);
         break;
-    case B:
+    case Blue:
         std::sort(bucket.begin(), bucket.end(), Pixel::compareBlueChannel);
         break;
     }
