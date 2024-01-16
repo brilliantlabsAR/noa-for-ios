@@ -165,15 +165,13 @@ struct ContentView: View {
                 print("MTU size: \(connection.maximumWriteLength(for: .withoutResponse)) bytes")
 
                 // Send scripts and issue ^D to execute main.lua
-//                try await _frameController.loadScript(named: "states.lua", on: connection)
-//                try await _frameController.loadScript(named: "graphics.lua", on: connection)
-//                try await _frameController.loadScript(named: "audio.lua", on: connection)
-//                try await _frameController.loadScript(named: "photo.lua", on: connection)
-//                try await _frameController.loadScript(named: "main.lua", on: connection)
-//                print("Starting...")
-//                connection.send(text: "\u{4}")
-                try await _frameController.loadScript(named: "test.lua", on: connection, run: true)
+                try await _frameController.loadScript(named: "state.lua", on: connection)
+                try await _frameController.loadScript(named: "graphics.lua", on: connection)
+                try await _frameController.loadScript(named: "main.lua", on: connection)//, run: true)
                 print("Starting...")
+                connection.send(text: "\u{4}")
+//                try await _frameController.loadScript(named: "test.lua", on: connection, run: true)
+//                print("Starting...")
 
                 for try await data in connection.receivedData {
                     Util.hexDump(data)

@@ -1,125 +1,63 @@
 require("graphics")
-require("states")
-require("audio")
-require("photo")
+require("state")
 
+local graphics = Graphics.new()
 local state = State.new()
-local gfx = Graphics.new()
 
-function BluetoothSendMessage(message)
-    while true do
-        local success, error_message = pcall(frame.bluetooth.send, message)
-        if success then
-            break
-        end
-        if error_message then
-            print(error_message)
-            break
-        end
+function tap_callback()
+    print('Tap')
+    if state:is(state.WaitingForTap) or state:is(state.TapTutorial) then
+        state:switch(state.RecordAudio)
     end
 end
 
-function BluetoothMessageHandler(message)
-    if state.current_state == state.WaitForPing then
-        if message:sub(1, 4) == "pin:" then
-            BluetoothSendMessage("pon:" .. message:sub(5))
-            state:after(0, state.WaitForResponse)
-        elseif message:sub(1, 4) == "res:" or message:sub(1, 4) == "err:" then
-            PrintResponse(message)
-        elseif message:sub(1, 4) == "ick:" then
-            state:after(0, state.WaitForTap)
-        end
-    elseif state.current_state == state.WaitForResponse then
-        if message:sub(1, 4) == "res:" or message:sub(1, 4) == "err:" then
-            PrintResponse(message)
-        end
-    elseif state.current_state == state.PrintResponse then
-        gfx.append_response(message:sub(5))
-    elseif state.current_state == state.WaitForTap then
-        if message:sub(1, 4) == "res:" or message:sub(1, 4) == "err:" then
-            PrintResponse(message)
-        end
-    end
-end
+-- Setup
+frame.imu.tap_callback(tap_callback)
 
-function TouchPadHandler()
-    if state.current_state == state.WaitForTap then
-        state.after(0, state.DetectSingleTap)
-    elseif state.current_state == state.WaitForPing or state.current_state == state.WaitForResponse then
-        state.after(0, state.AskToCancel)
-    elseif state.current_state == state.AskToCancel then
-        state.after(0, state.WaitForTap)
-    end
-end
-
-frame.bluetooth.receive_callback(BluetoothMessageHandler)
-frame.imu.tap_callback(TouchPadHandler)
-function PrintResponse(message)
-    gfx.error_flag = message:sub(1, 4) == "err:"
-    gfx.append_response(message:sub(5):decode("utf-8"))
-    state:after(0, state.PrintResponse)
-end
-
+-- Main loop
 while true do
-    if state.current_state == state.Init then
-        state:after(0, state.Welcome)
-    elseif state.current_state == state.Welcome then
-        if state:on_entry() then
-            gfx:append_response("Welcome to Noa for Monocle.\nStart the Noa iOS or Android app.")
+    -- Main state machine
+    if state:is("Init") then
+        state:switch("Welcome")
+    elseif state:is("Welcome") then
+        state:on_entry(function()
+            graphics:append_response("Hi! I'm Noa. Your helpful AI companion")
+        end)
+        state:switch_after(2, "TapTutorial")
+    elseif state:is("TapTutorial") then
+        state:on_entry(function()
+            graphics:clear_response()
+            graphics:append_response("Tap the side of your Frame and ask me something. I'm always standing by")
+        end)
+        state:switch_after(30, "WaitingForTap")
+    elseif state:is("WaitingForTap") then
+        state:on_entry(function()
+            graphics:clear_response()
+        end)
+    elseif state:is("RecordAudio") then
+        state:on_entry(function()
+            frame.microphone.record(5, 8000, 8)
+        end)
+        state:switch_after(5, "SendAudio")
+    elseif state:is("SendAudio") then
+        state:on_entry(function()
+            frame.bluetooth.send("\x10") -- Start flag
+        end)
+        local samples = math.floor((frame.bluetooth.max_length() - 1) / 4) * 4
+        local audio_data = frame.microphone.read(samples)
+        --print("Sending " .. #audio_data .. " samples")
+        if audio_data ~= nil then
+            frame.bluetooth.send("\x12" .. audio_data)
+        else
+            frame.bluetooth.send("\x14") -- End flag
+            state:switch("WaitForResponse")
         end
-        state:after(2, state.Connected)
-    elseif state.current_state == state.Connected then
-        if state:on_entry() then
-            gfx:clear_response()
-            gfx:set_prompt("Connected")
-        end
-        state:after(2, state.WaitForTap)
-    elseif state.current_state == state.WaitForTap then
-        if state:on_entry() then
-            BluetoothSendMessage("rdy:")
-            gfx:set_prompt("Tap and speak")
-        end
-    elseif state.current_state == state.DetectSingleTap then
-        if state:has_been() >= 1 then
-            -- if touch.state(touch.EITHER) then
-            --     state.after(0, state.DetectHold)
-            --     frame.camera.wake()
-            -- else
-            state:after(0, state.StartRecording)
-            -- end
-        end
-        -- elseif state.current_state == state.DetectHold then
-        --     -- if state.has_been() >= 1000 and touch.state(touch.EITHER) then
-        --     state:after(0, state.CaptureImage)
-        --     -- elseif not touch.state(touch.EITHER) then
-        --     --     frame.camera.sleep()
-        --     --     state.after(0, state.WaitForTap)
-        --     -- end
-    elseif state.current_state == state.StartRecording then
-        StartRecording(state, gfx, BluetoothSendMessage)
-    elseif state.current_state == state.SendAudio then
-        SendAudio(state, gfx, BluetoothSendMessage)
-        -- elseif state.current_state == state.WaitForPing or state.current_state == state.WaitForResponse then
-        --     gfx:set_prompt("Waiting for openAI")
-        -- elseif state.current_state == state.AskToCancel then
-        --     gfx:set_prompt("Cancel?")
-        --     state:after(3000, state.previous_state)
-        -- elseif state.current_state == state.PrintResponse then
-        --     gfx:set_prompt("")
-        --     if gfx.done_printing then
-        --         state:after(0, state.WaitForTap)
-        --     end
-        -- elseif state.current_state == state.CaptureImage then
-        --     CaptureImage(state, gfx, BluetoothSendMessage)
-        -- elseif state.current_state == state.SendImage then
-        --     SendImage(state, gfx, BluetoothSendMessage)
+    elseif state:is("WaitForResponse") then
+
+    else
+        error("Invalid state: " .. state.current_state)
     end
 
-    if state:has_been() > 5 then
-        state:after(0, state.DetectSingleTap)
-    elseif state:has_been() > 15 then
-        print(tostring(state.current_state))
-        break
-    end
-    gfx:run()
+    -- Run graphics printing
+    graphics:run()
 end

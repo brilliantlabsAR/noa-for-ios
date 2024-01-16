@@ -29,6 +29,9 @@
 		CC21C12E2B55BFA500DEAAEC /* Stopwatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */; };
 		CC21C1322B55E5EF00DEAAEC /* ColorQuantization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC21C1302B55E5EF00DEAAEC /* ColorQuantization.cpp */; };
 		CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */; };
+		CC2E4FC72B560DBC00718A65 /* state.lua in Resources */ = {isa = PBXBuildFile; fileRef = CC2E4FC42B560DBC00718A65 /* state.lua */; };
+		CC2E4FC82B560DBC00718A65 /* main.lua in Resources */ = {isa = PBXBuildFile; fileRef = CC2E4FC52B560DBC00718A65 /* main.lua */; };
+		CC2E4FC92B560DBC00718A65 /* graphics.lua in Resources */ = {isa = PBXBuildFile; fileRef = CC2E4FC62B560DBC00718A65 /* graphics.lua */; };
 		CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE00A2A09C0BF00756941 /* Settings.bundle */; };
 		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
 		CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE01E2A0DF21700756941 /* AppDelegate.swift */; };
@@ -65,11 +68,6 @@
 		CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */; };
 		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
 		CCD170D62B3E08FF008665F6 /* test.lua in Resources */ = {isa = PBXBuildFile; fileRef = CCD170D52B3E08FF008665F6 /* test.lua */; };
-		CCD170DB2B3F85B7008665F6 /* states.lua in Resources */ = {isa = PBXBuildFile; fileRef = CCD170D72B3F85B6008665F6 /* states.lua */; };
-		CCD170DC2B3F85B7008665F6 /* photo.lua in Resources */ = {isa = PBXBuildFile; fileRef = CCD170D82B3F85B6008665F6 /* photo.lua */; };
-		CCD170DD2B3F85B7008665F6 /* graphics.lua in Resources */ = {isa = PBXBuildFile; fileRef = CCD170D92B3F85B6008665F6 /* graphics.lua */; };
-		CCD170DE2B3F85B7008665F6 /* audio.lua in Resources */ = {isa = PBXBuildFile; fileRef = CCD170DA2B3F85B7008665F6 /* audio.lua */; };
-		CCD170E02B3F865E008665F6 /* main.lua in Resources */ = {isa = PBXBuildFile; fileRef = CCD170DF2B3F865E008665F6 /* main.lua */; };
 		CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD4B9012A93EB47004E3ADD /* NoaApp.swift */; };
 		CCDCFEF92B322845008EDB1D /* MultipartForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDCFEF82B322845008EDB1D /* MultipartForm.swift */; };
 		CCDEE1962AEB74C30093575B /* APIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDEE1952AEB74C30093575B /* APIKey.swift */; };
@@ -127,6 +125,9 @@
 		CC21C1312B55E5EF00DEAAEC /* ColorQuantization.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ColorQuantization.hpp; sourceTree = "<group>"; };
 		CC21C1332B55E69400DEAAEC /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorView.swift; sourceTree = "<group>"; };
+		CC2E4FC42B560DBC00718A65 /* state.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = state.lua; sourceTree = "<group>"; };
+		CC2E4FC52B560DBC00718A65 /* main.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.lua; sourceTree = "<group>"; };
+		CC2E4FC62B560DBC00718A65 /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = graphics.lua; sourceTree = "<group>"; };
 		CC3FE00A2A09C0BF00756941 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		CC3FE00C2A09C8A400756941 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		CC3FE0172A0B215700756941 /* Noa-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Noa-Info.plist"; sourceTree = SOURCE_ROOT; };
@@ -167,11 +168,6 @@
 		CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_CPU.wav; sourceTree = "<group>"; };
 		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
 		CCD170D52B3E08FF008665F6 /* test.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = test.lua; sourceTree = "<group>"; };
-		CCD170D72B3F85B6008665F6 /* states.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = states.lua; sourceTree = "<group>"; };
-		CCD170D82B3F85B6008665F6 /* photo.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = photo.lua; sourceTree = "<group>"; };
-		CCD170D92B3F85B6008665F6 /* graphics.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = graphics.lua; sourceTree = "<group>"; };
-		CCD170DA2B3F85B7008665F6 /* audio.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = audio.lua; sourceTree = "<group>"; };
-		CCD170DF2B3F865E008665F6 /* main.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.lua; sourceTree = "<group>"; };
 		CCD4B9012A93EB47004E3ADD /* NoaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaApp.swift; sourceTree = "<group>"; };
 		CCDCFEF82B322845008EDB1D /* MultipartForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartForm.swift; sourceTree = "<group>"; };
 		CCDEE1952AEB74C30093575B /* APIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.swift; sourceTree = "<group>"; };
@@ -492,11 +488,9 @@
 		CCD170D42B3E08E2008665F6 /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
-				CCD170DF2B3F865E008665F6 /* main.lua */,
-				CCD170DA2B3F85B7008665F6 /* audio.lua */,
-				CCD170D92B3F85B6008665F6 /* graphics.lua */,
-				CCD170D82B3F85B6008665F6 /* photo.lua */,
-				CCD170D72B3F85B6008665F6 /* states.lua */,
+				CC2E4FC62B560DBC00718A65 /* graphics.lua */,
+				CC2E4FC52B560DBC00718A65 /* main.lua */,
+				CC2E4FC42B560DBC00718A65 /* state.lua */,
 				CCD170D52B3E08FF008665F6 /* test.lua */,
 			);
 			path = Scripts;
@@ -616,16 +610,15 @@
 				CC3FE0312A0EF81A00756941 /* Question_History.m4a in Resources */,
 				CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */,
 				352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */,
-				CCD170DC2B3F85B7008665F6 /* photo.lua in Resources */,
 				CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */,
 				CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */,
 				CC1632422AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip in Resources */,
 				CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */,
 				CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */,
 				CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */,
-				CCD170E02B3F865E008665F6 /* main.lua in Resources */,
-				CCD170DD2B3F85B7008665F6 /* graphics.lua in Resources */,
 				CC212D6E2A9E6F130093479F /* monocle-fpga.bin in Resources */,
+				CC2E4FC92B560DBC00718A65 /* graphics.lua in Resources */,
+				CC2E4FC72B560DBC00718A65 /* state.lua in Resources */,
 				CCD170D62B3E08FF008665F6 /* test.lua in Resources */,
 				CC212D702A9E74870093479F /* audio.py in Resources */,
 				CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */,
@@ -633,9 +626,7 @@
 				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,
 				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
 				CCEE17542ACF8CC1000170F5 /* Tutorial_2.png in Resources */,
-				CCD170DE2B3F85B7008665F6 /* audio.lua in Resources */,
 				CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */,
-				CCD170DB2B3F85B7008665F6 /* states.lua in Resources */,
 				CC200A502A37E396005C67E0 /* states.py in Resources */,
 				CC200A4D2A37E38C005C67E0 /* main.py in Resources */,
 				CCEE17552ACF8CC1000170F5 /* Tutorial_5.png in Resources */,
@@ -646,6 +637,7 @@
 				CC4E3AC82A00BA4C0058AC20 /* Assets.xcassets in Resources */,
 				CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */,
 				CCEE17572ACF8CC1000170F5 /* Tutorial_3.png in Resources */,
+				CC2E4FC82B560DBC00718A65 /* main.lua in Resources */,
 				CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */,
 				CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */,
 			);
