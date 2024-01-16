@@ -10,7 +10,17 @@
 
 #include <CoreVideo/CVPixelBuffer.h>
 #include <cstdint>
+#include <tuple>
+#include <vector>
 
-void quantizeColors(CVPixelBufferRef pixelBuffer, size_t colors);
+struct PaletteValue
+{
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+};
+
+std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixelBufferRef pixelBuffer, size_t colors);
+void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<PaletteValue> &palette, const std::vector<uint8_t> &pixels);
 
 #endif /* ColorQuantization_hpp */

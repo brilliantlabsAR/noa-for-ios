@@ -70,7 +70,9 @@ class FrameController: ObservableObject {
         let time = Util.Stopwatch.measure {
             let test = UIImage(named: "Tahoe.jpg")
             if let pb = test?.toPixelBuffer() {
-                quantizeColors(pb, 16)
+                let quantized = quantizeColors(pb, 16)
+                print("palette=\(quantized.first.size()), pixels=\(quantized.second.size())")
+                applyColorsToPixelBuffer(pb, quantized.first, quantized.second)
                 if let image = UIImage(pixelBuffer: pb) {
                     printToChat("", picture: image, as: .user, connection: nil)
                 }
@@ -239,6 +241,9 @@ class FrameController: ObservableObject {
         if _photoBuffer.count == 200 * 200, // require a complete image to decode
            let pixelBuffer = CVPixelBuffer.fromRGB332(_photoBuffer, width: 200, height: 200) {
             photo = UIImage(pixelBuffer: pixelBuffer)?.resized(to: CGSize(width: 512, height: 512))
+        }
+        if photo == nil {
+            print("No photo")
         }
 
         // Text
