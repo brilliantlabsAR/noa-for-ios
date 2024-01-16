@@ -301,6 +301,7 @@ void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<Pa
                 size_t shiftAmount = (~pixelIdx & 1) * 4;                   // even pixel in high nibble, odd in low
                 uint8_t colorIdx = (pixels[byteIdx] >> shiftAmount) & 0xf;  // extract color value in nibble
                 PaletteValue color = palette[colorIdx];
+                bytes[y * byteStride + x * 4 + 0] = 0xff;
                 bytes[y * byteStride + x * 4 + 3] = color.r;
                 bytes[y * byteStride + x * 4 + 2] = color.g;
                 bytes[y * byteStride + x * 4 + 1] = color.b;
@@ -317,6 +318,7 @@ void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<Pa
                 size_t shiftAmount = (~pixelIdx & 1) * 4;                   // even pixel in high nibble, odd in low
                 uint8_t colorIdx = (pixels[byteIdx] >> shiftAmount) & 0xf;  // extract color value in nibble
                 PaletteValue color = palette[colorIdx];
+                bytes[y * byteStride + x * 4 + 0] = 0xff;
                 bytes[y * byteStride + x * 4 + 1] = color.r;
                 bytes[y * byteStride + x * 4 + 2] = color.g;
                 bytes[y * byteStride + x * 4 + 3] = color.b;
