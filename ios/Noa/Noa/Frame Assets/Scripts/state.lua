@@ -3,32 +3,32 @@ State.__index = State
 
 function State.new()
     local self = setmetatable({}, State)
-    self.previous_state = "Init"
-    self.current_state = "Init"
-    self.next_state = "Init"
-    self.entry_time = frame.time.utc()
-    self.entered = true
+    self.__previous_state = "Init"
+    self.__current_state = "Init"
+    self.__next_state = "Init"
+    self.__entry_time = frame.time.utc()
+    self.__entered = true
     return self
 end
 
 function State:is(state)
-    if self.current_state == state then
+    if self.__current_state == state then
         return true
     end
     return false
 end
 
-function State:switch_after(wait_time, next_state)
-    if next_state ~= self.next_state then
-        self.next_state = next_state
+function State:switch_after(wait_time, __next_state)
+    if __next_state ~= self.__next_state then
+        self.__next_state = __next_state
     end
-    if self.current_state ~= self.next_state then
-        if frame.time.utc() - self.entry_time >= wait_time then
-            self.previous_state = self.current_state
-            self.current_state = self.next_state
-            self.entry_time = frame.time.utc()
-            self.entered = true
-            print("State: " .. tostring(self.current_state))
+    if self.__current_state ~= self.__next_state then
+        if frame.time.utc() - self.__entry_time >= wait_time then
+            self.__previous_state = self.__current_state
+            self.__current_state = self.__next_state
+            self.__entry_time = frame.time.utc()
+            self.__entered = true
+            print("State: " .. tostring(self.__current_state))
         end
     end
 end
@@ -38,12 +38,12 @@ function State:switch(state)
 end
 
 function State:has_been()
-    return frame.time.utc() - self.entry_time
+    return frame.time.utc() - self.__entry_time
 end
 
 function State:on_entry(func)
-    if self.entered == true then
-        self.entered = false
+    if self.__entered == true then
+        self.__entered = false
         pcall(func)
     end
 end

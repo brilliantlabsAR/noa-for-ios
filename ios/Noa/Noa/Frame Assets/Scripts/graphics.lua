@@ -8,19 +8,25 @@ function Graphics.new()
 end
 
 function Graphics:clear()
-    self.__current_text = ""
-    self.__current_character = 0
-    self.__current_image = ""
+    self.__text = ""
+    self.__characters_printed = 0
+    self.__image = ""
+    self.__image_mode = false
+    self.__image_bytes_received = 0
+    self.__image_printed = false
     frame.display.assign_color(1, 0x00, 0x00, 0x00)
     frame.display.assign_color(2, 0xFF, 0xFF, 0xFF)
 end
 
-function Graphics:append_text(response)
-    self.__current_text = self.__current_text .. string.gsub(response, "\n+", " ")
+function Graphics:append_text(data)
+    self.__text = self.__text .. string.gsub(data, "\n+", " ")
 end
 
-function Graphics:append_image(response)
-    self.__current_image = self.__current_image .. response
+function Graphics:append_image(data)
+    self.__image_mode = true
+    local y = self.__image_bytes_received / 400 * 2
+    frame.display.bitmap(120, y + 1, 400, 16, 0, data)
+    self.__image_bytes_received = self.__image_bytes_received + #data
 end
 
 function Graphics:set_color(index, red, green, blue)
@@ -28,19 +34,19 @@ function Graphics:set_color(index, red, green, blue)
 end
 
 function Graphics:on_complete(func)
-    if self.__current_character > 0 and self.__current_character == #self.__current_text then
+    if (self.__characters_printed > 0 and self.__characters_printed == #self.__text) or
+        self.__image_printed then
         pcall(func)
     end
 end
 
 function Graphics:run()
-    -- Print out an image if valid
-    if #self.__current_image == 80000 then
-        frame.display.clear()
-        frame.sleep(0.02)
-        frame.display.bitmap(120, 0, 400, 16, 0, #self.__current_image)
-        frame.display.show()
-        frame.sleep(0.02)
+    -- Print out an image if available
+    if self.__image_mode then
+        if self.__image_bytes_received == 80000 and self.__image_printed == false then
+            frame.display.show()
+            self.__image_printed = true
+        end
         return
     end
 
@@ -55,7 +61,7 @@ function Graphics:run()
     local line_count = 1
     local lines = { "" }
     local accumulated_width = 0
-    local trunkated_text = string.sub(self.__current_text, 1, self.__current_character)
+    local trunkated_text = string.sub(self.__text, 1, self.__characters_printed)
 
     for word in string.gmatch(trunkated_text, "%S+") do
         for character in string.gmatch(word, "%S+") do
@@ -89,12 +95,12 @@ function Graphics:run()
 
 
     -- Delay for appropriate time
-    if string.sub(self.__current_text, self.__current_character, self.__current_character) == " " then
+    if string.sub(self.__text, self.__characters_printed, self.__characters_printed) == " " then
         frame.sleep(WORD_DELAY)
     end
 
     -- Increment for the next print
-    if self.__current_character < #self.__current_text then
-        self.__current_character = self.__current_character + 1
+    if self.__characters_printed < #self.__text then
+        self.__characters_printed = self.__characters_printed + 1
     end
 end

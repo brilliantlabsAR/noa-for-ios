@@ -389,7 +389,7 @@ class FrameController: ObservableObject {
 //    }
 
     private func sendEnqueuedMessagesToFrame(on connection: AsyncBluetoothManager.Connection?) {
-        let delayMS = 20
+        let delayMS = 50
         DispatchQueue.main.asyncAfter(deadline: .now().advanced(by: .milliseconds(delayMS))) { [weak self] in
             guard let self = self, 
                   let connection = connection,

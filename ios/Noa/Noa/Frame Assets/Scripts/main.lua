@@ -118,7 +118,7 @@ while true do
     elseif state:is("HoldResponse") then
         state:switch_after(20, "WaitingForTap")
     else
-        error("Invalid state: " .. state.current_state)
+        error("Invalid state: " .. state.__current_state)
     end
 
     -- Run graphics printing

@@ -66,7 +66,6 @@
 		CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */; };
 		CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */; };
 		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
-		CCD170D62B3E08FF008665F6 /* test.lua in Resources */ = {isa = PBXBuildFile; fileRef = CCD170D52B3E08FF008665F6 /* test.lua */; };
 		CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD4B9012A93EB47004E3ADD /* NoaApp.swift */; };
 		CCDCFEF92B322845008EDB1D /* MultipartForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDCFEF82B322845008EDB1D /* MultipartForm.swift */; };
 		CCDEE1962AEB74C30093575B /* APIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDEE1952AEB74C30093575B /* APIKey.swift */; };
@@ -165,7 +164,6 @@
 		CCCECE712A1EF36C00DBB7CA /* Question_Tootsie.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Tootsie.wav; sourceTree = "<group>"; };
 		CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_CPU.wav; sourceTree = "<group>"; };
 		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
-		CCD170D52B3E08FF008665F6 /* test.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = test.lua; sourceTree = "<group>"; };
 		CCD4B9012A93EB47004E3ADD /* NoaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaApp.swift; sourceTree = "<group>"; };
 		CCDCFEF82B322845008EDB1D /* MultipartForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartForm.swift; sourceTree = "<group>"; };
 		CCDEE1952AEB74C30093575B /* APIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.swift; sourceTree = "<group>"; };
@@ -488,7 +486,6 @@
 				CC2E4FC62B560DBC00718A65 /* graphics.lua */,
 				CC2E4FC52B560DBC00718A65 /* main.lua */,
 				CC2E4FC42B560DBC00718A65 /* state.lua */,
-				CCD170D52B3E08FF008665F6 /* test.lua */,
 			);
 			path = Scripts;
 			sourceTree = "<group>";
@@ -616,7 +613,6 @@
 				CC212D6E2A9E6F130093479F /* monocle-fpga.bin in Resources */,
 				CC2E4FC92B560DBC00718A65 /* graphics.lua in Resources */,
 				CC2E4FC72B560DBC00718A65 /* state.lua in Resources */,
-				CCD170D62B3E08FF008665F6 /* test.lua in Resources */,
 				CC212D702A9E74870093479F /* audio.py in Resources */,
 				CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */,
 				CC200A512A37E396005C67E0 /* graphics.py in Resources */,
@@ -878,7 +874,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0;
+				MARKETING_VERSION = 5.4;
 				OTHER_SWIFT_FLAGS = "-cxx-interoperability-mode=default";
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -918,7 +914,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0;
+				MARKETING_VERSION = 5.4;
 				OTHER_SWIFT_FLAGS = "-cxx-interoperability-mode=default";
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.brilliant.argpt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
