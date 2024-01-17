@@ -3,56 +3,98 @@ Graphics.__index = Graphics
 
 function Graphics.new()
     local self = setmetatable({}, Graphics)
-    self.MAX_LINES = 7
-    self.WORD_SPEED = 300
-    self.FRAME_RATE = 15
-    self:clear_response()
-    self.__last_frame_time = frame.time.utc()
-    self.__last_word_time = frame.time.utc()
+    self:clear()
     return self
 end
 
-function Graphics:clear_response()
-    self.__current_response = ""
-    self.__current_response_word = 0
-    self.__current_response_line_offset = 0
-    self.done_printing = false
+function Graphics:clear()
+    self.__current_text = ""
+    self.__current_character = 0
+    self.__current_image = ""
+    frame.display.assign_color(1, 0x00, 0x00, 0x00)
+    frame.display.assign_color(2, 0xFF, 0xFF, 0xFF)
 end
 
-function Graphics:append_response(response)
-    self.__current_response = string.gsub(response, "\n+", "  ")
-    print("Graphics: " .. self.__current_response)
+function Graphics:append_text(response)
+    self.__current_text = self.__current_text .. string.gsub(response, "\n+", " ")
 end
 
-function Graphics:__split_lines(words)
-    local word_arrays = {}
-    local current_array = {}
-    local current_length = 0
-    local max_characters = 26 -- TODO make this dynamic
+function Graphics:append_image(response)
+    self.__current_image = self.__current_image .. response
+end
 
-    for _, word in ipairs(words) do
-        local word_length = string.len(word)
-        if word == "" then
-            table.insert(word_arrays, current_array)
-            current_array = {}
-            current_length = max_characters
-        elseif current_length + word_length + #current_array <= max_characters then
-            table.insert(current_array, word)
-            current_length = current_length + word_length
-        else
-            table.insert(word_arrays, current_array)
-            current_array = { word }
-            current_length = word_length
-        end
+function Graphics:set_color(index, red, green, blue)
+    frame.display.assign_color(index, red, green, blue)
+end
+
+function Graphics:on_complete(func)
+    if self.__current_character > 0 and self.__current_character == #self.__current_text then
+        pcall(func)
     end
-
-    if #current_array > 0 then
-        table.insert(word_arrays, current_array)
-    end
-
-    return word_arrays
 end
 
 function Graphics:run()
+    -- Print out an image if valid
+    if #self.__current_image == 80000 then
+        frame.display.clear()
+        frame.sleep(0.02)
+        frame.display.bitmap(120, 0, 400, 16, 0, #self.__current_image)
+        frame.display.show()
+        frame.sleep(0.02)
+        return
+    end
+
+    -- Otherwise print text
+    local MAX_LINES = 3
+    local Y_OFFSET = 150
+    local SCREEN_WIDTH = 640
+    local CHARACTER_WIDTH = 24
+    local WORD_DELAY = 0.1
+
+    -- Local variables
+    local line_count = 1
+    local lines = { "" }
+    local accumulated_width = 0
+    local trunkated_text = string.sub(self.__current_text, 1, self.__current_character)
+
+    for word in string.gmatch(trunkated_text, "%S+") do
+        for character in string.gmatch(word, "%S+") do
+            if accumulated_width + (CHARACTER_WIDTH * #character) > SCREEN_WIDTH then
+                accumulated_width = 0
+                line_count = line_count + 1
+                if line_count > MAX_LINES then
+                    for shifted_line = 0, MAX_LINES - 1 do
+                        lines[line_count - MAX_LINES + shifted_line] = lines[line_count - MAX_LINES + shifted_line + 1]
+                    end
+                    line_count = line_count - 1
+                end
+                lines[line_count] = ""
+            end
+            accumulated_width = accumulated_width + (CHARACTER_WIDTH * #character) + 24
+            lines[line_count] = lines[line_count] .. " " .. word
+        end
+    end
+
+    -- Print to the display
+    frame.display.clear()
     frame.sleep(0.02)
+
+    for i, line in pairs(lines) do
+        local y = 1 + ((i - 1) * 58) + Y_OFFSET
+        frame.display.text(line, 1, y)
+    end
+
+    frame.display.show()
+    frame.sleep(0.02)
+
+
+    -- Delay for appropriate time
+    if string.sub(self.__current_text, self.__current_character, self.__current_character) == " " then
+        frame.sleep(WORD_DELAY)
+    end
+
+    -- Increment for the next print
+    if self.__current_character < #self.__current_text then
+        self.__current_character = self.__current_character + 1
+    end
 end

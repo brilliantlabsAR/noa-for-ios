@@ -1,16 +1,11 @@
 State = {}
 State.__index = State
-State.Init = "Init"
-State.TapTutorial = "TapTutorial"
-State.WaitingForTap = "WaitingForTap"
-State.RecordAudio = "RecordAudio"
-State.WaitForResponse = "WaitForResponse"
 
 function State.new()
     local self = setmetatable({}, State)
-    self.previous_state = State.Init
-    self.current_state = State.Init
-    self.next_state = State.Init
+    self.previous_state = "Init"
+    self.current_state = "Init"
+    self.next_state = "Init"
     self.entry_time = frame.time.utc()
     self.entered = true
     return self
