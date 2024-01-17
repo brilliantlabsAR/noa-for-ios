@@ -321,11 +321,12 @@ class FrameController: ObservableObject {
             paletteMessage.append(palette)
             _outgoingQueue.append(paletteMessage)
 
-            // Send image in chunks
+            // Send image in chunks of 400 pixels (200 bytes)
+            let pixelRowBytes = 200
             startIdx = 0
             while startIdx < pixels.count {
                 var message = Data([0x01, MessageID.multimodalImage4Chunk.rawValue])
-                let endIdx = min(pixels.count, startIdx + maxChunkSize)
+                let endIdx = min(pixels.count, startIdx + pixelRowBytes)
                 message.append(pixels[startIdx..<endIdx])
                 _outgoingQueue.append(message)
                 startIdx = endIdx
@@ -384,7 +385,7 @@ class FrameController: ObservableObject {
 //    }
 
     private func sendEnqueuedMessagesToFrame(on connection: AsyncBluetoothManager.Connection?) {
-        let delayMS = 100
+        let delayMS = 20
         DispatchQueue.main.asyncAfter(deadline: .now().advanced(by: .milliseconds(delayMS))) { [weak self] in
             guard let self = self, 
                   let connection = connection,
