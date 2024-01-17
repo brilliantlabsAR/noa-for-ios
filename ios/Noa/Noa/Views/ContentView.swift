@@ -167,14 +167,14 @@ struct ContentView: View {
                 // Send scripts and issue ^D to execute main.lua
                 try await _frameController.loadScript(named: "state.lua", on: connection)
                 try await _frameController.loadScript(named: "graphics.lua", on: connection)
-                try await _frameController.loadScript(named: "main.lua", on: connection)//, run: true)
+                try await _frameController.loadScript(named: "main.lua", on: connection)
                 print("Starting...")
                 connection.send(text: "\u{4}")
 //                try await _frameController.loadScript(named: "test.lua", on: connection, run: true)
 //                print("Starting...")
 
                 for try await data in connection.receivedData {
-                    Util.hexDump(data)
+                    //Util.hexDump(data)
                     _frameController.onDataReceived(data: data, on: connection)
                 }
             } catch let error as AsyncBluetoothManager.StreamError {

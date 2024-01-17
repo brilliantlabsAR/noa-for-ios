@@ -198,29 +198,24 @@ class FrameController: ObservableObject {
             _audioBuffer.removeAll(keepingCapacity: true)
             _photoBuffer.removeAll(keepingCapacity: true)
             printTypingIndicatorToChat(as: .user)
-            log("Received message: MultimodalStart")
 
         case .multimodalTextChunk:
             if data.count > 1 {
                 _textBuffer.append(data[1...])
             }
-            log("Received message: MultimodalTextChunk (\(data.count) bytes)")
 
         case .multimodalAudioChunk:
             if data.count > 1 {
                 _audioBuffer.append(data[1...])
             }
-            log("Received message: MultimodalAudioChunk (\(data.count) bytes)")
 
         case .multimodalImage332Chunk:
             if data.count > 1 {
                 _photoBuffer.append(data[1...])
             }
-            log("Received message: MultimodalPhotoChunk (\(data.count) bytes)")
 
         case .multimodalEnd:
             submitMultimodal(connection: connection)
-            log("Received message: MultimodalEnd")
 
         default:
             break

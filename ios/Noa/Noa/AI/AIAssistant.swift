@@ -40,7 +40,7 @@ public class AIAssistant: NSObject {
     private var _messageHistory: [[String: Any]] = [
         [
             "role": "system",
-            "content": "You are a smart assistant named Noa that answers all user queries, questions, and statements with a single sentence."
+            "content": "You are a smart assistant named Noa that answers all user queries, questions, and statements with a single sentence. Never comment on image quality."
         ],
     ]
 
