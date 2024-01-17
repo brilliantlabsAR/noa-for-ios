@@ -345,9 +345,13 @@ class FrameController: ObservableObject {
         guard let pixelBuffer = resizedImage.toPixelBuffer() else { return nil }
 
         // Quantize
-        let quantized = quantizeColors(pixelBuffer, 16, 4)
-        let paletteVector = quantized.first
-        let pixelVector = quantized.second
+        var quantized = quantizeColors(pixelBuffer, 16, 4)
+        var paletteVector = quantized.first
+        var pixelVector = quantized.second
+
+        // Make sure color 0 is always black so we don't render any color in empty border regions
+        // on Frame
+        setDarkestColorToBlackAndIndex0(&paletteVector, &pixelVector, 4);
 
         // Convert to palette and pixel data buffers
         if paletteVector.size() == 16 && pixelVector.size() > 0 {

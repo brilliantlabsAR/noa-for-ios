@@ -260,6 +260,66 @@ std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixe
     return std::pair(palette, outputPixels);
 }
 
+void setDarkestColorToBlackAndIndex0(std::vector<PaletteValue> &palette, std::vector<uint8_t> &pixels, size_t bitDepth)
+{
+    assert(bitDepth == 4);
+
+    // Find darkest color
+    float darkestLuma = 1.0f;
+    size_t darkestColor = 0;
+    for (size_t i = 0; i < palette.size(); i++)
+    {
+        float luma = palette[i].luminance();
+        if (luma < darkestLuma)
+        {
+            darkestLuma = luma;
+            darkestColor = i;
+        }
+    }
+
+    // Make darkest color fully black
+    palette[darkestColor].r = 0;
+    palette[darkestColor].g = 0;
+    palette[darkestColor].b = 0;
+
+    // Swap with color 0 so that color 0 is black
+    if (0 == darkestColor)
+    {
+        return;
+    }
+    PaletteValue tmp = palette[0];
+    palette[0] = palette[darkestColor];
+    palette[darkestColor] = tmp;
+
+    // Remap pixels. Swap any occurrences of 0 <-> darkestColor.
+    for (size_t i = 0; i < pixels.size(); i++)
+    {
+        uint8_t pixelPair = pixels[i];
+
+        uint8_t pixel1 = pixelPair >> 4;
+        if (pixel1 == 0)
+        {
+            pixel1 = darkestColor;
+        }
+        else if (pixel1 == darkestColor)
+        {
+            pixel1 = 0;
+        }
+
+        uint8_t pixel2 = pixelPair & 0xf;
+        if (pixel2 == 0)
+        {
+            pixel2 = darkestColor;
+        }
+        else if (pixel2 == darkestColor)
+        {
+            pixel2 = 0;
+        }
+
+        pixels[i] = (pixel1 << 4) | pixel2;
+    }
+}
+
 void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<PaletteValue> &palette, const std::vector<uint8_t> &pixels, size_t bitDepth)
 {
     assert(bitDepth == 4);
