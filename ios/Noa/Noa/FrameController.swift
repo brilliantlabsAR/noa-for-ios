@@ -9,6 +9,9 @@
 //  - Multimodal response back. Need a different type of image chunk for palettized image.
 //  - Clear internal history whenever a Frame message arrives N minutes after last Frame or GUI
 //    message.
+//  - Make M4AWriter and AI assistant URL requests completely async if possible so we don't need
+//    a DispatchQueue-based sender. The DispatchQueue based send is not necessarily safe if it
+//    gets called again befor sending is complete (the durations between sends might be reduced).
 //
 
 import AVFoundation
@@ -34,19 +37,30 @@ class FrameController: ObservableObject {
 
         /// Text chunk. All text chunks are concatenated and terminated with `MultimodalEnd`. May
         /// safely be interleaved with other chunk types.
-        case multimodalTextChunk = 0x01
+        case multimodalTextChunk = 0x11
 
         /// Audio chunk. Concatenated with other audio chunks and terminated with `MultimodalEnd`.
         /// May safely be interleaved with other chunk types. This chunk can only be sent from 
         /// Frame to phone.
         case multimodalAudioChunk = 0x12
 
-        /// Photo chunk. Concatenated with other photo chunks and terminated with `MultimodalEnd`.
-        /// May safely be interleaved with other chunk types. May only be sent from Frame to phone.
-        case multimodalPhotoChunk = 0x13
+        /// RGB332-format photo chunk. Concatenated with other photo chunks and terminated with
+        /// `MultimodalEnd`. May safely be interleaved with other chunk types. May only be sent
+        /// from Frame to phone.
+        case multimodalImage332Chunk = 0x13
+
+        /// Palette chunk for 4-bit color-indexed images (sent from phone  to Frame). This should
+        /// be sent as a single chunk somewhere in between `MultimodalStart` and `MultimodalEnd`
+        /// but before any `Image4` chunk. May ony be sent from phone to Frame.
+        case multimodalPaletteChunk = 0x14
+
+        /// Image chunk encoded as a 4-bit color-indexed linear format. Concatenated with other
+        /// chunks and terminated with `MultimodalEnd`. The palette must be transmitted before the
+        /// first chunk. May only be sent from phone to Frame.
+        case multimodalImage4Chunk = 0x15
 
         /// Ends a multimodal message. All data attachments must have been transmitted.
-        case multimodalEnd = 0x14
+        case multimodalEnd = 0x16
     }
 
     private let _settings: Settings
@@ -57,6 +71,7 @@ class FrameController: ObservableObject {
     private var _audioBuffer = Data()
     private var _photoBuffer = Data()
     private var _receiveMultimodalInProgress = false
+    private var _outgoingQueue: [Data] = []
 
     private let _multimodalStartMessage = Data([UInt8]([ 0x01, MessageID.multimodalStart.rawValue ] ))
     private let _multimodalEndMessage = Data([UInt8]([ 0x01, MessageID.multimodalEnd.rawValue ]))
@@ -66,23 +81,11 @@ class FrameController: ObservableObject {
     init(settings: Settings, messages: ChatMessageStore) {
         _settings = settings
         _messages = messages
-
-        let time = Util.Stopwatch.measure {
-            let test = UIImage(named: "Tahoe.jpg")
-            if let pb = test?.toPixelBuffer() {
-                let quantized = quantizeColors(pb, 16, 4)
-                print("palette=\(quantized.first.size()), pixels=\(quantized.second.size())")
-                applyColorsToPixelBuffer(pb, quantized.first, quantized.second, 4)
-                if let image = UIImage(pixelBuffer: pb) {
-                    printToChat("", picture: image, as: .user, connection: nil)
-                }
-            }
-        }
-        print("Time = \(time)")
     }
 
     func onConnect(on connection: AsyncBluetoothManager.Connection) async throws {
         _receiveMultimodalInProgress = false
+        _outgoingQueue.removeAll()
 
         // Send ^C to kill current running app. Do NOT use runCommand(). Not entirely sure why but
         // it appears to generate an additional error response and get stuck.
@@ -91,6 +94,7 @@ class FrameController: ObservableObject {
 
     func onDisconnect() {
         _receiveMultimodalInProgress = false
+        _outgoingQueue.removeAll()
     }
 
     func onDataReceived(data: Data, on connection: AsyncBluetoothManager.Connection) {
@@ -208,7 +212,7 @@ class FrameController: ObservableObject {
             }
             log("Received message: MultimodalAudioChunk (\(data.count) bytes)")
 
-        case .multimodalPhotoChunk:
+        case .multimodalImage332Chunk:
             if data.count > 1 {
                 _photoBuffer.append(data[1...])
             }
@@ -217,6 +221,9 @@ class FrameController: ObservableObject {
         case .multimodalEnd:
             submitMultimodal(connection: connection)
             log("Received message: MultimodalEnd")
+
+        default:
+            break
         }
     }
 
@@ -224,23 +231,23 @@ class FrameController: ObservableObject {
 
     private func submitMultimodal(connection: AsyncBluetoothManager.Connection) {
         //TEMPORARY: construct a fake image
-        _photoBuffer = Data(count: 200 * 200)
-        let red: UInt8 = 0xe0
-        let green: UInt8 = 0x1c
-        let blue: UInt8 = 0x03
-        for i in 0..<200 {
-            _photoBuffer[0 * 200 + i] = red
-            _photoBuffer[i * 200 + 0] = green
-            _photoBuffer[i * 200 + 199] = green
-            _photoBuffer[199 * 200 + i] = red
-            _photoBuffer[i * 200 + i] = blue
-        }
+//        _photoBuffer = Data(count: 200 * 200)
+//        let red: UInt8 = 0xe0
+//        let green: UInt8 = 0x1c
+//        let blue: UInt8 = 0x03
+//        for i in 0..<200 {
+//            _photoBuffer[0 * 200 + i] = red
+//            _photoBuffer[i * 200 + 0] = green
+//            _photoBuffer[i * 200 + 199] = green
+//            _photoBuffer[199 * 200 + i] = red
+//            _photoBuffer[i * 200 + i] = blue
+//        }
 
         // RGB332 -> UIImage
         var photo: UIImage? = nil
         if _photoBuffer.count == 200 * 200, // require a complete image to decode
            let pixelBuffer = CVPixelBuffer.fromRGB332(_photoBuffer, width: 200, height: 200) {
-            photo = UIImage(pixelBuffer: pixelBuffer)?.resized(to: CGSize(width: 512, height: 512))
+            photo = UIImage(pixelBuffer: pixelBuffer)?.rotated(by: -90)?.resized(to: CGSize(width: 512, height: 512))
         }
 
         // Text
@@ -306,7 +313,7 @@ class FrameController: ObservableObject {
             return
         }
 
-        connection.send(data: _multimodalStartMessage)
+        _outgoingQueue.append(_multimodalStartMessage)
 
         let payloadSize = connection.maximumWriteLength(for: .withoutResponse)
         let maxChunkSize = payloadSize - 2  // 0x01 (data packet) and message ID bytes
@@ -318,11 +325,97 @@ class FrameController: ObservableObject {
             let endIdx = min(textData.count, startIdx + maxChunkSize)
             message.append(textData[startIdx..<endIdx])
             //Util.hexDump(message)
-            connection.send(data: message)
+            _outgoingQueue.append(message)
             startIdx = endIdx
         }
 
-        connection.send(data: _multimodalEndMessage)
+        // Send palette and image in chunks. Frame cannot print text and display an image
+        // simultaneously, so we prioritize text messages.
+        if let image = image,
+           text.isEmpty,
+           let (palette, pixels) = convertImageTo4Bit(image: image) {
+            // Palette chunk must go first
+            var paletteMessage = Data([0x01, MessageID.multimodalPaletteChunk.rawValue])
+            paletteMessage.append(palette)
+            _outgoingQueue.append(paletteMessage)
+
+            // Send image in chunks
+            startIdx = 0
+            while startIdx < pixels.count {
+                var message = Data([0x01, MessageID.multimodalImage4Chunk.rawValue])
+                let endIdx = min(pixels.count, startIdx + maxChunkSize)
+                message.append(pixels[startIdx..<endIdx])
+                _outgoingQueue.append(message)
+                startIdx = endIdx
+            }
+        }
+
+        _outgoingQueue.append(_multimodalEndMessage)
+
+        sendEnqueuedMessagesToFrame(on: connection)
+    }
+
+    private func convertImageTo4Bit(image: UIImage) -> (Data, Data)? {
+        // Stable Diffusion images are 512x512 and we resize to 400x400 to fit within Frame's
+        // 640x400 display.
+        let resizedImage = image.resized(to: CGSize(width: 400, height: 400))
+        guard let pixelBuffer = resizedImage.toPixelBuffer() else { return nil }
+
+        // Quantize
+        let quantized = quantizeColors(pixelBuffer, 16, 4)
+        let paletteVector = quantized.first
+        let pixelVector = quantized.second
+
+        // Convet to palette and pixel data buffers
+        if paletteVector.size() == 16 && pixelVector.size() > 0 {
+            // Produce palette chunk, encodes as (R, G, B) byte triples
+            var palette = Data(count: 16 * 3)
+            for i in 0..<16 {
+                palette[i * 3 + 0] = paletteVector[i].r
+                palette[i * 3 + 1] = paletteVector[i].g
+                palette[i * 3 + 2] = paletteVector[i].b
+            }
+
+            // Produce 4-bit image data
+            let pixels = Data(pixelVector)
+
+            return (palette, pixels)
+        }
+
+        return nil
+    }
+
+    static var _cumulativeBytesSent = 0
+
+//    private func sendEnqueuedMessagesToFrame(on connection: AsyncBluetoothManager.Connection?) {
+//        let delayMS = 100//20
+//        for i in 0..<_outgoingQueue.count {
+//            let message = _outgoingQueue[i]
+//            DispatchQueue.main.asyncAfter(deadline: .now().advanced(by: .milliseconds(i * delayMS))) { [weak self] in
+//                guard let self = self, let connection = connection else { return }
+//                connection.send(data: message)
+//                Self._cumulativeBytesSent += message.count
+//                log("Sent \(Self._cumulativeBytesSent) bytes")
+//            }
+//        }
+//        _outgoingQueue.removeAll()
+//    }
+
+    private func sendEnqueuedMessagesToFrame(on connection: AsyncBluetoothManager.Connection?) {
+        let delayMS = 100
+        DispatchQueue.main.asyncAfter(deadline: .now().advanced(by: .milliseconds(delayMS))) { [weak self] in
+            guard let self = self, 
+                  let connection = connection,
+                  let nextMessage = _outgoingQueue.first else {
+                return
+            }
+            connection.send(data: nextMessage)
+            _outgoingQueue.removeFirst()
+            sendEnqueuedMessagesToFrame(on: connection)
+
+            Self._cumulativeBytesSent += nextMessage.count
+            log("\(Date.timeIntervalSinceReferenceDate) -- Sent \(Self._cumulativeBytesSent) bytes")
+        }
     }
 
     // MARK: iOS chat window
