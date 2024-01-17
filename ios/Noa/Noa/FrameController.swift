@@ -349,7 +349,7 @@ class FrameController: ObservableObject {
         let paletteVector = quantized.first
         let pixelVector = quantized.second
 
-        // Convet to palette and pixel data buffers
+        // Convert to palette and pixel data buffers
         if paletteVector.size() == 16 && pixelVector.size() > 0 {
             // Produce palette chunk, encodes as (R, G, B) byte triples
             var palette = Data(count: 16 * 3)
@@ -359,7 +359,7 @@ class FrameController: ObservableObject {
                 palette[i * 3 + 2] = paletteVector[i].b
             }
 
-            // Produce 4-bit image data
+            // Pixel data
             let pixels = Data(pixelVector)
 
             return (palette, pixels)
