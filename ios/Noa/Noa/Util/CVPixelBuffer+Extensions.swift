@@ -33,7 +33,14 @@ extension CVPixelBuffer {
         CVPixelBufferUnlockBaseAddress(self, CVPixelBufferLockFlags(rawValue: 0))
     }
 
-    static func fromRGB332(_ data: Data, width: Int, height: Int) -> CVPixelBuffer? {
+    static func fromRGB332(
+        _ data: Data,
+        width: Int,
+        height: Int,
+        redScaleFactor: Float = 1.0,
+        greenScaleFactor: Float = 1.0,
+        blueScaleFactor: Float = 1.0
+    ) -> CVPixelBuffer? {
         precondition(width * height == data.count)
 
         // Allocate a new buffer
@@ -65,9 +72,9 @@ extension CVPixelBuffer {
             var outIdx = 0
             for _ in 0..<height {
                 for _ in 0..<width {
-                    let r = min(255, Int(Float(data[inIdx] >> 5) * 255.0 / 7.0))
-                    let g = min(255, Int(Float((data[inIdx] >> 2) & 7) * 255.0 / 7.0))
-                    let b = min(255, Int(Float(data[inIdx] & 3) * 255.0 / 3.0))
+                    let r = min(255, Int(Float(data[inIdx] >> 5) * 255.0 * redScaleFactor / 7.0))
+                    let g = min(255, Int(Float((data[inIdx] >> 2) & 7) * 255.0 * greenScaleFactor / 7.0))
+                    let b = min(255, Int(Float(data[inIdx] & 3) * 255.0 * blueScaleFactor / 3.0))
                     inIdx += 1
                     bytes[outIdx] = 0xff    // opaque
                     outIdx += 1

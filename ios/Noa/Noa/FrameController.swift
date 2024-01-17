@@ -230,23 +230,10 @@ class FrameController: ObservableObject {
     // MARK: AI
 
     private func submitMultimodal(connection: AsyncBluetoothManager.Connection) {
-        //TEMPORARY: construct a fake image
-//        _photoBuffer = Data(count: 200 * 200)
-//        let red: UInt8 = 0xe0
-//        let green: UInt8 = 0x1c
-//        let blue: UInt8 = 0x03
-//        for i in 0..<200 {
-//            _photoBuffer[0 * 200 + i] = red
-//            _photoBuffer[i * 200 + 0] = green
-//            _photoBuffer[i * 200 + 199] = green
-//            _photoBuffer[199 * 200 + i] = red
-//            _photoBuffer[i * 200 + i] = blue
-//        }
-
         // RGB332 -> UIImage
         var photo: UIImage? = nil
         if _photoBuffer.count == 200 * 200, // require a complete image to decode
-           let pixelBuffer = CVPixelBuffer.fromRGB332(_photoBuffer, width: 200, height: 200) {
+           let pixelBuffer = CVPixelBuffer.fromRGB332(_photoBuffer, width: 200, height: 200, greenScaleFactor: 0.6) {
             photo = UIImage(pixelBuffer: pixelBuffer)?.rotated(by: -90)?.resized(to: CGSize(width: 512, height: 512))
         }
 
@@ -437,6 +424,22 @@ class FrameController: ObservableObject {
         if participant != .user,
            let connection = connection {
             sendResponseToFrame(on: connection, text: text, image: picture, isError: false)
+        }
+    }
+
+    // MARK: Debug
+
+    private func loadTestImage() {
+        _photoBuffer = Data(count: 200 * 200)
+        let red: UInt8 = 0xe0
+        let green: UInt8 = 0x1c
+        let blue: UInt8 = 0x03
+        for i in 0..<200 {
+            _photoBuffer[0 * 200 + i] = red
+            _photoBuffer[i * 200 + 0] = green
+            _photoBuffer[i * 200 + 199] = green
+            _photoBuffer[199 * 200 + i] = red
+            _photoBuffer[i * 200 + i] = blue
         }
     }
 }
