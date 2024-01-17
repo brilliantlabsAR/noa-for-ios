@@ -13,10 +13,12 @@ MESSAGE_IMAGE_4_FLAG = "\x15"
 MESSAGE_END_FLAG = "\x16"
 
 function bluetooth_callback(message)
-    if state:is("DisplayResponse") then
+    if state:is("WaitingForResponse") then
         if string.sub(message, 1, 1) == MESSAGE_START_FLAG then
-            graphics:clear()
-        elseif string.sub(message, 1, 1) == MESSAGE_TEXT_FLAG then
+            state:switch("DisplayResponse")
+        end
+    elseif state:is("DisplayResponse") then
+        if string.sub(message, 1, 1) == MESSAGE_TEXT_FLAG then
             graphics:append_text(string.sub(message, 2))
         elseif string.sub(message, 1, 1) == MESSAGE_PALETTE_FLAG then
             for color = 0, 15 do
@@ -89,10 +91,6 @@ while true do
         end
         state:switch("SendAudio")
     elseif state:is("SendAudio") then
-        state:on_entry(function()
-            graphics:clear()
-            graphics:append_text(". . .")
-        end)
         local samples = math.floor((frame.bluetooth.max_length() - 1) / 4) * 4
         while true do
             local audio_data = frame.microphone.read(samples)
@@ -102,11 +100,16 @@ while true do
                 break
             end
         end
-        state:switch("DisplayResponse")
+        state:switch("WaitingForResponse")
+    elseif state:is("WaitingForResponse") then
+        state:on_entry(function()
+            graphics:clear()
+            graphics:append_text(". . .")
+            send_data(MESSAGE_END_FLAG)
+        end)
     elseif state:is("DisplayResponse") then
         state:on_entry(function()
             graphics:clear()
-            send_data(MESSAGE_END_FLAG)
         end)
         graphics:on_complete(function()
             state:switch("HoldResponse")
