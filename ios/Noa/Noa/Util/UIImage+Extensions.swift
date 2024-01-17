@@ -13,7 +13,7 @@ extension UIImage {
     /// Creates a `UIImage` from a `CVPixelBuffer`. Not all `CVPixelBuffer` formats are supported.
     /// - Parameter pixelBuffer: The pixel buffer to create the image from.
     /// - Returns: `nil` if unsuccessful, otherwise `UIImage`.
-    public convenience init?(pixelBuffer: CVPixelBuffer) {
+    convenience init?(pixelBuffer: CVPixelBuffer) {
         var cgImage: CGImage?
         VTCreateCGImageFromCVPixelBuffer(pixelBuffer, options: nil, imageOut: &cgImage)
         guard let cgImage = cgImage else {
@@ -23,7 +23,7 @@ extension UIImage {
         self.init(cgImage: cgImage)
     }
 
-    public func centerCropped(to cropSize: CGSize) -> UIImage? {
+    func centerCropped(to cropSize: CGSize) -> UIImage? {
         guard let srcImage = self.cgImage else {
             print("[UIImage] Unable to obtain CGImage")
             return nil
@@ -42,14 +42,32 @@ extension UIImage {
         return UIImage(cgImage: croppedImage, scale: self.imageRendererFormat.scale, orientation: self.imageOrientation)
     }
 
-    public func resized(to newSize: CGSize) -> UIImage {
+    func resized(to newSize: CGSize) -> UIImage {
         let image = UIGraphicsImageRenderer(size: newSize).image { _ in
             draw(in: CGRect(origin: .zero, size: newSize))
         }
         return image.withRenderingMode(renderingMode)
     }
 
-    public func expandImageWithLetterbox(to newSize: CGSize) -> UIImage? {
+    func rotated(by degrees: Float) -> UIImage? {
+        let radians = CGFloat(degrees * .pi / 180.0)
+        let rotatedSize = CGRect(origin: .zero, size: size)
+            .applying(CGAffineTransform(rotationAngle: radians))
+            .integral
+            .size
+        UIGraphicsBeginImageContext(rotatedSize)
+        if let context = UIGraphicsGetCurrentContext() {
+            context.translateBy(x: rotatedSize.width / 2, y: rotatedSize.height / 2)
+            context.rotate(by: radians)
+            draw(in: CGRect(x: -size.width / 2, y: -size.height / 2, width: size.width, height: size.height))
+            let rotatedImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            return rotatedImage
+        }
+        return nil
+    }
+
+    func expandImageWithLetterbox(to newSize: CGSize) -> UIImage? {
         assert(newSize.width >= self.size.width && newSize.height >= self.size.height, "Image can only be expanded")
 
         if newSize == self.size {
@@ -79,7 +97,7 @@ extension UIImage {
     /// Converts a `UIImage` to an ARGB-formatted `CVPixelBuffer`. The `UIImage` is assumed to be
     /// opaque and the alpha channel is ignored. The resulting pixel buffer has all alpha values set to `0xFF`.
     /// - Returns: `CVPixelBuffer` if successful otherwise `nil`.
-    public func toPixelBuffer() -> CVPixelBuffer? {
+    func toPixelBuffer() -> CVPixelBuffer? {
         let width = Int(size.width)
         let height = Int(size.height)
 
