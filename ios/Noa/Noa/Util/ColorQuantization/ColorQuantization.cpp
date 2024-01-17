@@ -295,28 +295,12 @@ void setDarkestColorToBlackAndIndex0(std::vector<PaletteValue> &palette, std::ve
     uint8_t lut[256];
     for (size_t i = 0; i < 256; i++)
     {
-        uint8_t pixel1 = i >> 4;
-        if (pixel1 == 0)
-        {
-            pixel1 = darkestColor;
-        }
-        else if (pixel1 == darkestColor)
-        {
-            pixel1 = 0;
-        }
-
-        uint8_t pixel2 = i & 0xf;
-        if (pixel2 == 0)
-        {
-            pixel2 = darkestColor;
-        }
-        else if (pixel2 == darkestColor)
-        {
-            pixel2 = 0;
-        }
-
-        lut[i] = (pixel1 << 4) | pixel2;
+        lut[i] = i;
     }
+    lut[0x00 | 0x00] = (darkestColor << 4) | darkestColor;  // (0, 0) -> (darkestColor, darkestColor)
+    lut[0x00 | darkestColor] = (darkestColor << 4) | 0x00;  // (0, darkestColor) -> (darkestColor, 0)
+    lut[(darkestColor << 4) | 0x00] = 0x00 | darkestColor;  // (darkestColor, 0) -> (0, darkestColor)
+    lut[(darkestColor << 4) | darkestColor] = 0x00;         // (darkestColor, darkestColor) -> (0, 0)
 
     // Remap pixels using the LUT
     for (size_t i = 0; i < pixels.size(); i++)
