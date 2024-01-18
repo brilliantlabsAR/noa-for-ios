@@ -8,6 +8,7 @@
 #include "ColorQuantization.hpp"
 #include <algorithm>
 #include <cstdio>
+#include <random>
 #include <tuple>
 #include <vector>
 
@@ -26,16 +27,17 @@ struct Pixel
     uint8_t r;
     uint8_t g;
     uint8_t b;
-    uint8_t _padding;
+    uint8_t k;
 
     Pixel()
     {
     }
 
-    Pixel(uint16_t x, uint16_t y, const uint8_t *pixels, size_t stride, OSType format)
+    Pixel(uint16_t x, uint16_t y, const uint8_t *pixels, size_t stride, OSType format, uint8_t k = 0)
     {
         this->x = x;
         this->y = y;
+        this->k = k;
 
         switch (format)
         {
@@ -381,4 +383,144 @@ void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<Pa
 
 exit:
     CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
+}
+
+std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColorsKMeans(CVPixelBufferRef pixelBuffer, size_t numColors, size_t outputBitDepth)
+{
+    assert(numColors <= 16);    // for now, we output to a 4-bit buffer
+    assert(outputBitDepth == 4);
+
+    CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
+    size_t byteStride = CVPixelBufferGetBytesPerRow(pixelBuffer);
+    size_t width = CVPixelBufferGetWidth(pixelBuffer);
+    size_t height = CVPixelBufferGetHeight(pixelBuffer);
+    OSType format = CVPixelBufferGetPixelFormatType(pixelBuffer);
+
+    if (format != kCVPixelFormatType_32ABGR && format != kCVPixelFormatType_32ARGB)
+    {
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
+        puts("[ColorQuantization] Error: Pixel buffer must be ARGB or ABGR format");
+        return std::pair(std::vector<PaletteValue>(), std::vector<uint8_t>());
+    }
+
+    uint8_t *bytes = reinterpret_cast<uint8_t *>(CVPixelBufferGetBaseAddress(pixelBuffer));
+    if (nullptr == bytes)
+    {
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
+        puts("[ColorQuantization] Error: Unable to get buffer base address");
+        return std::pair(std::vector<PaletteValue>(), std::vector<uint8_t>());
+    }
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
+
+    std::vector<PaletteValue> palette(numColors);
+    std::vector<uint8_t> outputPixels(width * height / 2);  // 4 bits per pixel
+
+    // Random number generator for initial k-means clusters
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> random(0, unsigned(numColors - 1));   // [0, numColors-1]
+
+    // Array of labeled pixels, randomly assigned to initial clusters
+    std::vector<Pixel> pixels(width * height);
+    size_t pixelIdx = 0;
+    for (size_t y = 0; y < height; y++)
+    {
+        for (size_t x = 0; x < width; x++)
+        {
+           pixels[pixelIdx++] = Pixel(x, y, bytes, byteStride, format, random(rng));
+        }
+    }
+
+    // Centroid for each color cluster (mean RGB value)
+    struct Color
+    {
+        uint64_t r = 0;
+        uint64_t g = 0;
+        uint64_t b = 0;
+    };
+    Color centroids[numColors];
+    int numPixelsInCluster[numColors];
+
+    // Repeat k-means until complete
+    size_t maxIterations = 24;
+    size_t iterations = 0;
+    bool didChange = false;
+    do {
+        didChange = false;
+
+        // Compute average for each cluster
+        for (size_t i = 0; i < numColors; i++)
+        {
+            centroids[i] = Color(); // zero out
+            numPixelsInCluster[i] = 0;
+        }
+        for (size_t i = 0; i < pixels.size(); i++)
+        {
+            size_t k = pixels[i].k;
+            centroids[k].r += pixels[i].r;
+            centroids[k].g += pixels[i].g;
+            centroids[k].b += pixels[i].b;
+            numPixelsInCluster[k]++;
+        }
+        for (size_t i = 0; i < numColors; i++)
+        {
+            centroids[i].r /= numPixelsInCluster[i];
+            centroids[i].g /= numPixelsInCluster[i];
+            centroids[i].b /= numPixelsInCluster[i];
+        }
+
+        // Assign each pixel to nearest cluster (cluster whose centroid is nearest)
+        for (size_t i = 0; i < pixels.size(); i++)
+        {
+            // Compute distance^2 to each cluster centroid
+            uint64_t distance[numColors];
+            for (size_t j = 0; j < numColors; j++)
+            {
+                distance[j] = (centroids[j].r - pixels[i].r) * (centroids[j].r - pixels[i].r) +
+                              (centroids[j].g - pixels[i].g) * (centroids[j].g - pixels[i].g) +
+                              (centroids[j].b - pixels[i].b) * (centroids[j].b - pixels[i].b);
+            }
+
+            // Which is nearest?
+            size_t bestK = 0;
+            size_t nearestDistance = distance[0];
+            for (size_t j = 1; j < numColors; j++)
+            {
+                if (distance[j] < nearestDistance)
+                {
+                    nearestDistance = distance[j];
+                    bestK = j;
+                }
+            }
+
+            // Did an assignment change?
+            didChange |= pixels[i].k != bestK;
+
+            // Assign
+            pixels[i].k = bestK;
+        }
+
+        iterations++;
+    } while (didChange && iterations < maxIterations);
+
+    // Create palette
+    for (size_t i = 0; i < numColors; i++)
+    {
+        palette[i] = { .r = uint8_t(centroids[i].r), .g = uint8_t(centroids[i].g), .b = uint8_t(centroids[i].b) };
+    }
+
+    // Assign colors to output pixels
+    for (Pixel &pixel: pixels)
+    {
+        uint8_t colorIdx = pixel.k;                 // color is just the cluster index
+        size_t pixelIdx = pixel.y * width + pixel.x;
+        size_t byteIdx = pixelIdx / 2;
+        size_t shiftAmount = (~pixelIdx & 1) * 4;   // even pixel in high nibble, odd in low
+        uint8_t mask = 0xf0 >> shiftAmount;         // mask if reverse: mask off low nibble when writing high nibble, etc.
+        outputPixels[byteIdx] = (outputPixels[byteIdx] & mask) | (colorIdx << shiftAmount);
+    }
+
+    printf("Num iters = %d\n", iterations);
+
+    return std::pair(palette, outputPixels);
 }

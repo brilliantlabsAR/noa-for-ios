@@ -81,6 +81,21 @@ class FrameController: ObservableObject {
     init(settings: Settings, messages: ChatMessageStore) {
         _settings = settings
         _messages = messages
+        /*
+        let time = Util.Stopwatch.measure {
+            let test = UIImage(named: "Tahoe.jpg")
+            if let pb = test?.toPixelBuffer() {
+                var quantized = quantizeColorsKMeans(pb, 16, 4)
+                print("palette=\(quantized.first.size()), pixels=\(quantized.second.size())")
+                setDarkestColorToBlackAndIndex0(&quantized.first, &quantized.second, 4)
+                applyColorsToPixelBuffer(pb, quantized.first, quantized.second, 4)
+                if let image = UIImage(pixelBuffer: pb) {
+                    printToChat("", picture: image, as: .user, connection: nil)
+                }
+            }
+        }
+        print("Time = \(time)")
+        */
     }
 
     func onConnect(on connection: AsyncBluetoothManager.Connection) async throws {

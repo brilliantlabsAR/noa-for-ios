@@ -28,6 +28,7 @@ struct PaletteValue
 };
 
 std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixelBufferRef pixelBuffer, size_t colors, size_t outputBitDepth);
+std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColorsKMeans(CVPixelBufferRef pixelBuffer, size_t numColors, size_t outputBitDepth);
 
 /// Finds the darkest color in the palette, makes it black, and maps it to color 0, adjusting all image pixels.
 void setDarkestColorToBlackAndIndex0(std::vector<PaletteValue> &palette, std::vector<uint8_t> &pixels, size_t bitDepth);
