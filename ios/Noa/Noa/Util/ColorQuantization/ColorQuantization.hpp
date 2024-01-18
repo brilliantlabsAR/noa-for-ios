@@ -27,7 +27,20 @@ struct PaletteValue
     }
 };
 
-std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixelBufferRef pixelBuffer, size_t colors, size_t outputBitDepth);
+/// Quantize colors to desired number of colors using the median cut algorithm.
+/// - Parameter pixelBuffer: The pixel buffer to quantize.
+/// - Parameter numColors: Number of colors in new palette. Must be a power of 2.
+/// - Parameter outputBitDepth: Bit depth of output pixel array. Must be sufficient to describe the
+///     number of colors (e.g., for 16 colors, no lower than 4 bits).
+/// - Returns: A vector of colors, each a `PaletteValue`, and a vector of pixels.
+std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixelBufferRef pixelBuffer, size_t numColors, size_t outputBitDepth);
+
+/// Quantize colors to desired number of colors using the k-means clustering algorithm.
+/// - Parameter pixelBuffer: The pixel buffer to quantize.
+/// - Parameter numColors: Number of colors in new palette. Need not be a power of 2.
+/// - Parameter outputBitDepth: Bit depth of output pixel array. Must be sufficient to describe the
+///     number of colors (e.g., for 16 colors, no lower than 4 bits).
+/// - Returns: A vector of colors, each a `PaletteValue`, and a vector of pixels.
 std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColorsKMeans(CVPixelBufferRef pixelBuffer, size_t numColors, size_t outputBitDepth);
 
 /// Finds the darkest color in the palette, makes it black, and maps it to color 0, adjusting all image pixels.

@@ -74,6 +74,40 @@ struct Pixel
 };
 #pragma pack(pop, 1)
 
+std::pair<ColorChannel, uint8_t> findColorChannelWithLargestRange(const std::vector<Pixel> pixels)
+{
+    uint8_t minR = 255;
+    uint8_t maxR = 0;
+    uint8_t minG = 255;
+    uint8_t maxG = 0;
+    uint8_t minB = 255;
+    uint8_t maxB = 0;
+
+    for (size_t i = 0; i < pixels.size(); i++)
+    {
+        minR = std::min(minR, pixels[i].r);
+        maxR = std::max(maxR, pixels[i].r);
+        minG = std::min(minG, pixels[i].g);
+        maxG = std::max(maxG, pixels[i].g);
+        minB = std::min(minB, pixels[i].b);
+        maxB = std::max(maxB, pixels[i].b);
+    }
+
+    uint8_t rangeR = maxR - minR;
+    uint8_t rangeG = maxG - minG;
+    uint8_t rangeB = maxB - minB;
+
+    if (rangeR > rangeG && rangeR > rangeB)
+    {
+        return std::pair(Red, rangeR);
+    }
+    else if (rangeG > rangeR && rangeG > rangeB)
+    {
+        return std::pair(Green, rangeG);
+    }
+    return std::pair(Blue, rangeB);
+}
+
 std::pair<size_t, ColorChannel> findBucketWithLargestColorRange(const std::vector<std::vector<Pixel>> &buckets)
 {
     size_t bestBucketIdx = 0;
@@ -88,53 +122,14 @@ std::pair<size_t, ColorChannel> findBucketWithLargestColorRange(const std::vecto
             continue;
         }
 
-        uint8_t minR = 255;
-        uint8_t maxR = 0;
-        uint8_t minG = 255;
-        uint8_t maxG = 0;
-        uint8_t minB = 255;
-        uint8_t maxB = 0;
-
-        for (size_t j = 0; j < pixels.size(); j++)
+        ColorChannel channel;
+        uint8_t range;
+        std::tie(channel, range) = findColorChannelWithLargestRange(pixels);
+        if (range > bestRange)
         {
-            minR = std::min(minR, pixels[j].r);
-            maxR = std::max(maxR, pixels[j].r);
-            minG = std::min(minG, pixels[j].g);
-            maxG = std::max(maxG, pixels[j].g);
-            minB = std::min(minB, pixels[j].b);
-            maxB = std::max(maxB, pixels[j].b);
-        }
-
-        uint8_t rangeR = maxR - minR;
-        uint8_t rangeG = maxG - minG;
-        uint8_t rangeB = maxB - minB;
-
-        if (rangeR > rangeG && rangeR > rangeB)
-        {
-            if (rangeR > bestRange)
-            {
-                bestBucketIdx = i;
-                bestRange = rangeR;
-                bestChannel = Red;
-            }
-        }
-        else if (rangeG > rangeR && rangeG > rangeB)
-        {
-            if (rangeG > bestRange)
-            {
-                bestBucketIdx = i;
-                bestRange = rangeG;
-                bestChannel = Green;
-            }
-        }
-        else
-        {
-            if (rangeB > bestRange)
-            {
-                bestBucketIdx = i;
-                bestRange = rangeB;
-                bestChannel = Blue;
-            }
+            bestBucketIdx = i;
+            bestRange = range;
+            bestChannel = channel;
         }
     }
 
@@ -203,28 +198,33 @@ std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixe
     // Median cut algorithm
     while (buckets.size() != numColors)
     {
-        // Find the bucket that has the largest range in any color channel
-        size_t bucketIdx;
-        ColorChannel channel;
-        std::tie(bucketIdx, channel) = findBucketWithLargestColorRange(buckets);
-        std::vector<Pixel> &bucket = buckets[bucketIdx];
-        if (bucket.size() < 2)
+        // Recursively subdivide each bucket
+        size_t initialBucketCount = buckets.size();
+        for (size_t i = 0; i < initialBucketCount; i++)
         {
-            break;
+            std::vector<Pixel> &bucket = buckets[i];
+            if (bucket.size() < 2)
+            {
+                goto exit_algo;
+            }
+
+            // Find color channel with largest range and sort by that channel
+            ColorChannel channel;
+            uint8_t range;
+            std::tie(channel, range) = findColorChannelWithLargestRange(bucket);
+            sortBucketByColorChannel(bucket, channel);
+
+            // Create a new bucket by splitting the current bucket and dumping half of its pixels
+            // into it. Note that here we resize buckets but continue to use the bucket reference.
+            // This only works because we reserved numColors elements in buckets so that adding to
+            // it (up to that amount) does not cause any re-allocation (which would invalidate the
+            // reference).
+            size_t midwayIdx = bucket.size() / 2;
+            buckets.emplace_back(std::vector<Pixel>(bucket.begin() + midwayIdx, bucket.end())); // upper half of current bucket into new one
+            bucket.resize(midwayIdx);   // removes upper half from current bucket
         }
-
-        // Sort that bucket by the color channel with the largest range
-        sortBucketByColorChannel(bucket, channel);
-
-        // Create a new bucket by splitting the current bucket and dumping half of its pixels
-        // into it. Note that here we resize buckets but continue to use the bucket reference.
-        // This only works because we reserved numColors elements in buckets so that adding to
-        // it (up to that amount) does not cause any re-allocation (which would invalidate the
-        // reference).
-        size_t midwayIdx = bucket.size() / 2;
-        buckets.emplace_back(std::vector<Pixel>(bucket.begin() + midwayIdx, bucket.end())); // upper half of current bucket into new one
-        bucket.resize(midwayIdx);   // removes upper half from current bucket
     }
+exit_algo:
 
     // For each bucket, compute average color and write to output pixel buffer
     for (size_t colorIdx = 0; colorIdx < buckets.size(); colorIdx++)
@@ -260,129 +260,6 @@ std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColors(CVPixe
     }
 
     return std::pair(palette, outputPixels);
-}
-
-void setDarkestColorToBlackAndIndex0(std::vector<PaletteValue> &palette, std::vector<uint8_t> &pixels, size_t bitDepth)
-{
-    assert(bitDepth == 4);
-
-    // Find darkest color
-    float darkestLuma = 1.0f;
-    size_t darkestColor = 0;
-    for (size_t i = 0; i < palette.size(); i++)
-    {
-        float luma = palette[i].luminance();
-        if (luma < darkestLuma)
-        {
-            darkestLuma = luma;
-            darkestColor = i;
-        }
-    }
-
-    // Make darkest color fully black
-    palette[darkestColor].r = 0;
-    palette[darkestColor].g = 0;
-    palette[darkestColor].b = 0;
-
-    // Swap with color 0 so that color 0 is black
-    if (0 == darkestColor)
-    {
-        return;
-    }
-    PaletteValue tmp = palette[0];
-    palette[0] = palette[darkestColor];
-    palette[darkestColor] = tmp;
-
-    // Construct a LUT that swaps occurrences of 0 <-> darkestColor for each 4-bit pixel
-    uint8_t lut[256];
-    for (size_t i = 0; i < 256; i++)
-    {
-        lut[i] = i;
-    }
-    lut[0x00 | 0x00] = (darkestColor << 4) | darkestColor;  // (0, 0) -> (darkestColor, darkestColor)
-    lut[0x00 | darkestColor] = (darkestColor << 4) | 0x00;  // (0, darkestColor) -> (darkestColor, 0)
-    lut[(darkestColor << 4) | 0x00] = 0x00 | darkestColor;  // (darkestColor, 0) -> (0, darkestColor)
-    lut[(darkestColor << 4) | darkestColor] = 0x00;         // (darkestColor, darkestColor) -> (0, 0)
-
-    // Remap pixels using the LUT
-    for (size_t i = 0; i < pixels.size(); i++)
-    {
-        pixels[i] = lut[pixels[i]];
-    }
-}
-
-void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<PaletteValue> &palette, const std::vector<uint8_t> &pixels, size_t bitDepth)
-{
-    assert(bitDepth == 4);
-
-    CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
-    size_t byteStride = CVPixelBufferGetBytesPerRow(pixelBuffer);
-    size_t width = CVPixelBufferGetWidth(pixelBuffer);
-    size_t height = CVPixelBufferGetHeight(pixelBuffer);
-    OSType format = CVPixelBufferGetPixelFormatType(pixelBuffer);
-
-    uint8_t *bytes = reinterpret_cast<uint8_t *>(CVPixelBufferGetBaseAddress(pixelBuffer));
-    if (nullptr == bytes)
-    {
-        puts("[ColorQuantization] Error: Unable to get buffer base address");
-        goto exit;
-    }
-
-    if (format != kCVPixelFormatType_32ABGR && format != kCVPixelFormatType_32ARGB)
-    {
-        puts("[ColorQuantization] Error: Pixel buffer must be ARGB or ABGR format");
-        goto exit;
-    }
-    
-    if (width * height != pixels.size() * 2)    // pixels is 4bpp
-    {
-        puts("[ColorQuantization] Error: Source and destination pixel buffers must have same number of pixels");
-        goto exit;
-    }
-
-    switch (format)
-    {
-    case kCVPixelFormatType_32ABGR:
-        for (size_t y = 0; y < height; y++)
-        {
-            for (size_t x = 0; x < width; x++)
-            {
-                size_t pixelIdx = y * width + x;
-                size_t byteIdx = pixelIdx / 2;
-                size_t shiftAmount = (~pixelIdx & 1) * 4;                   // even pixel in high nibble, odd in low
-                uint8_t colorIdx = (pixels[byteIdx] >> shiftAmount) & 0xf;  // extract color value in nibble
-                PaletteValue color = palette[colorIdx];
-                bytes[y * byteStride + x * 4 + 0] = 0xff;
-                bytes[y * byteStride + x * 4 + 3] = color.r;
-                bytes[y * byteStride + x * 4 + 2] = color.g;
-                bytes[y * byteStride + x * 4 + 1] = color.b;
-            }
-        }
-        break;
-    case kCVPixelFormatType_32ARGB:
-        for (size_t y = 0; y < height; y++)
-        {
-            for (size_t x = 0; x < width; x++)
-            {
-                size_t pixelIdx = y * width + x;
-                size_t byteIdx = pixelIdx / 2;
-                size_t shiftAmount = (~pixelIdx & 1) * 4;                   // even pixel in high nibble, odd in low
-                uint8_t colorIdx = (pixels[byteIdx] >> shiftAmount) & 0xf;  // extract color value in nibble
-                PaletteValue color = palette[colorIdx];
-                bytes[y * byteStride + x * 4 + 0] = 0xff;
-                bytes[y * byteStride + x * 4 + 1] = color.r;
-                bytes[y * byteStride + x * 4 + 2] = color.g;
-                bytes[y * byteStride + x * 4 + 3] = color.b;
-            }
-        }
-        break;
-    default:
-        puts("[ColorQuantization]: Invalid pixel format");
-        break;
-    }
-
-exit:
-    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
 }
 
 std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColorsKMeans(CVPixelBufferRef pixelBuffer, size_t numColors, size_t outputBitDepth)
@@ -520,7 +397,129 @@ std::pair<std::vector<PaletteValue>, std::vector<uint8_t>> quantizeColorsKMeans(
         outputPixels[byteIdx] = (outputPixels[byteIdx] & mask) | (colorIdx << shiftAmount);
     }
 
-    printf("Num iters = %d\n", iterations);
-
     return std::pair(palette, outputPixels);
+}
+
+
+void setDarkestColorToBlackAndIndex0(std::vector<PaletteValue> &palette, std::vector<uint8_t> &pixels, size_t bitDepth)
+{
+    assert(bitDepth == 4);
+
+    // Find darkest color
+    float darkestLuma = 1.0f;
+    size_t darkestColor = 0;
+    for (size_t i = 0; i < palette.size(); i++)
+    {
+        float luma = palette[i].luminance();
+        if (luma < darkestLuma)
+        {
+            darkestLuma = luma;
+            darkestColor = i;
+        }
+    }
+
+    // Make darkest color fully black
+    palette[darkestColor].r = 0;
+    palette[darkestColor].g = 0;
+    palette[darkestColor].b = 0;
+
+    // Swap with color 0 so that color 0 is black
+    if (0 == darkestColor)
+    {
+        return;
+    }
+    PaletteValue tmp = palette[0];
+    palette[0] = palette[darkestColor];
+    palette[darkestColor] = tmp;
+
+    // Construct a LUT that swaps occurrences of 0 <-> darkestColor for each 4-bit pixel
+    uint8_t lut[256];
+    for (size_t i = 0; i < 256; i++)
+    {
+        lut[i] = i;
+    }
+    lut[0x00 | 0x00] = (darkestColor << 4) | darkestColor;  // (0, 0) -> (darkestColor, darkestColor)
+    lut[0x00 | darkestColor] = (darkestColor << 4) | 0x00;  // (0, darkestColor) -> (darkestColor, 0)
+    lut[(darkestColor << 4) | 0x00] = 0x00 | darkestColor;  // (darkestColor, 0) -> (0, darkestColor)
+    lut[(darkestColor << 4) | darkestColor] = 0x00;         // (darkestColor, darkestColor) -> (0, 0)
+
+    // Remap pixels using the LUT
+    for (size_t i = 0; i < pixels.size(); i++)
+    {
+        pixels[i] = lut[pixels[i]];
+    }
+}
+
+void applyColorsToPixelBuffer(CVPixelBufferRef pixelBuffer, const std::vector<PaletteValue> &palette, const std::vector<uint8_t> &pixels, size_t bitDepth)
+{
+    assert(bitDepth == 4);
+
+    CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
+    size_t byteStride = CVPixelBufferGetBytesPerRow(pixelBuffer);
+    size_t width = CVPixelBufferGetWidth(pixelBuffer);
+    size_t height = CVPixelBufferGetHeight(pixelBuffer);
+    OSType format = CVPixelBufferGetPixelFormatType(pixelBuffer);
+
+    uint8_t *bytes = reinterpret_cast<uint8_t *>(CVPixelBufferGetBaseAddress(pixelBuffer));
+    if (nullptr == bytes)
+    {
+        puts("[ColorQuantization] Error: Unable to get buffer base address");
+        goto exit;
+    }
+
+    if (format != kCVPixelFormatType_32ABGR && format != kCVPixelFormatType_32ARGB)
+    {
+        puts("[ColorQuantization] Error: Pixel buffer must be ARGB or ABGR format");
+        goto exit;
+    }
+    
+    if (width * height != pixels.size() * 2)    // pixels is 4bpp
+    {
+        puts("[ColorQuantization] Error: Source and destination pixel buffers must have same number of pixels");
+        goto exit;
+    }
+
+    switch (format)
+    {
+    case kCVPixelFormatType_32ABGR:
+        for (size_t y = 0; y < height; y++)
+        {
+            for (size_t x = 0; x < width; x++)
+            {
+                size_t pixelIdx = y * width + x;
+                size_t byteIdx = pixelIdx / 2;
+                size_t shiftAmount = (~pixelIdx & 1) * 4;                   // even pixel in high nibble, odd in low
+                uint8_t colorIdx = (pixels[byteIdx] >> shiftAmount) & 0xf;  // extract color value in nibble
+                PaletteValue color = palette[colorIdx];
+                bytes[y * byteStride + x * 4 + 0] = 0xff;
+                bytes[y * byteStride + x * 4 + 3] = color.r;
+                bytes[y * byteStride + x * 4 + 2] = color.g;
+                bytes[y * byteStride + x * 4 + 1] = color.b;
+            }
+        }
+        break;
+    case kCVPixelFormatType_32ARGB:
+        for (size_t y = 0; y < height; y++)
+        {
+            for (size_t x = 0; x < width; x++)
+            {
+                size_t pixelIdx = y * width + x;
+                size_t byteIdx = pixelIdx / 2;
+                size_t shiftAmount = (~pixelIdx & 1) * 4;                   // even pixel in high nibble, odd in low
+                uint8_t colorIdx = (pixels[byteIdx] >> shiftAmount) & 0xf;  // extract color value in nibble
+                PaletteValue color = palette[colorIdx];
+                bytes[y * byteStride + x * 4 + 0] = 0xff;
+                bytes[y * byteStride + x * 4 + 1] = color.r;
+                bytes[y * byteStride + x * 4 + 2] = color.g;
+                bytes[y * byteStride + x * 4 + 3] = color.b;
+            }
+        }
+        break;
+    default:
+        puts("[ColorQuantization]: Invalid pixel format");
+        break;
+    }
+
+exit:
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(0));
 }
