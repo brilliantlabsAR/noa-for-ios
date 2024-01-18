@@ -345,7 +345,7 @@ class FrameController: ObservableObject {
         guard let pixelBuffer = resizedImage.toPixelBuffer() else { return nil }
 
         // Quantize
-        let quantized = quantizeColors(pixelBuffer, 16, 4)
+        let quantized = quantizeColorsKMeans(pixelBuffer, 16, 4)
         var paletteVector = quantized.first
         var pixelVector = quantized.second
 
