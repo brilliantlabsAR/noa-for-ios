@@ -3,11 +3,12 @@ State.__index = State
 
 function State.new()
     local self = setmetatable({}, State)
-    self.__previous_state = "Init"
-    self.__current_state = "Init"
-    self.__next_state = "Init"
+    self.__previous_state = "START"
+    self.__current_state = "START"
+    self.__next_state = "START"
     self.__entry_time = frame.time.utc()
     self.__entered = true
+    print("State: " .. tostring(self.__current_state))
     return self
 end
 

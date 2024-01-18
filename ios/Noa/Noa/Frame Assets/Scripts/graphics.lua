@@ -11,7 +11,6 @@ function Graphics:clear()
     self.__text = ""
     self.__characters_printed = 0
     self.__image = ""
-    self.__image_mode = false
     self.__image_bytes_received = 0
     self.__image_printed = false
     frame.display.assign_color(1, 0x00, 0x00, 0x00)
@@ -23,7 +22,6 @@ function Graphics:append_text(data)
 end
 
 function Graphics:append_image(data)
-    self.__image_mode = true
     local y = self.__image_bytes_received / 400 * 2
     frame.display.bitmap(120, y + 1, 400, 16, 0, data)
     self.__image_bytes_received = self.__image_bytes_received + #data
@@ -40,22 +38,13 @@ function Graphics:on_complete(func)
     end
 end
 
-function Graphics:run()
-    -- Print out an image if available
-    if self.__image_mode then
-        if self.__image_bytes_received == 80000 and self.__image_printed == false then
-            frame.display.show()
-            self.__image_printed = true
-        end
-        return
-    end
-
+function Graphics:print_text()
     -- Otherwise print text
     local MAX_LINES = 3
     local Y_OFFSET = 150
     local SCREEN_WIDTH = 640
     local CHARACTER_WIDTH = 24
-    local WORD_DELAY = 0.1
+    local WORD_DELAY = 0.075
 
     -- Local variables
     local line_count = 1
@@ -102,5 +91,13 @@ function Graphics:run()
     -- Increment for the next print
     if self.__characters_printed < #self.__text then
         self.__characters_printed = self.__characters_printed + 1
+    end
+end
+
+function Graphics:print_image()
+    if self.__image_bytes_received == 80000 and self.__image_printed == false then
+        frame.display.show()
+        frame.sleep(0.02)
+        self.__image_printed = true
     end
 end
