@@ -33,7 +33,6 @@
 		CC2E4FC92B560DBC00718A65 /* graphics.lua in Resources */ = {isa = PBXBuildFile; fileRef = CC2E4FC62B560DBC00718A65 /* graphics.lua */; };
 		CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE00A2A09C0BF00756941 /* Settings.bundle */; };
 		CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE00C2A09C8A400756941 /* Settings.swift */; };
-		CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE01E2A0DF21700756941 /* AppDelegate.swift */; };
 		CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0202A0DF25100756941 /* SceneDelegate.swift */; };
 		CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */; };
 		CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */; };
@@ -131,7 +130,6 @@
 		CC3FE00A2A09C0BF00756941 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		CC3FE00C2A09C8A400756941 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		CC3FE0172A0B215700756941 /* Noa-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Noa-Info.plist"; sourceTree = SOURCE_ROOT; };
-		CC3FE01E2A0DF21700756941 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CC3FE0202A0DF25100756941 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockInputGenerator.swift; sourceTree = "<group>"; };
 		CC3FE0282A0EF81A00756941 /* Question_Tootsie.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_Tootsie.m4a; sourceTree = "<group>"; };
@@ -373,7 +371,6 @@
 				CCD4B9012A93EB47004E3ADD /* NoaApp.swift */,
 				CCF4F3542B3CC7EB00146A59 /* FrameController.swift */,
 				CCB2F9612A2568EE00F24F2D /* MonocleController.swift */,
-				CC3FE01E2A0DF21700756941 /* AppDelegate.swift */,
 				CC3FE0202A0DF25100756941 /* SceneDelegate.swift */,
 				CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */,
 				CC3FE00A2A09C0BF00756941 /* Settings.bundle */,
@@ -695,7 +692,6 @@
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
 				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
 				CCDEE1962AEB74C30093575B /* APIKey.swift in Sources */,
-				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
 				CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */,
 				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,

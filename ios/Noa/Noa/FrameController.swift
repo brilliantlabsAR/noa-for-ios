@@ -21,12 +21,14 @@ import UIKit
 
 import ColorQuantization
 
+@MainActor
 class FrameController: ObservableObject {
-    // MARK: Bluetooth IDs
+    // MARK: Bluetooth
 
-    static let serviceUUID = CBUUID(string: "7a230001-5475-a6a4-654c-8431f6ad49c4")
-    static let txUUID = CBUUID(string: "7a230002-5475-a6a4-654c-8431f6ad49c4")
-    static let rxUUID = CBUUID(string: "7a230003-5475-a6a4-654c-8431f6ad49c4")
+    private static let k_serviceUUID = CBUUID(string: "7a230001-5475-a6a4-654c-8431f6ad49c4")
+    private static let k_txUUID = CBUUID(string: "7a230002-5475-a6a4-654c-8431f6ad49c4")
+    private static let k_rxUUID = CBUUID(string: "7a230003-5475-a6a4-654c-8431f6ad49c4")
+    private lazy var _bluetooth = AsyncBluetoothManager(service: Self.k_serviceUUID, rxCharacteristic: Self.k_txUUID, txCharacteristic: Self.k_rxUUID)
 
     // MARK: Internal state
 
@@ -65,8 +67,12 @@ class FrameController: ObservableObject {
 
     private let _settings: Settings
     private let _messages: ChatMessageStore
+
     private let _m4aWriter = M4AWriter()
     private let _ai = AIAssistant(configuration: .backgroundData)
+    
+    private var _nearbyDevices: [(peripheral: CBPeripheral, rssi: Float)] = []
+
     private var _textBuffer = Data()
     private var _audioBuffer = Data()
     private var _photoBuffer = Data()
@@ -76,37 +82,41 @@ class FrameController: ObservableObject {
     private let _multimodalStartMessage = Data([UInt8]([ 0x01, MessageID.multimodalStart.rawValue ] ))
     private let _multimodalEndMessage = Data([UInt8]([ 0x01, MessageID.multimodalEnd.rawValue ]))
 
+    private var _scanTask: Task<Void, Never>!
+    private var _mainTask: Task<Void, Never>!
+
     // MARK: API
+
+    /// Whether a BLE connection to Frame has been established.
+    @Published var isConnected = false
+
+    /// When not connected and unpaired, the nearest unpaired candidate device to which we can try
+    /// to connect.
+    @Published var nearbyUnpairedDevice: CBPeripheral?
 
     init(settings: Settings, messages: ChatMessageStore) {
         _settings = settings
         _messages = messages
-    }
-
-    func onConnect(on connection: AsyncBluetoothManager.Connection) async throws {
-        _receiveMultimodalInProgress = false
-        _outgoingQueue.removeAll()
-
-        // Send ^C to kill current running app. Do NOT use runCommand(). Not entirely sure why but
-        // it appears to generate an additional error response and get stuck.
-        connection.send(text: "\u{3}")
-    }
-
-    func onDisconnect() {
-        _receiveMultimodalInProgress = false
-        _outgoingQueue.removeAll()
-    }
-
-    func onDataReceived(data: Data, on connection: AsyncBluetoothManager.Connection) {
-        guard data.count > 0 else { return }
-
-        if data[0] == 0x01 {
-            // Binary data: a message from the Noa app
-            handleMessage(data: data.subdata(in: 1..<data.count), on: connection)
-        } else {
-            // Frame's console stdout
-            log("Frame said: \(String(decoding: data, as: UTF8.self))")
+        _scanTask = Task {
+            await scanForNearbyDevicesTask()
         }
+        _mainTask = Task {
+            await mainTask()
+        }
+    }
+
+    /// Pair to device. This will also cause the Frame controller to attempt to auto-connect to the
+    /// paired device.
+    func pair(to peripheral: CBPeripheral) {
+        // Update pairing ID. The main task's connect loop will automatically pick this up and 
+        // auto-connect.
+        _settings.setPairedDeviceID(peripheral.identifier)
+    }
+
+    /// Terminate Bluetooth connection, which will cause the controller to search for a new device
+    /// to connect to.
+    func disconnect() {
+        _bluetooth.disconnect()
     }
 
     /// Submit a query from the iOS app directly.
@@ -122,69 +132,140 @@ class FrameController: ObservableObject {
         _ai.clearHistory()
     }
 
-    /// Loads a script from the iPhone's file system and writes it to the Frame's file system.
-    /// It does this by sending a series of file write commands with chunks of the script encoded
-    /// as string literals. For now, `[===[` and `]===]` are used, which means that scripts may not
-    /// use this level of long bracket or higher.
-    /// - Parameter filename: File to send.
-    /// - Parameter on: Bluetooth connection to send over.
-    /// - Parameter run: If true, runs this script file by executing `require('file')` after script
-    /// is uploaded.
-    func loadScript(named filename: String, on connection: AsyncBluetoothManager.Connection, run: Bool = false) async throws {
-        let filePrefix = NSString(string: filename).deletingPathExtension   // e.g. test.lua -> test
-        let script = loadLuaScript(named: filename)
-        try await runCommand("f=frame.file.open('\(filename)', 'w')", on: connection)
-        let maxCharsPerLine = connection.maximumWriteLength(for: .withoutResponse) - "f:write();print(nil)".count
-        if maxCharsPerLine < "[===[[ ]===]".count { // worst case minimum transmission of one character
-            fatalError("Bluetooth packet size is too small")
-        }
-        var idx = 0
-        while idx < script.count {
-            let (literal, numScriptChars) = encodeScriptChunkAsLiteral(script: script, from: idx, maxLength: maxCharsPerLine)
-            let command = "f:write(\(literal))"
-            try await runCommand(command, on: connection)
-            idx += numScriptChars
-            log("Uploaded: \(idx) / \(script.count) bytes of \(filename)")
-        }
-        try await runCommand("f:close()", on: connection)
-        if run {
-            connection.send(text: "require('\(filePrefix)')")
-        }
-    }
+    // MARK: Tasks
 
-    // MARK: Frame commands and scripts
-
-    private func encodeScriptChunkAsLiteral(script: String, from startIdx: Int, maxLength: Int) -> (String, Int) {
-        let numCharsRemaining = script.count - startIdx
-        let numCharsInChunk = min(maxLength - "[===[]===]".count, numCharsRemaining)
-        let from = script.index(script.startIndex, offsetBy: startIdx)
-        let to = script.index(from, offsetBy: numCharsInChunk)
-        return ("[===[\(script[from..<to])]===]", numCharsInChunk)
-    }
-
-    private func runCommand(_ command: String, on connection: AsyncBluetoothManager.Connection) async throws {
-        // Send command and wait for "nil" or end of stream
-        connection.send(text: "\(command);print(nil)")
-        for try await data in connection.receivedData {
-            let response = String(decoding: data, as: UTF8.self)
-            if response == "nil" {
-                break
-            } else {
-                log("Unexpected response: \(response)")
+    /// Scans for nearby Frame devices.
+    private func scanForNearbyDevicesTask() async {
+        while true {
+            for await devices in _bluetooth.discoveredDevices {
+                _nearbyDevices = devices
             }
         }
     }
 
-    private func loadLuaScript(named filename: String) -> String {
-        let url = Bundle.main.url(forResource: filename, withExtension: nil)!
-        let data = try? Data(contentsOf: url)
-        guard let data = data else {
-            fatalError("Unable to load Lua script from disk")
+    /// Handles the Frame connect loop and responds to events from the device.
+    private func mainTask() async {
+        log("Started Frame task")
+        isConnected = false
+
+        while true {
+            do {
+                let connection = try await connectToDevice()
+                isConnected = true
+                try await onConnect(on: connection)
+                print("MTU size: \(connection.maximumWriteLength(for: .withoutResponse)) bytes")
+
+                // Send scripts and issue ^D to reset and execute main.lua
+                try await loadScript(named: "state.lua", on: connection)
+                try await loadScript(named: "graphics.lua", on: connection)
+                try await loadScript(named: "main.lua", on: connection)
+                log("Starting...")
+                connection.send(text: "\u{4}")
+//                try await _frameController.loadScript(named: "test.lua", on: connection, run: true)
+//                print("Starting...")
+
+                for try await data in connection.receivedData {
+                    //Util.hexDump(data)
+                    onDataReceived(data: data, on: connection)
+                }
+            } catch let error as AsyncBluetoothManager.StreamError {
+                // Disconnection falls through to loop around again
+                isConnected = false
+                onDisconnect()
+                log("Connection lost: \(error.localizedDescription)")
+            } catch is CancellationError {
+                // Task was canceled, exit it entirely
+                log("Task canceled!")
+                break
+            } catch {
+                log("Unknown error: \(error.localizedDescription)")
+            }
         }
-        return String(decoding: data, as: UTF8.self)
+
+        // We should never fall through to here
+        isConnected = false
+        log("Frame task finished")
     }
 
-    // MARK: Noa messages from Frame
+    // Finds and connects to a device. If paired, will search for that device. Otherwise, will
+    // search for a nearby device and wait until the user confirms by explicitly pressing
+    // "Connect". Not as complicated as it looks but the UI state management is messy. Attempts to
+    // be nice by sleeping when possible and checks for cancellation between async methods that do
+    // not throw. Because we don't currently ever cancel the Bluetooth task (it would be a real
+    // mess to try to cancel/restart it), this could be eliminated.
+    private func connectToDevice() async throws -> AsyncBluetoothManager.Connection {
+        var candidateHysteresisTime = Date.distantPast
+
+        // Keep trying until we connect
+        while true {
+            log("Looking for a Frame device to connect to...")
+            var chosenDevice: CBPeripheral?
+            while chosenDevice == nil {
+                if let pairedDeviceID = _settings.pairedDeviceID {
+                    // Paired case: wait for paired device to appear, auto-connect to it
+                    if let targetDevice = _nearbyDevices.first(where: { $0.peripheral.identifier == pairedDeviceID })?.peripheral {
+                        chosenDevice = targetDevice
+                        break
+                    }
+                    try await Task.sleep(for: .seconds(0.5))
+                } else {
+                    // Unpaired case: Check whether any device is within pairing range and surface
+                    // that on the nearbyUnpairedDevice property for SwiftUI view to pick up. Note
+                    // that devices are already sorted in descending RSSI order so we only need to
+                    // check threshold.
+                    let rssiThreshold: Float = -60
+                    let candidateDevice = _nearbyDevices.first(where: { $0.rssi > rssiThreshold })
+                    if Date.now > candidateHysteresisTime {
+                        if let candidateDevice = candidateDevice {
+                            nearbyUnpairedDevice = candidateDevice.peripheral
+                            // Stay in this state a moment to prevent flickering at RSSI threshold
+                            candidateHysteresisTime = .now.addingTimeInterval(1)
+                        } else {
+                            nearbyUnpairedDevice = nil
+                            candidateHysteresisTime = .distantPast
+                        }
+                    }
+                    try await Task.sleep(for: .seconds(0.25))
+                }
+            }
+
+            if let connection = await _bluetooth.connect(to: chosenDevice!) {
+                // Once connected, safe to hide the device sheet
+                log("Connected successfully")
+                return connection
+            }
+            try await Task.sleep(for: .seconds(0.5))
+            log("Connection to device failed! Starting over...")
+        }
+    }
+
+    // MARK: Frame events
+
+    private func onConnect(on connection: AsyncBluetoothManager.Connection) async throws {
+        _receiveMultimodalInProgress = false
+        _outgoingQueue.removeAll()
+
+        // Send ^C to kill current running app. Do NOT use runCommand(). Not entirely sure why but
+        // it appears to generate an additional error response and get stuck.
+        connection.send(text: "\u{3}")
+    }
+
+    private func onDisconnect() {
+        _receiveMultimodalInProgress = false
+        _outgoingQueue.removeAll()
+    }
+
+    private func onDataReceived(data: Data, on connection: AsyncBluetoothManager.Connection) {
+        guard data.count > 0 else { return }
+
+        if data[0] == 0x01 {
+            // Binary data: a message from the Noa app
+            handleMessage(data: data.subdata(in: 1..<data.count), on: connection)
+        } else {
+            // Frame's console stdout
+            log("Frame said: \(String(decoding: data, as: UTF8.self))")
+        }
+    }
 
     private func handleMessage(data: Data, on connection: AsyncBluetoothManager.Connection) {
         guard let id = MessageID(rawValue: data[0]) else {
@@ -425,6 +506,68 @@ class FrameController: ObservableObject {
            let connection = connection {
             sendResponseToFrame(on: connection, text: text, image: picture, isError: false)
         }
+    }
+
+    // MARK: Frame commands and scripts
+
+    /// Loads a script from the iPhone's file system and writes it to the Frame's file system.
+    /// It does this by sending a series of file write commands with chunks of the script encoded
+    /// as string literals. For now, `[===[` and `]===]` are used, which means that scripts may not
+    /// use this level of long bracket or higher.
+    /// - Parameter filename: File to send.
+    /// - Parameter on: Bluetooth connection to send over.
+    /// - Parameter run: If true, runs this script file by executing `require('file')` after script
+    /// is uploaded.
+    private func loadScript(named filename: String, on connection: AsyncBluetoothManager.Connection, run: Bool = false) async throws {
+        let filePrefix = NSString(string: filename).deletingPathExtension   // e.g. test.lua -> test
+        let script = loadLuaScript(named: filename)
+        try await runCommand("f=frame.file.open('\(filename)', 'w')", on: connection)
+        let maxCharsPerLine = connection.maximumWriteLength(for: .withoutResponse) - "f:write();print(nil)".count
+        if maxCharsPerLine < "[===[[ ]===]".count { // worst case minimum transmission of one character
+            fatalError("Bluetooth packet size is too small")
+        }
+        var idx = 0
+        while idx < script.count {
+            let (literal, numScriptChars) = encodeScriptChunkAsLiteral(script: script, from: idx, maxLength: maxCharsPerLine)
+            let command = "f:write(\(literal))"
+            try await runCommand(command, on: connection)
+            idx += numScriptChars
+            log("Uploaded: \(idx) / \(script.count) bytes of \(filename)")
+        }
+        try await runCommand("f:close()", on: connection)
+        if run {
+            connection.send(text: "require('\(filePrefix)')")
+        }
+    }
+
+    private func encodeScriptChunkAsLiteral(script: String, from startIdx: Int, maxLength: Int) -> (String, Int) {
+        let numCharsRemaining = script.count - startIdx
+        let numCharsInChunk = min(maxLength - "[===[]===]".count, numCharsRemaining)
+        let from = script.index(script.startIndex, offsetBy: startIdx)
+        let to = script.index(from, offsetBy: numCharsInChunk)
+        return ("[===[\(script[from..<to])]===]", numCharsInChunk)
+    }
+
+    private func runCommand(_ command: String, on connection: AsyncBluetoothManager.Connection) async throws {
+        // Send command and wait for "nil" or end of stream
+        connection.send(text: "\(command);print(nil)")
+        for try await data in connection.receivedData {
+            let response = String(decoding: data, as: UTF8.self)
+            if response == "nil" {
+                break
+            } else {
+                log("Unexpected response: \(response)")
+            }
+        }
+    }
+
+    private func loadLuaScript(named filename: String) -> String {
+        let url = Bundle.main.url(forResource: filename, withExtension: nil)!
+        let data = try? Data(contentsOf: url)
+        guard let data = data else {
+            fatalError("Unable to load Lua script from disk")
+        }
+        return String(decoding: data, as: UTF8.self)
     }
 
     // MARK: Debug

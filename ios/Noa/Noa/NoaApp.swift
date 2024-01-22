@@ -8,31 +8,42 @@
 import Combine
 import SwiftUI
 
+fileprivate let _settings = Settings()
+fileprivate let _chatMessageStore = ChatMessageStore()
+fileprivate var _frameController: FrameController?
+
+@MainActor
+func getFrameController() -> FrameController {
+    if let frameController = _frameController {
+        return frameController
+    }
+    _frameController = FrameController(settings: _settings, messages: _chatMessageStore)
+    return _frameController!
+}
+
+class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Make sure Frame controller and its connection loop is restored
+        _ = getFrameController()
+        return true
+    }
+
+    public func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
+        print("[AppDelegate] Handle events for background session: \(identifier)")
+    }
+}
+
 @main
 struct NoaApp: App {
-    private let _settings = Settings()
-    private let _chatMessageStore = ChatMessageStore()
-    private let _bluetooth = AsyncBluetoothManager(
-        service: FrameController.serviceUUID,
-        rxCharacteristic: FrameController.rxUUID,
-        txCharacteristic: FrameController.txUUID
-    )
-    private var _frameController: FrameController!
-
-    @UIApplicationDelegateAdaptor private var _appDelegate: AppDelegate
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
         WindowGroup {
             ContentView(
                 settings: _settings,
                 chatMessageStore: _chatMessageStore,
-                frameController: _frameController,
-                bluetooth: _bluetooth
+                frameController: getFrameController()
             )
         }
-    }
-
-    init() {
-        _frameController = FrameController(settings: _settings, messages: _chatMessageStore)
     }
 }
