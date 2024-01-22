@@ -88,6 +88,7 @@
 //
 
 import CoreBluetooth
+import os
 
 class AsyncBluetoothManager: NSObject {
     // MARK: Internal state
@@ -95,17 +96,17 @@ class AsyncBluetoothManager: NSObject {
     private let _queue = DispatchQueue(label: "xyz.brilliant.argpt.bluetooth", qos: .default)
 
     private lazy var _manager: CBCentralManager = {
-        return CBCentralManager(delegate: self, queue: _queue)
+        return CBCentralManager(delegate: self, queue: _queue, options: [CBCentralManagerOptionRestoreIdentifierKey: "AsyncBluetoothManager"])
     }()
 
     private let _serviceUUID: CBUUID
     private let _rxCharacteristicUUID: CBUUID
     private let _txCharacteristicUUID: CBUUID
 
-    private var _discoveredPeripherals: [(peripheral: CBPeripheral, rssi: Float, timeout: TimeInterval)] = []
+    private var _discoveredPeripherals: [(peripheral: Peripheral, timeout: TimeInterval)] = []
     private var _discoveryTimer: Timer?
 
-    private var _discoveredDevicesContinuation: AsyncStream<[(peripheral: CBPeripheral, rssi: Float)]>.Continuation!
+    private var _discoveredDevicesContinuation: AsyncStream<[Peripheral]>.Continuation!
     private var _connectContinuation: AsyncStream<Connection>.Continuation?
     private weak var _connection: Connection?
 
@@ -122,6 +123,13 @@ class AsyncBluetoothManager: NSObject {
         case utf8EncodingFailed     // failed to convert string to data and could not send
     }
 
+    // MARK: API - Discovered peripheral object
+
+    struct Peripheral {
+        let peripheral: CBPeripheral
+        let rssi: Float
+        let restored: Bool
+    }
     // MARK: API - Connection object
 
     class Connection {
@@ -216,7 +224,7 @@ class AsyncBluetoothManager: NSObject {
 
     // MARK: API - Properties and methods
 
-    private(set) var discoveredDevices: AsyncStream<[(peripheral: CBPeripheral, rssi: Float)]>!
+    private(set) var discoveredDevices: AsyncStream<[Peripheral]>!
 
     init(
         service: CBUUID,
@@ -229,7 +237,7 @@ class AsyncBluetoothManager: NSObject {
 
         super.init()
 
-        discoveredDevices = AsyncStream<[(peripheral: CBPeripheral, rssi: Float)]>([(peripheral: CBPeripheral, rssi: Float)].self, bufferingPolicy: .bufferingNewest(1)) { continuation in
+        discoveredDevices = AsyncStream<[Peripheral]>([Peripheral].self, bufferingPolicy: .bufferingNewest(1)) { continuation in
             _queue.async {
                 // Continuation will be accessed from Bluetooth queue
                 self._discoveredDevicesContinuation = continuation
@@ -259,11 +267,23 @@ class AsyncBluetoothManager: NSObject {
                     return
                 }
 
-                // Disconnect any existing peripheral
-                _connection?.closeStream(with: .connectionReplaced)
-                _connection = nil
-                if let peripheral = _connectedPeripheral {
-                    _manager.cancelPeripheralConnection(peripheral) // will cause disconnect event, in turn causing peripheral to be forgotten
+                // Disconnect any existing peripheral, unless it is same peripheral we are trying
+                // to connect to. Unsure of how this could happen but it has been observed. At one
+                // point, disconnects would cancel a connection without immediately forgetting the
+                // peripheral (waiting for the disconect callback to handle that), which may have
+                // resulted in this unusual state
+                if let existingPeripheral = _connectedPeripheral {
+                    if existingPeripheral == peripheral {
+                        // Already have this peripheral, just make sure to refresh service and
+                        // characteristics to be sure
+                        finishConnecting(to: peripheral)
+                        _manager.stopScan()
+                        return
+                    }
+                    _manager.cancelPeripheralConnection(existingPeripheral)
+                    _connection?.closeStream(with: .connectionReplaced)
+                    _connection = nil
+                    forgetPeripheral()
                 }
 
                 precondition(_connectContinuation == nil)   // connect() is not reentrant
@@ -271,8 +291,16 @@ class AsyncBluetoothManager: NSObject {
 
                 precondition(_connectedPeripheral == nil)
                 _manager.stopScan() // no need to continue scanning
-                _manager.connect(peripheral)
                 log("Stopped scanning")
+
+                if peripheral.state == .connected {
+                    // This peripheral was probably restored
+                    log("Already connected to peripheral")
+                    finishConnecting(to: peripheral)
+                } else {
+                    log("Connecting for first time to peripheral")
+                    _manager.connect(peripheral)
+                }
             }
         }
 
@@ -307,6 +335,7 @@ class AsyncBluetoothManager: NSObject {
             // which will cause it to be forgotten
             if let peripheral = _connectedPeripheral {
                 _manager.cancelPeripheralConnection(peripheral)
+                forgetPeripheral()
             }
 
             // Have observed instances where after we call peripheral connect(), nothing happens
@@ -328,6 +357,7 @@ class AsyncBluetoothManager: NSObject {
             _connection = nil
             if let peripheral = _connectedPeripheral {
                 _manager.cancelPeripheralConnection(peripheral)
+                forgetPeripheral()
             }
             startScan()
         }
@@ -335,7 +365,7 @@ class AsyncBluetoothManager: NSObject {
 
     private func startScan() {
         if _manager.isScanning {
-            log("Internal error: Already scanning!")
+            log("Warning: Already scanning!")
         }
 
         _manager.scanForPeripherals(withServices: [ _serviceUUID ], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true ])
@@ -354,7 +384,7 @@ class AsyncBluetoothManager: NSObject {
         }
     }
 
-    private func updateDiscoveredPeripherals(with peripheral: CBPeripheral? = nil, rssi: Float = -.infinity) {
+    private func updateDiscoveredPeripherals(with peripheral: CBPeripheral? = nil, rssi: Float = -.infinity, restored: Bool = false) {
         // Delete anything that has timed out
         let now = Date.timeIntervalSinceReferenceDate
         var numPeripheralsBefore = _discoveredPeripherals.count
@@ -364,25 +394,34 @@ class AsyncBluetoothManager: NSObject {
         // If we are adding a peripheral, remove dupes first
         if let peripheral = peripheral {
             numPeripheralsBefore = _discoveredPeripherals.count
-            _discoveredPeripherals.removeAll { $0.peripheral.isEqual(peripheral) }
-            _discoveredPeripherals.append((peripheral: peripheral, rssi: rssi, timeout: now + 10))  // timeout after 10 seconds
+            _discoveredPeripherals.removeAll { $0.peripheral.peripheral.isEqual(peripheral) }
+            _discoveredPeripherals.append((peripheral: Peripheral(peripheral: peripheral, rssi: rssi, restored: restored), timeout: now + 10))  // timeout after 10 seconds
             didChange = didChange || (numPeripheralsBefore != _discoveredPeripherals.count)
         }
 
         // Publish sorted in descending order by RSSI. Always publish because RSSI is constantly
         // changing.
         let devices = _discoveredPeripherals
-            .map { (peripheral: $0.peripheral, rssi: $0.rssi) }
-            .sorted { $0 .rssi > $1.rssi }
+            .map { $0.peripheral }
+            .sorted { $0.rssi > $1.rssi }
         _discoveredDevicesContinuation?.yield(devices)
 
         // Only log peripherals on change in peripherals, not RSSI
         if didChange {
             log("Discovered peripherals:")
-            for (peripheral, rssi, _) in _discoveredPeripherals {
-                log("  name=\(peripheral.name ?? "<no name>") id=\(peripheral.identifier) rssi=\(rssi)")
+            for (peripheral, _) in _discoveredPeripherals {
+                log("  name=\(peripheral.peripheral.name ?? "<no name>") id=\(peripheral.peripheral.identifier) rssi=\(peripheral.rssi)")
             }
         }
+    }
+
+    private func finishConnecting(to peripheral: CBPeripheral) {
+        let name = peripheral.name ?? ""
+        log("Connected to peripheral: name=\(name), UUID=\(peripheral.identifier)")
+
+        _connectedPeripheral = peripheral
+        peripheral.delegate = self
+        peripheral.discoverServices([ _serviceUUID ])
     }
 
     private func forgetPeripheral() {
@@ -413,6 +452,7 @@ extension AsyncBluetoothManager: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
+            log("POWERED ON")
             startScan()
         case .poweredOff:
             log("Bluetooth is powered off")
@@ -434,12 +474,7 @@ extension AsyncBluetoothManager: CBCentralManagerDelegate {
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        let name = peripheral.name ?? ""
-        log("Connected to peripheral: name=\(name), UUID=\(peripheral.identifier)")
-        
-        _connectedPeripheral = peripheral
-        peripheral.delegate = self
-        peripheral.discoverServices([ _serviceUUID ])
+        finishConnecting(to: peripheral)
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
@@ -485,6 +520,23 @@ extension AsyncBluetoothManager: CBCentralManagerDelegate {
         // Disconnect happened during a connected session. Close connection and remove it.
         if let connection = _connection {
             disconnect(connectionID: connection.connectionID, with: .connectionLost)
+        }
+    }
+
+    func centralManager(_ central: CBCentralManager, willRestoreState dict: [String: Any]) {
+        // Handle state restoration by making the device discoverable for connect loop that should
+        // have come up with the app
+        log("Restored CBCentralManager")
+        if let restoredPeripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
+            for peripheral in restoredPeripherals {
+                if peripheral.state == .connected {
+                    peripheral.delegate = self
+                    updateDiscoveredPeripherals(with: peripheral, rssi: 0, restored: true)
+                } else if peripheral.state == .disconnected {
+                    peripheral.delegate = self
+                    updateDiscoveredPeripherals(with: peripheral, rssi: 0, restored: true)
+                }
+            }
         }
     }
 }
@@ -573,8 +625,11 @@ extension AsyncBluetoothManager: CBPeripheralDelegate {
 
 // MARK: Misc. helpers
 
+fileprivate let _logger = Logger()
+
 fileprivate func log(_ message: String) {
-    print("[AsyncBluetoothManager] \(message)")
+    _logger.notice("[AsyncBluetoothManager] \(message, privacy: .public)")
+
 }
 
 extension AsyncBluetoothManager.StreamError: LocalizedError {

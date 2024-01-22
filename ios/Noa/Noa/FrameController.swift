@@ -71,7 +71,7 @@ class FrameController: ObservableObject {
     private let _m4aWriter = M4AWriter()
     private let _ai = AIAssistant(configuration: .backgroundData)
     
-    private var _nearbyDevices: [(peripheral: CBPeripheral, rssi: Float)] = []
+    private var _nearbyDevices: [AsyncBluetoothManager.Peripheral] = []
 
     private var _textBuffer = Data()
     private var _audioBuffer = Data()
@@ -161,7 +161,7 @@ class FrameController: ObservableObject {
                 try await loadScript(named: "main.lua", on: connection)
                 log("Starting...")
                 connection.send(text: "\u{4}")
-//                try await _frameController.loadScript(named: "test.lua", on: connection, run: true)
+//                try await loadScript(named: "test_restore.lua", on: connection, run: true)
 //                print("Starting...")
 
                 for try await data in connection.receivedData {

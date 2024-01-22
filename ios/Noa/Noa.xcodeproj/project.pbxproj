@@ -15,6 +15,7 @@
 		CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
+		CC0B99D52B5F297400312987 /* test_restore.lua in Resources */ = {isa = PBXBuildFile; fileRef = CC0B99D42B5F297400312987 /* test_restore.lua */; };
 		CC1632422AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */; };
 		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
 		CC200A502A37E396005C67E0 /* states.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4E2A37E396005C67E0 /* states.py */; };
@@ -109,6 +110,7 @@
 		CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Statement_Chinese.m4a; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
+		CC0B99D42B5F297400312987 /* test_restore.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = test_restore.lua; sourceTree = "<group>"; };
 		CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.248.0754.zip"; sourceTree = "<group>"; };
 		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
 		CC200A4E2A37E396005C67E0 /* states.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = states.py; sourceTree = "<group>"; };
@@ -492,6 +494,7 @@
 				CC2E4FC62B560DBC00718A65 /* graphics.lua */,
 				CC2E4FC52B560DBC00718A65 /* main.lua */,
 				CC2E4FC42B560DBC00718A65 /* state.lua */,
+				CC0B99D42B5F297400312987 /* test_restore.lua */,
 			);
 			path = Scripts;
 			sourceTree = "<group>";
@@ -610,6 +613,7 @@
 				CC3FE0312A0EF81A00756941 /* Question_History.m4a in Resources */,
 				CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */,
 				352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */,
+				CC0B99D52B5F297400312987 /* test_restore.lua in Resources */,
 				CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */,
 				CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */,
 				CC1632422AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip in Resources */,

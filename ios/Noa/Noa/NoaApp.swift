@@ -23,7 +23,8 @@ func getFrameController() -> FrameController {
 
 class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Make sure Frame controller and its connection loop is restored
+        // Make sure Frame controller and its connection loop is restored. I do not think the
+        // SwiftUI view is brought up on CoreBluetooth restore.
         _ = getFrameController()
         return true
     }
