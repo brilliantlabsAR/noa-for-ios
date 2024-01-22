@@ -39,6 +39,7 @@ struct ContentView: View {
                     onConnectPressed: {
                         if let device = _frameController.nearbyUnpairedDevice {
                             _frameController.pair(to: device)
+                            connectButtonState = .connecting
                         }
                     },
                     onCancelPressed: {
