@@ -28,7 +28,7 @@ class FrameController: ObservableObject {
     private static let k_serviceUUID = CBUUID(string: "7a230001-5475-a6a4-654c-8431f6ad49c4")
     private static let k_txUUID = CBUUID(string: "7a230002-5475-a6a4-654c-8431f6ad49c4")
     private static let k_rxUUID = CBUUID(string: "7a230003-5475-a6a4-654c-8431f6ad49c4")
-    private lazy var _bluetooth = AsyncBluetoothManager(service: Self.k_serviceUUID, rxCharacteristic: Self.k_txUUID, txCharacteristic: Self.k_rxUUID)
+    private lazy var _bluetooth = AsyncBluetoothManager(service: Self.k_serviceUUID, rxCharacteristic: Self.k_rxUUID, txCharacteristic: Self.k_txUUID)
 
     // MARK: Internal state
 
