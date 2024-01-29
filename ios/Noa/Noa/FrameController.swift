@@ -6,7 +6,6 @@
 //
 //  TODO:
 //  -----
-//  - Multimodal response back. Need a different type of image chunk for palettized image.
 //  - Clear internal history whenever a Frame message arrives N minutes after last Frame or GUI
 //    message.
 //  - Make M4AWriter and AI assistant URL requests completely async if possible so we don't need
