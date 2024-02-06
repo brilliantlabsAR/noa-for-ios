@@ -29,7 +29,7 @@ frame.bluetooth.receive_callback(bluetooth_callback)
 
 i = 0
 while true do
-    frame.sleep(10)
+    frame.sleep(5 * 60)    -- sleep 5 minutes
     send_data(MESSAGE_START_FLAG)
     send_data(MESSAGE_TEXT_FLAG .. "Hello! " .. tostring(i))
     send_data(MESSAGE_END_FLAG)
