@@ -19,6 +19,9 @@ struct ContentView: View {
     // Bluetooth
     @State private var _nearbyDevices: [(peripheral: CBPeripheral, rssi: Float)] = []
 
+    // Login
+    @State private var showLoginSheet = true
+
     // Pairing and connection state
     @State private var connectButtonState: DeviceSheetConnectButtonState = .searching
     @State private var deviceSheetState: DeviceSheetState = .searching
@@ -47,27 +50,33 @@ struct ContentView: View {
                     }
                 )
             } else {
-                ChatView(
-                    isMonocleConnected: $_frameController.isConnected,
-                    onTextSubmitted: { (query: String) in
-                        _frameController.submitQuery(query: query)
-                    },
-                    onClearChatButtonPressed: {
-                        _frameController.clearHistory()
-                    },
-                    onAssistantModeChanged: { (mode: AIAssistant.Mode) in
-                        //TODO
-                    },
-                    onPairToggled: { (pair: Bool) in
-                        _settings.setPairedDeviceID(nil)
-                        _frameController.disconnect()
-                        if pair {
-                            deviceSheetState = .searching
+                if showLoginSheet {
+                    DiscordLoginView(onDismiss: {
+                        showLoginSheet = false
+                    })
+                } else {
+                    ChatView(
+                        isMonocleConnected: $_frameController.isConnected,
+                        onTextSubmitted: { (query: String) in
+                            _frameController.submitQuery(query: query)
+                        },
+                        onClearChatButtonPressed: {
+                            _frameController.clearHistory()
+                        },
+                        onAssistantModeChanged: { (mode: AIAssistant.Mode) in
+                            //TODO
+                        },
+                        onPairToggled: { (pair: Bool) in
+                            _settings.setPairedDeviceID(nil)
+                            _frameController.disconnect()
+                            if pair {
+                                deviceSheetState = .searching
+                            }
                         }
-                    }
-                )
-                .environmentObject(_chatMessageStore)
-                .environmentObject(_settings)
+                    )
+                    .environmentObject(_chatMessageStore)
+                    .environmentObject(_settings)
+                }
             }
         }
         .onAppear {

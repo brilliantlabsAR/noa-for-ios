@@ -62,6 +62,7 @@
 		CCBC46262A02101A00871C12 /* Participant.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCBC46252A02101A00871C12 /* Participant.swift */; };
 		CCC573962B58EA140021A108 /* Tulips.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CCC573952B58EA140021A108 /* Tulips.jpg */; };
 		CCC573982B58EBFA0021A108 /* Bouquet.webp in Resources */ = {isa = PBXBuildFile; fileRef = CCC573972B58EBFA0021A108 /* Bouquet.webp */; };
+		CCCEC3B42B72E8960024DDAC /* DiscordLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCEC3B32B72E8960024DDAC /* DiscordLoginView.swift */; };
 		CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */; };
 		CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */; };
 		CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */; };
@@ -163,6 +164,7 @@
 		CCBC46252A02101A00871C12 /* Participant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Participant.swift; sourceTree = "<group>"; };
 		CCC573952B58EA140021A108 /* Tulips.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tulips.jpg; sourceTree = "<group>"; };
 		CCC573972B58EBFA0021A108 /* Bouquet.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = Bouquet.webp; sourceTree = "<group>"; };
+		CCCEC3B32B72E8960024DDAC /* DiscordLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordLoginView.swift; sourceTree = "<group>"; };
 		CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIError.swift; sourceTree = "<group>"; };
 		CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_History.wav; sourceTree = "<group>"; };
 		CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Movies.wav; sourceTree = "<group>"; };
@@ -255,6 +257,7 @@
 		CC00399C2A6DA398009E3BAC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				CCCEC3B22B72E8780024DDAC /* Authentication */,
 				CC00399F2A6DA4A2009E3BAC /* Device */,
 				CC00399D2A6DA3CB009E3BAC /* Chat */,
 				CC00399E2A6DA3DF009E3BAC /* Settings */,
@@ -480,6 +483,14 @@
 			path = Util;
 			sourceTree = "<group>";
 		};
+		CCCEC3B22B72E8780024DDAC /* Authentication */ = {
+			isa = PBXGroup;
+			children = (
+				CCCEC3B32B72E8960024DDAC /* DiscordLoginView.swift */,
+			);
+			path = Authentication;
+			sourceTree = "<group>";
+		};
 		CCD170D32B3E08D1008665F6 /* Frame Assets */ = {
 			isa = PBXGroup;
 			children = (
@@ -682,6 +693,7 @@
 				CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */,
 				CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */,
 				CCBC46262A02101A00871C12 /* Participant.swift in Sources */,
+				CCCEC3B42B72E8960024DDAC /* DiscordLoginView.swift in Sources */,
 				CCDCFEF92B322845008EDB1D /* MultipartForm.swift in Sources */,
 				CCB2F9622A2568EE00F24F2D /* MonocleController.swift in Sources */,
 				CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */,
