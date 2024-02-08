@@ -26,6 +26,9 @@ class Settings: ObservableObject {
     @Published private(set) var debug200pxImageMode: Bool = false
     private static let k_debug200pxImageMode = "debug_200px_images"
 
+    @Published private(set) var authorizationToken: String?
+    private static let k_authorizationToken = "authorization_token"
+
     public init() {
         Self.registerDefaults()
         NotificationCenter.default.addObserver(self, selector: #selector(Self.onSettingsChanged), name: UserDefaults.didChangeNotification, object: nil)
@@ -40,6 +43,17 @@ class Settings: ObservableObject {
             let uuidString = value?.uuidString ?? ""    // use "" for none
             UserDefaults.standard.set(uuidString, forKey: Self.k_pairedDeviceID)
             print("[Settings] Set: \(Self.k_pairedDeviceID) = \(uuidString)")
+        }
+    }
+
+    /// Sets the authorization token to use for logging into Brillaint's server automatically.
+    /// - Parameter token: The new token or `nil` for none.
+    public func setAuthorizationToken(_ token: String?) {
+        if authorizationToken != token {
+            authorizationToken = token
+            let tokenString = token ?? ""
+            UserDefaults.standard.set(tokenString, forKey: Self.k_authorizationToken)
+            print("[Settings] Set: \(Self.k_authorizationToken) = \(tokenString)")
         }
     }
 
@@ -125,13 +139,24 @@ class Settings: ObservableObject {
             self.debug200pxImageMode = debug200pxImageMode
         }
 
-        // This property is not exposed to users in Settings and so may be absent
+        // The following properties are not exposed to users in Settings and so may be absent
         var uuid: UUID?
         if let pairedDeviceIDString = UserDefaults.standard.string(forKey: Self.k_pairedDeviceID) {
             uuid = UUID(uuidString: pairedDeviceIDString)   // will be nil if invalid
         }
         if self.pairedDeviceID != uuid {
             self.pairedDeviceID = uuid
+        }
+
+        var token = UserDefaults.standard.string(forKey: Self.k_authorizationToken)
+        if token != nil {
+            if token!.isEmpty {
+                // If empty string was stored, no auth token
+                token = nil
+            }
+        }
+        if self.authorizationToken != token {
+            self.authorizationToken = token
         }
     }
 }

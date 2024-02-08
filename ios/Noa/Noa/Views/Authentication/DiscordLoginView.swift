@@ -10,9 +10,9 @@ import WebKit
 
 struct DiscordLoginView: UIViewRepresentable {
     private let _url = URL(string: "https://api.brilliant.xyz/noa/login/discord")!
-    private let _onDismiss: () -> Void
+    private let _onDismiss: (String?, String?) -> Void
 
-    init(onDismiss: @escaping () -> Void) {
+    init(onDismiss: @escaping (String?, String?) -> Void) {
         _onDismiss = onDismiss
     }
 
@@ -21,8 +21,11 @@ struct DiscordLoginView: UIViewRepresentable {
     }
 
     func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
-        let request = URLRequest(url: _url)
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        var request = URLRequest(url: _url)
+        request.httpShouldHandleCookies = false
         webView.load(request)
         webView.navigationDelegate = context.coordinator
         return webView
@@ -33,9 +36,9 @@ struct DiscordLoginView: UIViewRepresentable {
 }
 
 class DiscordLoginViewCoordinator: NSObject, WKNavigationDelegate {
-    private let _onDismiss: () -> Void
+    private let _onDismiss: (String?, String?) -> Void
 
-    init(onDismiss: @escaping () -> Void) {
+    init(onDismiss: @escaping (String?, String?) -> Void) {
         _onDismiss = onDismiss
     }
 
@@ -50,29 +53,28 @@ class DiscordLoginViewCoordinator: NSObject, WKNavigationDelegate {
 
         if url.lastPathComponent == "callback" {
             // Received the callback URL that contains our auth token
-            if let token = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value {
-                print("Extracted token: \(token)")
+            let code = URLComponents(string: url.absoluteString)?.queryItems?.first(where: { $0.name == "code" })?.value
+            if let code = code {
+                // We have a code from Discord that we need to pass to Brilliant backend to
+                // complete sign-in and get auth token
+                print("[DiscordLoginView] Received code: \(code)")
+                signIn(with: SocialIdentityProvider.discord, using: code) { [weak self] (authorizationToken: String?, email: String?) in
+                    guard let authorizationToken = authorizationToken else {
+                        print("[DiscordLoginView] Error: Discord login failed. Noa server sign-in failed.")
+                        self?._onDismiss(nil, nil)
+                        return
+                    }
+
+                    // Succesfully signed in!
+                    self?._onDismiss(authorizationToken, email)
+                }
             } else {
-                //TODO: handle this gracefully by emitting an error to the chat?
-                fatalError("Discord login failed. Server unexpectedly failed to provide a token.")
+                print("[DiscordLoginView] Error: Discord login failed. Discord authorization server unexpectedly failed to provide a code.")
+                _onDismiss(nil, nil)
             }
             decisionHandler(WKNavigationActionPolicy.cancel)
-            _onDismiss()
         } else {
             decisionHandler(WKNavigationActionPolicy.allow)
         }
     }
-
-    func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
-//        if let url = webView.url {
-//            print("Navigated to: \(url)")
-//        } else {
-//            print("Unknown navigation")
-//        }
-    }
-
 }
-//
-//#Preview {
-//    DiscordLoginView()
-//}

@@ -346,8 +346,7 @@ class FrameController: ObservableObject {
             audio: audioFile,
             image: image,
             resizeImageTo200px: false,
-            imageStrength: _settings.imageStrength,
-            imageGuidance: _settings.imageGuidance
+            settings: _settings
         ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
             guard let self = self else { return }
 

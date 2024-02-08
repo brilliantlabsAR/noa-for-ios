@@ -46,19 +46,8 @@ struct DeviceScreenView: View {
             colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255).edgesIgnoringSafeArea(.all) : Color(red: 242/255, green: 242/255, blue: 247/255).edgesIgnoringSafeArea(.all)
             VStack {
                 VStack {
-                    let light = Image("BrilliantLabsLogo")
-                        .resizable()
-                    let dark = Image("BrilliantLabsLogo_Dark")
-                        .resizable()
-                    ColorModeAdaptiveImage(light: light, dark: dark)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 100, height: 12)
-                        .padding(.top, 80)
-                    
-                    Text("Noa")
-                        .font(.system(size: 32, weight: .bold))
-                        .padding(.top, -7)
-                    
+                    LogoView()
+
                     Spacer()
                 
                     Text("Let’s set up your Monocle. Take it out of the case, and bring it close.")

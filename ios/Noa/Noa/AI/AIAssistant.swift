@@ -13,12 +13,12 @@
 import UIKit
 
 public class AIAssistant: NSObject {
-    public enum Mode {
+    enum Mode {
         case assistant
         case translator
     }
 
-    public enum NetworkConfiguration {
+    enum NetworkConfiguration {
         case normal
         case backgroundData
         case backgroundUpload
@@ -49,7 +49,7 @@ public class AIAssistant: NSObject {
         ],
     ]
 
-    public init(configuration: NetworkConfiguration) {
+    init(configuration: NetworkConfiguration) {
         super.init()
 
         switch configuration {
@@ -72,7 +72,7 @@ public class AIAssistant: NSObject {
         }
     }
 
-    public func clearHistory() {
+    func clearHistory() {
         // To clear history, remove all but the very first message
         if _messageHistory.count > 1 {
             _messageHistory.removeSubrange(1..<_messageHistory.count)
@@ -80,28 +80,33 @@ public class AIAssistant: NSObject {
         }
     }
 
-    public func send(
+    func send(
         prompt: String?,
         audio: Data?,
         image: UIImage?,
         resizeImageTo200px: Bool,
-        imageStrength: Float,
-        imageGuidance: Int,
+        settings: Settings,
         completion: @escaping (UIImage?, String, String, AIError?) -> Void
     ) {
         // Get conversation history. We will append user prompt once we receive it back in the
         // response (as all or part of the prompt may be contained in the audio attachment, which
         // must be transcribed on the server).
         guard let messageHistoryPayload = try? JSONSerialization.data(withJSONObject: _messageHistory) else {
-            completion(nil, "", "", AIError.internalError(message: "Internal error: Conversation history cannot be serialized"))
+            completion(nil, "", "", AIError.internalError(message: "Conversation history cannot be serialized"))
+            return
+        }
+
+        // We shouldn't be here if we are not logged in with an auth token
+        guard let authorizationToken = settings.authorizationToken else {
+            completion(nil, "", "", AIError.internalError(message: "User is not logged in"))
             return
         }
 
         // Create form data
         var fields: [Util.MultipartForm.Field] = [
             .init(name: "messages", data: messageHistoryPayload, isJSON: true),
-            .init(name: "image_strength", text: "\(imageStrength)"),
-            .init(name: "cfg_scale", text: "\(imageGuidance)")
+            .init(name: "image_strength", text: "\(settings.imageStrength)"),
+            .init(name: "cfg_scale", text: "\(settings.imageGuidance)")
         ]
         if let prompt = prompt {
             fields.append(.init(name: "prompt", text: prompt))
@@ -122,11 +127,11 @@ public class AIAssistant: NSObject {
 
         // Build request
         let requestHeader = [
-            "Authorization": brilliantAPIKey,
+            "Authorization": authorizationToken, //brilliantAPIKey,
             "Content-Type": "multipart/form-data;boundary=\(form.boundary)"
         ]
-        //let url = URL(string: "https://api.brilliant.xyz/noa/mm")!
-        let url = URL(string: "https://api.brilliant.xyz/dev/noa/mm")!
+        let url = URL(string: "https://api.brilliant.xyz/noa/mm")!
+        //let url = URL(string: "https://api.brilliant.xyz/dev/noa/mm")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = requestHeader

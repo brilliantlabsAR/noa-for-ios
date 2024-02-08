@@ -33,6 +33,15 @@ struct SettingsMenuView: View {
                     Label("Pair Monocle", systemImage: "wake")
                 }
             }
+
+            Button(role: .destructive, action: {
+                if let token = _settings.authorizationToken {
+                    signOut(authorizationToken: token)
+                }
+                _settings.setAuthorizationToken(nil)
+            }) {
+                Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+            }
         } label: {
             Image(systemName: "gearshape.fill")
                 .foregroundColor(Color(red: 87/255, green: 199/255, blue: 170/255))

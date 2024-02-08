@@ -34,7 +34,7 @@ extension AIError: CustomStringConvertible {
         case .dataFormatError(let message):
             return message
         case .internalError(let message):
-            return message
+            return "Internal error: \(message)"
         }
     }
 }
