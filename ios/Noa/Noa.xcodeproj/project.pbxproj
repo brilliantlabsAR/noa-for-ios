@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 352D27F72A7B01820019EFDB /* SpinningMonocle.mp4 */; };
 		CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */; };
-		CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC0039952A6C7E57009E3BAC /* NordicDFU */; };
 		CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */; };
 		CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A42A6DA57E009E3BAC /* ContentView.swift */; };
 		CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */; };
@@ -50,6 +49,7 @@
 		CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF22A00C4180058AC20 /* MessageView.swift */; };
 		CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */; };
 		CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF62A01AA350058AC20 /* ChatView.swift */; };
+		CC5274822B7AD35B00593B67 /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC5274812B7AD35B00593B67 /* NordicDFU */; };
 		CC68515A2A9933F8004EA777 /* DallE.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851592A9933F8004EA777 /* DallE.swift */; };
 		CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */; };
 		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
@@ -175,7 +175,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */,
+				CC5274822B7AD35B00593B67 /* NordicDFU in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -467,7 +467,7 @@
 			);
 			name = Noa;
 			packageProductDependencies = (
-				CC0039952A6C7E57009E3BAC /* NordicDFU */,
+				CC5274812B7AD35B00593B67 /* NordicDFU */,
 			);
 			productName = "ChatGPT for Monocle";
 			productReference = CC4E3AC02A00BA4C0058AC20 /* Noa.app */;
@@ -542,7 +542,7 @@
 			);
 			mainGroup = CC4E3AB72A00BA4C0058AC20;
 			packageReferences = (
-				CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
+				CC5274802B7AD35B00593B67 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
 			);
 			productRefGroup = CC4E3AC12A00BA4C0058AC20 /* Products */;
 			projectDirPath = "";
@@ -1002,20 +1002,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
+		CC5274802B7AD35B00593B67 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
+			repositoryURL = "https://github.com/trzy/IOS-DFU-Library/";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.0;
+				branch = "bart/zip-foundation-upgrade";
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		CC0039952A6C7E57009E3BAC /* NordicDFU */ = {
+		CC5274812B7AD35B00593B67 /* NordicDFU */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
+			package = CC5274802B7AD35B00593B67 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
 			productName = NordicDFU;
 		};
 /* End XCSwiftPackageProductDependency section */
