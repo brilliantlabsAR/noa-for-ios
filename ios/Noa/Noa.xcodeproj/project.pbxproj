@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 352D27F72A7B01820019EFDB /* SpinningMonocle.mp4 */; };
 		CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */; };
-		CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC0039952A6C7E57009E3BAC /* NordicDFU */; };
 		CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */; };
 		CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A42A6DA57E009E3BAC /* ContentView.swift */; };
 		CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */; };
@@ -39,7 +38,7 @@
 		CC3FE0312A0EF81A00756941 /* Question_History.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE02B2A0EF81A00756941 /* Question_History.m4a */; };
 		CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */; };
 		CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */; };
-		CC3FE0362A0F12F700756941 /* AIAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0352A0F12F700756941 /* AIAssistant.swift */; };
+		CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3FE0352A0F12F700756941 /* ChatGPT.swift */; };
 		CC4E3AC82A00BA4C0058AC20 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */; };
 		CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CC4E3ACA2A00BA4D0058AC20 /* Preview Assets.xcassets */; };
 		CC4E3AD52A00BA4D0058AC20 /* NoaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AD42A00BA4D0058AC20 /* NoaTests.swift */; };
@@ -50,13 +49,15 @@
 		CC4E3AF32A00C4180058AC20 /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF22A00C4180058AC20 /* MessageView.swift */; };
 		CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */; };
 		CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF62A01AA350058AC20 /* ChatView.swift */; };
+		CC5274822B7AD35B00593B67 /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC5274812B7AD35B00593B67 /* NordicDFU */; };
+		CC68515A2A9933F8004EA777 /* DallE.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851592A9933F8004EA777 /* DallE.swift */; };
 		CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */; };
 		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
 		CCB2F9622A2568EE00F24F2D /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* Controller.swift */; };
 		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
 		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
 		CCBC46262A02101A00871C12 /* Participant.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCBC46252A02101A00871C12 /* Participant.swift */; };
-		CCCECE6B2A1EB4B100DBB7CA /* WhisperTranslation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6A2A1EB4B100DBB7CA /* WhisperTranslation.swift */; };
+		CCCECE6B2A1EB4B100DBB7CA /* Whisper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */; };
 		CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */; };
 		CCCECE742A1EF36C00DBB7CA /* Question_History.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */; };
 		CCCECE752A1EF36C00DBB7CA /* Question_Movies.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */; };
@@ -65,13 +66,13 @@
 		CCCECE782A1EF36C00DBB7CA /* Question_CPU.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */; };
 		CCCECE792A1EF36C00DBB7CA /* Question_Lizards.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */; };
 		CCD4B9022A93EB47004E3ADD /* NoaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCD4B9012A93EB47004E3ADD /* NoaApp.swift */; };
-		CCDEE1962AEB74C30093575B /* APIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCDEE1952AEB74C30093575B /* APIKey.swift */; };
 		CCEE174F2ACF7E71000170F5 /* Tutorial.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEE174E2ACF7E71000170F5 /* Tutorial.swift */; };
 		CCEE17542ACF8CC1000170F5 /* Tutorial_2.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17502ACF8CC1000170F5 /* Tutorial_2.png */; };
 		CCEE17552ACF8CC1000170F5 /* Tutorial_5.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17512ACF8CC1000170F5 /* Tutorial_5.png */; };
 		CCEE17562ACF8CC1000170F5 /* Tutorial_4.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17522ACF8CC1000170F5 /* Tutorial_4.png */; };
 		CCEE17572ACF8CC1000170F5 /* Tutorial_3.png in Resources */ = {isa = PBXBuildFile; fileRef = CCEE17532ACF8CC1000170F5 /* Tutorial_3.png */; };
 		CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */; };
+		CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */; };
 		CCF9DA852A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */; };
 		F8B8D4792A71761700817A24 /* LoopingVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B8D4782A71761700817A24 /* LoopingVideoPlayer.swift */; };
 		F8BC4DE52A4DBD680005F6F0 /* DeviceScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */; };
@@ -127,7 +128,7 @@
 		CC3FE02B2A0EF81A00756941 /* Question_History.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_History.m4a; sourceTree = "<group>"; };
 		CC3FE02C2A0EF81A00756941 /* Question_Nutrition.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_Nutrition.m4a; sourceTree = "<group>"; };
 		CC3FE02D2A0EF81A00756941 /* Question_CPU.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Question_CPU.m4a; sourceTree = "<group>"; };
-		CC3FE0352A0F12F700756941 /* AIAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistant.swift; sourceTree = "<group>"; };
+		CC3FE0352A0F12F700756941 /* ChatGPT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatGPT.swift; sourceTree = "<group>"; };
 		CC4E3AC02A00BA4C0058AC20 /* Noa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Noa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CC4E3ACA2A00BA4D0058AC20 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -141,13 +142,14 @@
 		CC4E3AF22A00C4180058AC20 /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
 		CC4E3AF42A01A7A90058AC20 /* ChatMessageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageStore.swift; sourceTree = "<group>"; };
 		CC4E3AF62A01AA350058AC20 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		CC6851592A9933F8004EA777 /* DallE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DallE.swift; sourceTree = "<group>"; };
 		CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
 		CC6851672A9964C2004EA777 /* Tahoe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tahoe.jpg; sourceTree = "<group>"; };
 		CCB2F9612A2568EE00F24F2D /* Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
 		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
 		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
 		CCBC46252A02101A00871C12 /* Participant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Participant.swift; sourceTree = "<group>"; };
-		CCCECE6A2A1EB4B100DBB7CA /* WhisperTranslation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperTranslation.swift; sourceTree = "<group>"; };
+		CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Whisper.swift; sourceTree = "<group>"; };
 		CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIError.swift; sourceTree = "<group>"; };
 		CCCECE6E2A1EF36C00DBB7CA /* Question_History.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_History.wav; sourceTree = "<group>"; };
 		CCCECE6F2A1EF36C00DBB7CA /* Question_Movies.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Movies.wav; sourceTree = "<group>"; };
@@ -156,13 +158,13 @@
 		CCCECE722A1EF36C00DBB7CA /* Question_CPU.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_CPU.wav; sourceTree = "<group>"; };
 		CCCECE732A1EF36C00DBB7CA /* Question_Lizards.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Question_Lizards.wav; sourceTree = "<group>"; };
 		CCD4B9012A93EB47004E3ADD /* NoaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoaApp.swift; sourceTree = "<group>"; };
-		CCDEE1952AEB74C30093575B /* APIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.swift; sourceTree = "<group>"; };
 		CCEE174E2ACF7E71000170F5 /* Tutorial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tutorial.swift; sourceTree = "<group>"; };
 		CCEE17502ACF8CC1000170F5 /* Tutorial_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_2.png; sourceTree = "<group>"; };
 		CCEE17512ACF8CC1000170F5 /* Tutorial_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_5.png; sourceTree = "<group>"; };
 		CCEE17522ACF8CC1000170F5 /* Tutorial_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_4.png; sourceTree = "<group>"; };
 		CCEE17532ACF8CC1000170F5 /* Tutorial_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tutorial_3.png; sourceTree = "<group>"; };
 		CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuView.swift; sourceTree = "<group>"; };
+		CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyPopupBoxView.swift; sourceTree = "<group>"; };
 		CCF9DA842A5E5FFC004C1EAE /* ColorModeAdaptiveImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorModeAdaptiveImage.swift; sourceTree = "<group>"; };
 		F8B8D4782A71761700817A24 /* LoopingVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoopingVideoPlayer.swift; sourceTree = "<group>"; };
 		F8BC4DE42A4DBD680005F6F0 /* DeviceScreenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceScreenView.swift; sourceTree = "<group>"; };
@@ -173,7 +175,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */,
+				CC5274822B7AD35B00593B67 /* NordicDFU in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -263,6 +265,7 @@
 			isa = PBXGroup;
 			children = (
 				CCF9DA802A5C9C46004C1EAE /* SettingsMenuView.swift */,
+				CCF9DA822A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -305,11 +308,11 @@
 		CC3FE0342A0F12C800756941 /* AI */ = {
 			isa = PBXGroup;
 			children = (
-				CC3FE0352A0F12F700756941 /* AIAssistant.swift */,
-				CCCECE6A2A1EB4B100DBB7CA /* WhisperTranslation.swift */,
+				CC3FE0352A0F12F700756941 /* ChatGPT.swift */,
+				CC6851592A9933F8004EA777 /* DallE.swift */,
+				CCCECE6A2A1EB4B100DBB7CA /* Whisper.swift */,
 				CCCECE6C2A1EE7C700DBB7CA /* AIError.swift */,
 				CC212D672A9D34A90093479F /* StableDiffusion.swift */,
-				CCDEE1952AEB74C30093575B /* APIKey.swift */,
 			);
 			path = AI;
 			sourceTree = "<group>";
@@ -464,7 +467,7 @@
 			);
 			name = Noa;
 			packageProductDependencies = (
-				CC0039952A6C7E57009E3BAC /* NordicDFU */,
+				CC5274812B7AD35B00593B67 /* NordicDFU */,
 			);
 			productName = "ChatGPT for Monocle";
 			productReference = CC4E3AC02A00BA4C0058AC20 /* Noa.app */;
@@ -514,7 +517,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1420;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1420;
 				TargetAttributes = {
 					CC4E3ABF2A00BA4C0058AC20 = {
 						CreatedOnToolsVersion = 14.2;
@@ -539,7 +542,7 @@
 			);
 			mainGroup = CC4E3AB72A00BA4C0058AC20;
 			packageReferences = (
-				CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
+				CC5274802B7AD35B00593B67 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
 			);
 			productRefGroup = CC4E3AC12A00BA4C0058AC20 /* Products */;
 			projectDirPath = "";
@@ -617,8 +620,9 @@
 				CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
 				CC212D6A2A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift in Sources */,
+				CC68515A2A9933F8004EA777 /* DallE.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
-				CC3FE0362A0F12F700756941 /* AIAssistant.swift in Sources */,
+				CC3FE0362A0F12F700756941 /* ChatGPT.swift in Sources */,
 				CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */,
 				CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */,
 				CCBC46262A02101A00871C12 /* Participant.swift in Sources */,
@@ -631,11 +635,11 @@
 				CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */,
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
 				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
-				CCDEE1962AEB74C30093575B /* APIKey.swift in Sources */,
 				CC212D682A9D34A90093479F /* StableDiffusion.swift in Sources */,
 				CC3FE01F2A0DF21700756941 /* AppDelegate.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
-				CCCECE6B2A1EB4B100DBB7CA /* WhisperTranslation.swift in Sources */,
+				CCF9DA832A5C9DFB004C1EAE /* APIKeyPopupBoxView.swift in Sources */,
+				CCCECE6B2A1EB4B100DBB7CA /* Whisper.swift in Sources */,
 				CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */,
 				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,
 				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,
@@ -717,7 +721,6 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -779,7 +782,6 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -806,7 +808,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Noa/Preview Content\"";
-				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				DEVELOPMENT_TEAM = 7T2874S592;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Noa-Info.plist";
@@ -842,7 +844,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Noa/Preview Content\"";
-				DEVELOPMENT_TEAM = TWKJ9RPH32;
+				DEVELOPMENT_TEAM = 7T2874S592;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Noa-Info.plist";
@@ -1000,20 +1002,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
+		CC5274802B7AD35B00593B67 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
+			repositoryURL = "https://github.com/trzy/IOS-DFU-Library/";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.0;
+				branch = "bart/zip-foundation-upgrade";
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		CC0039952A6C7E57009E3BAC /* NordicDFU */ = {
+		CC5274812B7AD35B00593B67 /* NordicDFU */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
+			package = CC5274802B7AD35B00593B67 /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
 			productName = NordicDFU;
 		};
 /* End XCSwiftPackageProductDependency section */

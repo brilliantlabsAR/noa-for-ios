@@ -1,13 +1,13 @@
 //
-//  StableDiffusion.swift
+//  DallE.swift
 //  Noa
 //
-//  Created by Bart Trzynadlowski on 8/28/23.
+//  Created by Bart Trzynadlowski on 8/25/23.
 //
 
 import UIKit
 
-class StableDiffusion: NSObject {
+class DallE: NSObject {
     public enum NetworkConfiguration {
         case normal
         case backgroundData
@@ -32,7 +32,7 @@ class StableDiffusion: NSObject {
             fallthrough
         case .backgroundData:
             // Configure a URL session that supports background transfers
-            let configuration = URLSessionConfiguration.background(withIdentifier: "StableDiffusion-\(UUID().uuidString)")
+            let configuration = URLSessionConfiguration.background(withIdentifier: "DallE-\(UUID().uuidString)")
             configuration.isDiscretionary = false
             configuration.shouldUseExtendedBackgroundIdleMode = true
             configuration.sessionSendsLaunchEvents = true
@@ -42,67 +42,63 @@ class StableDiffusion: NSObject {
         }
     }
 
-    public func imageToImage(image: UIImage, prompt: String, model: String, strength: Float, guidance: Int, apiKey: String, completion: @escaping (UIImage?, AIError?) -> Void) {
-        // Stable Diffusion wants images to be multiples of 64 pixels on each side
-        guard let pngImageData = getPNGData(for: image) else {
+    public func renderEdit(jpegFileData: Data, maskPNGFileData: Data?, prompt: String, apiKey: String, completion: @escaping (UIImage?, AIError?) -> Void) {
+        // Convert JPEG to PNG and, if no mask supplied, mask off entire image by clearing the
+        // alpha channel so that the entire image is redrawn
+        guard let pngImageData = convertJPEGToPNG(jpegFileData: jpegFileData, clearAlphaChannel: maskPNGFileData == nil) else {
             DispatchQueue.main.async {
-                completion(nil, AIError.dataFormatError(message: "Unable to crop image and convert to PNG"))
+                completion(nil, AIError.dataFormatError(message: "Unable to convert JPEG image to PNG data"))
             }
             return
         }
 
         // Prepare URL request
         let boundary = UUID().uuidString
-        let url = URL(string: "https://api.stability.ai/v1/generation/\(model)/image-to-image")!
+        let url = URL(string: "https://api.openai.com/v1/images/edits")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data;boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.setValue("Noa/iOS", forHTTPHeaderField: "Stability-Client-ID")
 
         // Form data
         var formData = Data()
 
-        // Form parameter "init_image"
+        // Form parameter "image" -- if mask is not supplied, alpha channel is mask (alpha=0 is
+        // where image will be modified)
         formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"init_image\";filename=\"image.png\"\r\n".data(using: .utf8)!)
+        formData.append("Content-Disposition:form-data;name=\"image\";filename=\"image.png\"\r\n".data(using: .utf8)!)
         formData.append("Content-Type:image/png\r\n\r\n".data(using: .utf8)!)
         formData.append(pngImageData)
         formData.append("\r\n".data(using: .utf8)!)
 
-        // Form parameter "text_prompts"
+        // Form parameter "mask"
+        if let maskPNGFileData = maskPNGFileData {
+            formData.append("--\(boundary)\r\n".data(using: .utf8)!)
+            formData.append("Content-Disposition:form-data;name=\"mask\";filename=\"mask.png\"\r\n".data(using: .utf8)!)
+            formData.append("Content-Type:image/png\r\n\r\n".data(using: .utf8)!)
+            formData.append(maskPNGFileData)
+            formData.append("\r\n".data(using: .utf8)!)
+        }
+
+        // Form parameter "prompt"
         formData.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"text_prompts[0][text]\"\r\n".data(using: .utf8)!)
+        formData.append("Content-Disposition:form-data;name=\"prompt\"\r\n".data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
         formData.append(prompt.data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
 
-        // Form parameter "init_image_mode"
+        // Form parameter "response_format"
         formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"init_image_mode\"\r\n".data(using: .utf8)!)
+        formData.append("Content-Disposition:form-data;name=\"response_format\"\r\n".data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
-        formData.append("IMAGE_STRENGTH".data(using: .utf8)!)
+        formData.append("b64_json".data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
 
-        // Form parameter "image_strength"
+        // Form parameter "size"
         formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"image_strength\"\r\n".data(using: .utf8)!)
+        formData.append("Content-Disposition:form-data;name=\"size\"\r\n".data(using: .utf8)!)
         formData.append("\r\n".data(using: .utf8)!)
-        formData.append("\(strength)".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-
-        // Form parameter "cfg_scale"
-        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"cfg_scale\"\r\n".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-        formData.append("\(guidance)".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-
-        // Form parameter "samples"
-        formData.append("--\(boundary)\r\n".data(using: .utf8)!)
-        formData.append("Content-Disposition:form-data;name=\"samples\"\r\n".data(using: .utf8)!)
-        formData.append("\r\n".data(using: .utf8)!)
-        formData.append("1".data(using: .utf8)!)
+        formData.append("512x512".data(using: .utf8)!)
         formData.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
 
         // If this is a background task using a file, write that file, else attach to request
@@ -122,24 +118,27 @@ class StableDiffusion: NSObject {
 
         // Begin
         task.resume()
-
-        print("[StableDiffusion] Submitted image2image request with: model=\(model), strength=\(strength), guidance=\(guidance), prompt=\(prompt)")
     }
 
-    /// Given a UIImage, expands it so that each side is the next integral multiple of 64 (as
-    /// required by Stable Diffusion), letterboxing and centering the original content. Monocle
-    /// sends images that are 640x400. Cropping them down to 640x384 produces an image
-    /// that is *too small* for Stable Diffusion but bumping the size up *just* works.
-    /// - Parameter for: Image to expand and obtain PNG data for.
-    /// - Returns: PNG data of an expanded copy of the image or `nil` if there was an error.
-    private func getPNGData(for image: UIImage) -> Data? {
-        // Expand each dimension to multiple of 64 that is equal or greater than current size
-        let currentWidth = Int(image.size.width)
-        let currentHeight = Int(image.size.height)
-        let newWidth = (currentWidth + 63) & ~63
-        let newHeight = (currentHeight + 63) & ~63
-        let newSize = CGSize(width: CGFloat(newWidth), height: CGFloat(newHeight))
-        return image.expandImageWithLetterbox(to: newSize)?.pngData()
+    private func convertJPEGToPNG(jpegFileData: Data, clearAlphaChannel: Bool) -> Data? {
+        if let jpegImage = UIImage(data: jpegFileData),
+           let pixelBuffer = jpegImage.toPixelBuffer() {
+            if clearAlphaChannel {
+                pixelBuffer.clearAlpha()
+            }
+            if let maskedImage = UIImage(pixelBuffer: pixelBuffer) {
+                if let pngData = maskedImage.pngData() {
+                    return pngData
+                } else {
+                    print("[DallE] Error: Failed to produce PNG encoded image")
+                }
+            } else {
+                print("[DallE] Error: Failed to convert pixel buffer to UIImage")
+            }
+        } else {
+            print("[DallE] Error: Unable to convert JPEG image data to a pixel buffer")
+        }
+        return nil
     }
 
     private func deliverImage(for taskIdentifier: Int) {
@@ -147,7 +146,7 @@ class StableDiffusion: NSObject {
             guard let self = self else { return }
 
             guard let completion = _completionByTask[taskIdentifier] else {
-                print("[StableDiffusion] Error: Lost completion data for task \(taskIdentifier)")
+                print("[DallE] Error: Lost completion data for task \(taskIdentifier)")
                 _responseDataByTask.removeValue(forKey: taskIdentifier)
                 return
             }
@@ -155,7 +154,7 @@ class StableDiffusion: NSObject {
             _completionByTask.removeValue(forKey: taskIdentifier)
 
             guard let responseData = _responseDataByTask[taskIdentifier] else {
-                print("[StableDiffusion] Error: Lost response data for task \(taskIdentifier)")
+                print("[DallE] Error: Lost response data for task \(taskIdentifier)")
                 return
             }
 
@@ -171,33 +170,40 @@ class StableDiffusion: NSObject {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: [])
             if let response = json as? [String: AnyObject] {
-                if let errorType = response["name"] as? String {
-                    var errorMessage = "Stability AI request failed (\(errorType))"
-                    if let message = response["message"] as? String {
-                        errorMessage += ": \(message)"
+                if let errorPayload = response["error"] as? [String: AnyObject],
+                   var errorMessage = errorPayload["message"] as? String {
+                    // Error from OpenAI
+                    if errorMessage.isEmpty {
+                        // This happens sometimes, try to see if there is an error code
+                        if let errorCode = errorPayload["code"] as? String,
+                           !errorCode.isEmpty {
+                            errorMessage = "Unable to respond. Error code: \(errorCode)"
+                        } else {
+                            errorMessage = "No response received. Ensure your API key is valid and try again."
+                        }
                     }
                     return (AIError.apiError(message: errorMessage), nil)
-                } else if let artifacts = response["artifacts"] as? [[String: AnyObject]],
-                       artifacts.count > 0,
-                       let base64String = artifacts[0]["base64"] as? String,
+                } else if let dataObject = response["data"] as? [[String: String]],
+                       dataObject.count > 0,
+                       let base64String = dataObject[0]["b64_json"],
                        let base64Data = base64String.data(using: .utf8),
                        let imageData = Data(base64Encoded: base64Data),
                        let image = UIImage(data: imageData) {
                     return (nil, image)
                 }
             }
-            print("[StableDiffusion] Error: Unable to parse response")
+            print("[DallE] Error: Unable to parse response")
         } catch {
-            print("[StableDiffusion] Error: Unable to deserialize response: \(error)")
+            print("[DallE] Error: Unable to deserialize response: \(error)")
         }
         return (AIError.responsePayloadParseError, nil)
     }
 }
 
-extension StableDiffusion: URLSessionDelegate {
+extension DallE: URLSessionDelegate {
     public func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
         let errorMessage = error == nil ? "unknown error" : error!.localizedDescription
-        print("[StableDiffusion] URLSession became invalid: \(errorMessage)")
+        print("[DallE] URLSession became invalid: \(errorMessage)")
 
         // Deliver error for all outstanding tasks
         DispatchQueue.main.async { [weak self] in
@@ -211,36 +217,36 @@ extension StableDiffusion: URLSessionDelegate {
     }
 
     public func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
-        print("[StableDiffusion] URLSession finished events")
+        print("[DallE] URLSession finished events")
     }
 
     public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        print("[StableDiffusion] URLSession received challenge")
+        print("[DallE] URLSession received challenge")
         if let trust = challenge.protectionSpace.serverTrust {
             completionHandler(.useCredential, URLCredential(trust: trust))
         } else {
-            print("[StableDiffusion] URLSession unable to use credential")
+            print("[DallE] URLSession unable to use credential")
         }
     }
 }
 
-extension StableDiffusion: URLSessionDataDelegate {
+extension DallE: URLSessionDataDelegate {
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didBecome streamTask: URLSessionStreamTask) {
-        print("[StableDiffusion] URLSessionDataTask became stream task")
+        print("[DallE] URLSessionDataTask became stream task")
         streamTask.resume()
     }
 
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didBecome downloadTask: URLSessionDownloadTask) {
-        print("[StableDiffusion] URLSessionDataTask became download task")
+        print("[DallE] URLSessionDataTask became download task")
         downloadTask.resume()
     }
 
     public func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        print("[StableDiffusion] URLSessionDataTask received challenge")
+        print("[DallE] URLSessionDataTask received challenge")
         if let trust = challenge.protectionSpace.serverTrust {
             completionHandler(.useCredential, URLCredential(trust: trust))
         } else {
-            print("[StableDiffusion] URLSessionDataTask unable to use credential")
+            print("[DallE] URLSessionDataTask unable to use credential")
 
             // Deliver error
             DispatchQueue.main.async { [weak self] in
@@ -257,9 +263,9 @@ extension StableDiffusion: URLSessionDataDelegate {
     public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
         // Original request was redirected somewhere else. Create a new task for redirection.
         if let urlString = request.url?.absoluteString {
-            print("[StableDiffusion] URLSessionDataTask redirected to \(urlString)")
+            print("[DallE] URLSessionDataTask redirected to \(urlString)")
         } else {
-            print("[StableDiffusion] URLSessionDataTask redirected")
+            print("[DallE] URLSessionDataTask redirected")
         }
 
         // New task
@@ -284,11 +290,11 @@ extension StableDiffusion: URLSessionDataDelegate {
 
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error {
-            print("[StableDiffusion] URLSessionDataTask failed to complete: \(error.localizedDescription)")
+            print("[DallE] URLSessionDataTask failed to complete: \(error.localizedDescription)")
         } else {
             // Error == nil should indicate successful completion. Process final result.
             deliverImage(for: task.taskIdentifier)
-            print("[StableDiffusion] URLSessionDataTask finished")
+            print("[DallE] URLSessionDataTask finished")
         }
 
         // If there really was no error, we should have received data, triggered the completion,
@@ -307,12 +313,12 @@ extension StableDiffusion: URLSessionDataDelegate {
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
         // Assume that regardless of any error (including non-200 status code), the didCompleteWithError
         // delegate method will eventually be called and we can report the error there
-        print("[StableDiffusion] URLSessionDataTask received response headers")
+        print("[DallE] URLSessionDataTask received response headers")
         guard let response = response as? HTTPURLResponse else {
-            print("[StableDiffusion] URLSessionDataTask received unknown response type")
+            print("[DallE] URLSessionDataTask received unknown response type")
             return
         }
-        print("[StableDiffusion] URLSessionDataTask received response code \(response.statusCode)")
+        print("[DallE] URLSessionDataTask received response code \(response.statusCode)")
         completionHandler(URLSession.ResponseDisposition.allow)
     }
 

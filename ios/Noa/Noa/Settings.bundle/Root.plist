@@ -14,6 +14,24 @@
 		</dict>
 		<dict>
 			<key>Type</key>
+			<string>PSTextFieldSpecifier</string>
+			<key>Title</key>
+			<string>API Key</string>
+			<key>Key</key>
+			<string>api_key</string>
+			<key>DefaultValue</key>
+			<string></string>
+			<key>IsSecure</key>
+			<false/>
+			<key>KeyboardType</key>
+			<string>Alphabet</string>
+			<key>AutocapitalizationType</key>
+			<string>None</string>
+			<key>AutocorrectionType</key>
+			<string>No</string>
+		</dict>
+		<dict>
+			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
 			<string>Model</string>
@@ -25,13 +43,11 @@
 			<array>
 				<string>GPT-3.5 Turbo</string>
 				<string>GPT-4</string>
-				<string>GPT-4 Turbo (Preview)</string>
 			</array>
 			<key>Values</key>
 			<array>
 				<string>gpt-3.5-turbo</string>
 				<string>gpt-4</string>
-				<string>gpt-4-1106-preview</string>
 			</array>
 		</dict>
 		<dict>
@@ -39,6 +55,16 @@
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
 			<string>Stability AI API</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTextFieldSpecifier</string>
+			<key>Title</key>
+			<string>API Key</string>
+			<key>Key</key>
+			<string>stability_api_key</string>
+			<key>DefaultValue</key>
+			<string></string>
 		</dict>
 		<dict>
 			<key>Type</key>

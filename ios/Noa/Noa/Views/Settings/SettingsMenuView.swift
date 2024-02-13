@@ -10,15 +10,22 @@ import SwiftUI
 struct SettingsMenuView: View {
     @EnvironmentObject private var _settings: Settings
 
+    @Binding var popUpApiBox: Bool
     @Binding var showPairingView: Bool
     @Binding var bluetoothEnabled: Bool
-    @Binding var mode: AIAssistant.Mode
+    @Binding var mode: ChatGPT.Mode
 
     @State private var _translateEnabled = false
 
     var body: some View {
         Menu {
             let isMonoclePaired = _settings.pairedDeviceID != nil
+
+            Button(action: {
+                popUpApiBox = true
+            }) {
+                Label("Manage API Keys", systemImage: "person.circle")
+            }
 
             Toggle(isOn: $_translateEnabled) {
                 Label("Translate", systemImage: "globe")
@@ -57,6 +64,7 @@ struct SettingsMenuView: View {
 struct SettingsMenuView_Previews: PreviewProvider {
     static var previews: some View {
         SettingsMenuView(
+            popUpApiBox: .constant(false),
             showPairingView: .constant(false),
             bluetoothEnabled: .constant(true),
             mode: .constant(.assistant)

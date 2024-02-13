@@ -14,8 +14,14 @@ import Combine
 import Foundation
 
 class Settings: ObservableObject {
+    @Published private(set) var openAIKey: String = ""
+    private static let k_openAIKey = "api_key"
+
     @Published private(set) var gptModel: String = ""
     private static let k_gptModel = "model"
+
+    @Published private(set) var stabilityAIKey: String = ""
+    private static let k_stabilityAIKey = "stability_api_key"
 
     @Published private(set) var stableDiffusionModel: String = ""
     private static let k_stableDiffusionModelKey = "stability_sd_model"
@@ -54,6 +60,26 @@ class Settings: ObservableObject {
             return "?"
         }
         return name
+    }
+
+    /// Sets the value of the OpenAI API key setting and persists it.
+    /// - Parameter value: The new value.
+    public func setOpenAIKey(_ value: String) {
+        if openAIKey != value {
+            openAIKey = value
+            UserDefaults.standard.set(value, forKey: Self.k_openAIKey)
+            print("[Settings] Set: \(Self.k_openAIKey) = \(openAIKey)")
+        }
+    }
+
+    /// Sets the value of the Stability AI API key setting and persists it.
+    /// - Parameter value: The new value.
+    public func setStabilityAIKey(_ value: String) {
+        if stabilityAIKey != value {
+            stabilityAIKey = value
+            UserDefaults.standard.set(value, forKey: Self.k_stabilityAIKey)
+            print("[Settings] Set: \(Self.k_stabilityAIKey) = \(stabilityAIKey)")
+        }
     }
 
     /// Sets the value of the model setting. Currently does not perform validation to ensure an allowed value is used.
@@ -144,9 +170,19 @@ class Settings: ObservableObject {
 
     @objc private func onSettingsChanged() {
         // Publish changes when settings have been edited
+        let openAIKey = UserDefaults.standard.string(forKey: Self.k_openAIKey) ?? ""
+        if openAIKey != self.openAIKey {
+            self.openAIKey = openAIKey
+        }
+
         let model = UserDefaults.standard.string(forKey: Self.k_gptModel) ?? "gpt-3.5-turbo"
         if model != self.gptModel {
             self.gptModel = model
+        }
+
+        let stabilityAIKey = UserDefaults.standard.string(forKey: Self.k_stabilityAIKey) ?? ""
+        if stabilityAIKey != self.stabilityAIKey {
+            self.stabilityAIKey = stabilityAIKey
         }
 
         let stableDiffusionModel = UserDefaults.standard.string(forKey: Self.k_stableDiffusionModelKey) ?? ""

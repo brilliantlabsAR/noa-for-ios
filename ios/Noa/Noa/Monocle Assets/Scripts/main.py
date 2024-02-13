@@ -1,5 +1,5 @@
 import bluetooth
-import camera,_camera
+import camera
 import graphics
 import microphone
 import touch
@@ -19,11 +19,18 @@ def bluetooth_send_message(message):
             pass
 
 def bluetooth_message_handler(message):
-    if state.current_state == state.WaitForResponse:
-        if message.startswith("res:") or message.startswith("err:"):
+    if state.current_state == state.WaitForPing:
+        if message.startswith("pin:"):
+            bluetooth_send_message(b"pon:" + message[4:])
+            state.after(0, state.WaitForResponse)
+        elif message.startswith("res:") or message.startswith("err:"):
             print_response(message)
         elif message.startswith("ick:"):
             state.after(0, state.WaitForTap)
+
+    elif state.current_state == state.WaitForResponse:
+        if message.startswith("res:") or message.startswith("err:"):
+            print_response(message)
 
     elif state.current_state == state.PrintResponse:
         gfx.append_response(message[4:].decode("utf-8"))
@@ -35,7 +42,10 @@ def bluetooth_message_handler(message):
 def touch_pad_handler(_):
     if state.current_state == state.WaitForTap:
         state.after(0, state.DetectSingleTap)
-    elif state.current_state == state.WaitForResponse:
+    elif (
+        state.current_state == state.WaitForPing
+        or state.current_state == state.WaitForResponse
+    ):
         state.after(0, state.AskToCancel)
     elif state.current_state == state.AskToCancel:
         state.after(0, state.WaitForTap)
@@ -75,7 +85,6 @@ while True:
         if state.has_been() >= 250:
             if touch.state(touch.EITHER): # still holding, try detect hold
                 state.after(0, state.DetectHold)
-                _camera.wake()
             else:
                 state.after(0, state.StartRecording)
 
@@ -83,7 +92,6 @@ while True:
         if state.has_been() >= 1000 and touch.state(touch.EITHER):
             state.after(0, state.CaptureImage)
         elif not touch.state(touch.EITHER):
-            _camera.sleep()
             state.after(0, state.WaitForTap)
 
     elif state.current_state == state.StartRecording:
@@ -92,7 +100,10 @@ while True:
     elif state.current_state == state.SendAudio:
         send_audio(state, gfx, bluetooth_send_message)
 
-    elif state.current_state == state.WaitForResponse:
+    elif (
+        state.current_state == state.WaitForPing
+        or state.current_state == state.WaitForResponse
+    ):
         gfx.set_prompt("Waiting for openAI")
 
     elif state.current_state == state.AskToCancel:
