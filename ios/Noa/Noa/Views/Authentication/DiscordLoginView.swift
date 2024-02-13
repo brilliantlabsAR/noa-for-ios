@@ -58,7 +58,7 @@ class DiscordLoginViewCoordinator: NSObject, WKNavigationDelegate {
                 // We have a code from Discord that we need to pass to Brilliant backend to
                 // complete sign-in and get auth token
                 print("[DiscordLoginView] Received code: \(code)")
-                signIn(with: SocialIdentityProvider.discord, using: code) { [weak self] (authorizationToken: String?, email: String?) in
+                signIn(with: SocialIdentityProvider.discord, token: code, userID: nil, fullName: nil, email: nil) { [weak self] (authorizationToken: String?, email: String?) in
                     guard let authorizationToken = authorizationToken else {
                         print("[DiscordLoginView] Error: Discord login failed. Noa server sign-in failed.")
                         self?._onDismiss(nil, nil)

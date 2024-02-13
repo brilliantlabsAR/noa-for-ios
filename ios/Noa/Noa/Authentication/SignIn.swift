@@ -12,13 +12,13 @@ fileprivate struct SignInResponse: Codable {
     let email: String
 }
 
-func signIn(with provider: SocialIdentityProvider, using code: String, completion: @escaping (String?, String?) -> Void) {
+func signIn(with provider: SocialIdentityProvider, token code: String, userID: String?, fullName: String?, email: String?, completion: @escaping (String?, String?) -> Void) {
     let fields: [Util.MultipartForm.Field] = [
         .init(name: "id_token", text: code),
-        .init(name: "name", text: ""),
-        .init(name: "email", text: ""),
+        .init(name: "name", text: fullName ?? ""),
+        .init(name: "email", text: email ?? ""),
         .init(name: "social_type", text: provider.rawValue),
-        .init(name: "social_id", text: "")
+        .init(name: "social_id", text: userID ?? "")
     ]
     let form = Util.MultipartForm(fields: fields)
 

@@ -6,6 +6,7 @@
 //
 
 enum SocialIdentityProvider: String {
+    case apple = "apple"
     case discord = "discord"
     case google = "google"
 }

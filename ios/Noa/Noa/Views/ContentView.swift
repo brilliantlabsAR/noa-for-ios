@@ -7,6 +7,15 @@
 //  Top-level application view.
 //
 
+//
+// TODO:
+// -----
+// - Auth token needs to be stored in Keychain, not Settings!
+// - Need a button in DiscordLoginView to cancel out.
+// - When Apple sign in initially returns, but before Noa sign in is complete, should display some sort of "signing in..." spinner
+// - Need to implement account deletion and for Apple ID case, refresh token and identity token must be revoked
+//
+
 import CoreBluetooth
 import Foundation
 import SwiftUI
@@ -39,6 +48,18 @@ struct ContentView: View {
                     switch signInSheet {
                     case .hidden:
                         Spacer()
+
+                        AppleSignInButtonView(onComplete: { (token: String?, userID: String?, fullName: String?, email: String?) in
+                            signInSheet = .hidden
+                            if let token = token {
+                                // We obtained an auth token and can start the app
+                                _settings.setAuthorizationToken(token)
+                            }
+                        })
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 300)
+                            .padding()
+
                         Button(
                             action: {
                                 signInSheet = .discord
@@ -50,7 +71,7 @@ struct ContentView: View {
                                     .frame(width: 300)
                             }
                         )
-                        Text("Choose a method to log in with.")
+                        Text("Choose a method to sign in with.")
                             .font(.system(size: 15))
                             .frame(width: 314, height: 60)
                         Spacer()
