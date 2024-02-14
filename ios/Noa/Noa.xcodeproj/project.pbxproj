@@ -55,6 +55,9 @@
 		CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4E3AF62A01AA350058AC20 /* ChatView.swift */; };
 		CC5274BC2B7B11B800593B67 /* AppleSignInButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5274BB2B7B11B800593B67 /* AppleSignInButtonView.swift */; };
 		CC5274BE2B7B15A600593B67 /* APIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5274BD2B7B15A600593B67 /* APIKey.swift */; };
+		CC5274CD2B7C432B00593B67 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = CC5274CC2B7C432B00593B67 /* GoogleSignIn */; };
+		CC5274CF2B7C432B00593B67 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = CC5274CE2B7C432B00593B67 /* GoogleSignInSwift */; };
+		CC5274D12B7C439D00593B67 /* GoogleSignInButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5274D02B7C439D00593B67 /* GoogleSignInButtonView.swift */; };
 		CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */; };
 		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
 		CC86A1902B7438C5003A2DCC /* MainAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A18F2B7438C5003A2DCC /* MainAppView.swift */; };
@@ -164,6 +167,7 @@
 		CC5274BA2B7AE02F00593B67 /* Noa.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Noa.entitlements; sourceTree = "<group>"; };
 		CC5274BB2B7B11B800593B67 /* AppleSignInButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInButtonView.swift; sourceTree = "<group>"; };
 		CC5274BD2B7B15A600593B67 /* APIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.swift; sourceTree = "<group>"; };
+		CC5274D02B7C439D00593B67 /* GoogleSignInButtonView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleSignInButtonView.swift; sourceTree = "<group>"; };
 		CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
 		CC6851672A9964C2004EA777 /* Tahoe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tahoe.jpg; sourceTree = "<group>"; };
 		CC86A18F2B7438C5003A2DCC /* MainAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppView.swift; sourceTree = "<group>"; };
@@ -206,7 +210,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CC5274CF2B7C432B00593B67 /* GoogleSignInSwift in Frameworks */,
 				CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */,
+				CC5274CD2B7C432B00593B67 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -513,6 +519,7 @@
 		CCCEC3B22B72E8780024DDAC /* Authentication */ = {
 			isa = PBXGroup;
 			children = (
+				CC5274D02B7C439D00593B67 /* GoogleSignInButtonView.swift */,
 				CCCEC3B32B72E8960024DDAC /* DiscordLoginView.swift */,
 				CC5274BB2B7B11B800593B67 /* AppleSignInButtonView.swift */,
 			);
@@ -556,6 +563,8 @@
 			name = Noa;
 			packageProductDependencies = (
 				CC0039952A6C7E57009E3BAC /* NordicDFU */,
+				CC5274CC2B7C432B00593B67 /* GoogleSignIn */,
+				CC5274CE2B7C432B00593B67 /* GoogleSignInSwift */,
 			);
 			productName = "ChatGPT for Monocle";
 			productReference = CC4E3AC02A00BA4C0058AC20 /* Noa.app */;
@@ -632,6 +641,7 @@
 			mainGroup = CC4E3AB72A00BA4C0058AC20;
 			packageReferences = (
 				CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
+				CC5274CB2B7C432B00593B67 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			productRefGroup = CC4E3AC12A00BA4C0058AC20 /* Products */;
 			projectDirPath = "";
@@ -736,6 +746,7 @@
 				CC21C12E2B55BFA500DEAAEC /* Stopwatch.swift in Sources */,
 				CCF4F3552B3CC7EB00146A59 /* FrameController.swift in Sources */,
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
+				CC5274D12B7C439D00593B67 /* GoogleSignInButtonView.swift in Sources */,
 				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
 				CC86A1972B7465EC003A2DCC /* SignOut.swift in Sources */,
 				CC86A1902B7438C5003A2DCC /* MainAppView.swift in Sources */,
@@ -1126,6 +1137,14 @@
 				minimumVersion = 4.0.0;
 			};
 		};
+		CC5274CB2B7C432B00593B67 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1133,6 +1152,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
 			productName = NordicDFU;
+		};
+		CC5274CC2B7C432B00593B67 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CC5274CB2B7C432B00593B67 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		CC5274CE2B7C432B00593B67 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CC5274CB2B7C432B00593B67 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

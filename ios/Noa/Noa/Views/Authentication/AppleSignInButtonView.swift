@@ -65,9 +65,9 @@ struct AppleSignInButtonView: View {
                     let email = appleIDCredential.email
 
                     // Sign in with Noa server
-                    signIn(with: SocialIdentityProvider.apple, token: token, userID: userID, fullName: fullName, email: email) { (authorizationToken: String?, email: String?) in
+                    signIn(with: .apple, token: token, userID: userID, fullName: fullName, email: email) { (authorizationToken: String?, email: String?) in
                         guard let authorizationToken = authorizationToken else {
-                            print("[AppleSignInButtonView] Error: Login failed. Noa server sign-in failed.")
+                            print("[AppleSignInButtonView] Error: Noa server sign-in failed")
                             _onComplete(nil, nil, nil, nil)
                             return
                         }

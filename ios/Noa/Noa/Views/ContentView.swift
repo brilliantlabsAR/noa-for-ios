@@ -18,6 +18,7 @@
 
 import CoreBluetooth
 import Foundation
+import GoogleSignIn
 import SwiftUI
 
 enum SignInSheetState {
@@ -56,9 +57,19 @@ struct ContentView: View {
                                 _settings.setAuthorizationToken(token)
                             }
                         })
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 300)
-                            .padding()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 300)
+                        .padding()
+
+                        GoogleSignInButtonView(onComplete: { (token: String?, userID: String?, fullName: String?, email: String?) in
+                            signInSheet = .hidden
+                            if let token = token {
+                                _settings.setAuthorizationToken(token)
+                            }
+                        })
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 300)
+                        .padding()
 
                         Button(
                             action: {
@@ -71,6 +82,7 @@ struct ContentView: View {
                                     .frame(width: 300)
                             }
                         )
+                            .padding()
                         Text("Choose a method to sign in with.")
                             .font(.system(size: 15))
                             .frame(width: 314, height: 60)
@@ -88,6 +100,17 @@ struct ContentView: View {
                 }
             }
         }
+        /*
+        .onOpenURL(perform: { url in
+            GIDSignIn.sharedInstance.handle(url)
+        })
+        .onAppear {
+            GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
+                // Check if 'user' exists, otherwise, handle 'error'
+                //TODO: I don't think we need this. We use sign in just for user validation and then store our own token.
+            }
+        }
+         */
     }
 
     init(settings: Settings, chatMessageStore: ChatMessageStore, frameController: FrameController) {

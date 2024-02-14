@@ -6,24 +6,24 @@
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.510809410914-9utqnibj3os18lruin8ke3mlrdg1moqg</string>
+			</array>
+		</dict>
+	</array>
+	<key>GIDClientID</key>
+	<string>510809410914-9utqnibj3os18lruin8ke3mlrdg1moqg.apps.googleusercontent.com</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>
 		<string>fetch</string>
 		<string>processing</string>
 	</array>
-	<key>GIDClientID</key>
-	<string>YOUR_IOS_CLIENT_ID</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-	<dict>
-		<key>CFBundleURLSchemes</key>
-		<array>
-		<string>YOUR_DOT_REVERSED_IOS_CLIENT_ID</string>
-		</array>
-	</dict>
-	</array>
-	<key>GIDServerClientID</key>
-	<string>YOUR_SERVER_CLIENT_ID</string>
 </dict>
 </plist>
