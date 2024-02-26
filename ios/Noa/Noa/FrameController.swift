@@ -102,6 +102,7 @@ class FrameController: ObservableObject {
         _mainTask = Task {
             await mainTask()
         }
+        setupPlaybackAudioSession()
     }
 
     /// Pair to device. This will also cause the Frame controller to attempt to auto-connect to the
@@ -318,6 +319,7 @@ class FrameController: ObservableObject {
         // 8-bit PCM -> M4A, then submit all
         if _audioBuffer.count > 0,
            let pcmBuffer = AVAudioPCMBuffer.fromMonoInt8Data(_audioBuffer, sampleRate: 8000) {
+            playReceivedAudio(pcmBuffer)
             log("Converting audio to m4a format")
             _m4aWriter.write(buffer: pcmBuffer) { [weak self] (fileData: Data?) in
                 guard let self = self,
@@ -570,6 +572,13 @@ class FrameController: ObservableObject {
 
     // MARK: Debug
 
+    private let _enableDebugAudioPlayback = false   // controls whether audio is played back on iPhone speaker
+    private let _audioEngine = AVAudioEngine()
+    private var _playerNode = AVAudioPlayerNode()
+    private var _audioConverter: AVAudioConverter?
+    private var _playbackFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 48000, channels: 1, interleaved: false)!
+    private let _frameAudioFormat = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 8000, channels: 1, interleaved: false)!
+
     private func loadTestImage() {
         _photoBuffer = Data(count: 200 * 200)
         let red: UInt8 = 0xe0
@@ -581,6 +590,59 @@ class FrameController: ObservableObject {
             _photoBuffer[i * 200 + 199] = green
             _photoBuffer[199 * 200 + i] = red
             _photoBuffer[i * 200 + i] = blue
+        }
+    }
+
+    private func setupPlaybackAudioSession() {
+        guard _enableDebugAudioPlayback else { return }
+
+        // Set up the app's audio session
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [ .defaultToSpeaker ])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            fatalError("Unable to set up audio session: \(error.localizedDescription)")
+        }
+
+        // Set up player
+        _audioEngine.attach(_playerNode)
+        _audioEngine.connect(_playerNode, to: _audioEngine.mainMixerNode, format: _playbackFormat)
+        _audioEngine.prepare()
+        do {
+            try _audioEngine.start()
+        } catch {
+            log("Error: Unable to start audio engine: \(error.localizedDescription)")
+        }
+
+        // Set up converter
+        _audioConverter = AVAudioConverter(from: _frameAudioFormat, to: _playbackFormat)
+    }
+
+    private func playReceivedAudio(_ pcmBuffer: AVAudioPCMBuffer) {
+        guard _enableDebugAudioPlayback else { return }
+        if let audioConverter = _audioConverter {
+            var error: NSError?
+            var allSamplesReceived = false
+            let outputBuffer = AVAudioPCMBuffer(pcmFormat: _playbackFormat, frameCapacity: pcmBuffer.frameLength * 48/8)!
+            audioConverter.reset()
+            audioConverter.convert(to: outputBuffer, error: &error, withInputFrom: { (inNumPackets: AVAudioPacketCount, outError: UnsafeMutablePointer<AVAudioConverterInputStatus>) -> AVAudioBuffer? in
+                if allSamplesReceived {
+                    outError.pointee = .noDataNow
+                    return nil
+                }
+                allSamplesReceived = true
+                outError.pointee = .haveData
+                return pcmBuffer
+            })
+
+            print("\(pcmBuffer.frameLength) \(outputBuffer.frameLength)")
+            print(_playbackFormat)
+            print(_audioEngine.mainMixerNode.outputFormat(forBus: 0))
+            print(outputBuffer.format)
+
+            _playerNode.scheduleBuffer(outputBuffer)
+            _playerNode.prepare(withFrameCount: outputBuffer.frameLength)
+            _playerNode.play()
         }
     }
 }
