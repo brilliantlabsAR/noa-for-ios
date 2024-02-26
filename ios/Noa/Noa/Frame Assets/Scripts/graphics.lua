@@ -71,17 +71,12 @@ function Graphics:print_text()
     end
 
     -- Print to the display
-    frame.display.clear()
-    frame.sleep(0.02)
-
     for i, line in pairs(lines) do
         local y = 1 + ((i - 1) * 58) + Y_OFFSET
         frame.display.text(line, 1, y)
     end
 
     frame.display.show()
-    frame.sleep(0.02)
-
 
     -- Delay for appropriate time
     if string.sub(self.__text, self.__characters_printed, self.__characters_printed) == " " then

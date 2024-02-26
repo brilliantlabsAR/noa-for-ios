@@ -73,7 +73,7 @@ while true do
     elseif state:is("CAPTURE") then
         state:on_entry(function()
             frame.microphone.record(6, 8000, 8)
-            frame.sleep(0.1) -- Reduce motion blur
+            frame.camera.auto(25)
             frame.camera.capture()
             graphics:clear()
             graphics:append_text("Listening . . .")

@@ -156,12 +156,12 @@ class FrameController: ObservableObject {
                 print("MTU size: \(connection.maximumWriteLength(for: .withoutResponse)) bytes")
 
                 // Send scripts and issue ^D to reset and execute main.lua
-//                try await loadScript(named: "state.lua", on: connection)
-//                try await loadScript(named: "graphics.lua", on: connection)
-//                try await loadScript(named: "main.lua", on: connection)
-//                log("Starting...")
-//                connection.send(text: "\u{4}")
-                try await loadScript(named: "test_restore.lua", on: connection, run: true)
+                try await loadScript(named: "state.lua", on: connection)
+                try await loadScript(named: "graphics.lua", on: connection)
+                try await loadScript(named: "main.lua", on: connection)
+                log("Starting...")
+                connection.send(text: "\u{4}")
+//                try await loadScript(named: "test_restore.lua", on: connection, run: true)
                 print("Starting...")
 
                 for try await data in connection.receivedData {
