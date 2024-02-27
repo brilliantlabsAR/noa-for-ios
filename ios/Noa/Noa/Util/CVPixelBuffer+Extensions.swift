@@ -72,9 +72,18 @@ extension CVPixelBuffer {
             var outIdx = 0
             for _ in 0..<height {
                 for _ in 0..<width {
-                    let r = min(255, Int(Float(data[inIdx] >> 5) * 255.0 * redScaleFactor / 7.0))
-                    let g = min(255, Int(Float((data[inIdx] >> 2) & 7) * 255.0 * greenScaleFactor / 7.0))
-                    let b = min(255, Int(Float(data[inIdx] & 3) * 255.0 * blueScaleFactor / 3.0))
+                    // let r = min(255, Int(Float(data[inIdx] >> 5) * 255.0 * redScaleFactor / 7.0))
+                    // let g = min(255, Int(Float((data[inIdx] >> 2) & 7) * 255.0 * greenScaleFactor / 7.0))
+                    // let b = min(255, Int(Float(data[inIdx] & 3) * 255.0 * blueScaleFactor / 3.0))
+                    
+                    var r = (data[inIdx] & 0b11100000) >> 5
+                    var g = (data[inIdx] & 0b00011100) >> 2
+                    var b = data[inIdx] & 0b00000011 
+                    
+                    r = (0b11111111 / 0b111) * r
+                    g = (0b11111111 / 0b111) * g
+                    b = (0b11111111 / 0b11) * b
+                    
                     inIdx += 1
                     bytes[outIdx] = 0xff    // opaque
                     outIdx += 1
