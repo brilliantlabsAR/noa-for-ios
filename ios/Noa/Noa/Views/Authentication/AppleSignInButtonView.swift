@@ -53,13 +53,13 @@ struct AppleSignInButtonView: View {
                         return
                     }
 
-                    guard let identityToken = appleIDCredential.identityToken else {
-                        print("[AppleSignInButtonView] Error: No identity token provided despite authorization success")
+                    guard let authorizationCode = appleIDCredential.authorizationCode else {
+                        print("[AppleSignInButtonView] Error: No authorization code provided despite authorization success")
                         _onComplete(nil, nil, nil, nil)
                         return
                     }
 
-                    let token = String(decoding: identityToken, as: UTF8.self)
+                    let token = String(decoding: authorizationCode, as: UTF8.self)
                     let userID = appleIDCredential.user
                     let fullName = getFullName(from: appleIDCredential)
                     let email = appleIDCredential.email
