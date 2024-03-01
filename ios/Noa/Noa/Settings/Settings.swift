@@ -53,7 +53,7 @@ class Settings: ObservableObject {
             authorizationToken = token
             let tokenString = token ?? ""
             UserDefaults.standard.set(tokenString, forKey: Self.k_authorizationToken)
-            print("[Settings] Set: \(Self.k_authorizationToken) = \(tokenString)")
+            // Do not log auth token
         }
     }
 
