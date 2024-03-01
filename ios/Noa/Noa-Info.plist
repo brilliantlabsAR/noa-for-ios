@@ -19,6 +19,19 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>510809410914-9utqnibj3os18lruin8ke3mlrdg1moqg.apps.googleusercontent.com</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>31.41.59.265</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>
