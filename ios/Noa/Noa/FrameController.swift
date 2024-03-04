@@ -6,6 +6,7 @@
 //
 //  TODO:
 //  -----
+//  - Check CRCs of loaded scripts
 //  - Clear internal history whenever a Frame message arrives N minutes after last Frame or GUI
 //    message.
 //  - Make M4AWriter and AI assistant URL requests completely async if possible so we don't need
@@ -156,13 +157,14 @@ class FrameController: ObservableObject {
                 print("MTU size: \(connection.maximumWriteLength(for: .withoutResponse)) bytes")
 
                 // Send scripts and issue ^D to reset and execute main.lua
+                connection.send(text: "\u{3}")  // ^C to stop currently running script
                 try await loadScript(named: "state.lua", on: connection)
                 try await loadScript(named: "graphics.lua", on: connection)
                 try await loadScript(named: "main.lua", on: connection)
                 log("Starting...")
                 connection.send(text: "\u{4}")
 //                try await loadScript(named: "test_restore.lua", on: connection, run: true)
-                print("Starting...")
+//                print("Starting...")
 
                 for try await data in connection.receivedData {
                     //Util.hexDump(data)
