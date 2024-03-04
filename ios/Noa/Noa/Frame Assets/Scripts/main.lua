@@ -57,7 +57,7 @@ while true do
             audio_data_sent = false
         end)
 
-        if state:has_been() > 1.1 and image_data_sent == false then
+        if state:has_been() > 1.2 and image_data_sent == false then
             while true do
                 local image_data = frame.camera.read(frame.bluetooth.max_length() - 1)
                 if (image_data == nil) then
