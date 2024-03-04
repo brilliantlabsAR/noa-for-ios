@@ -65,6 +65,7 @@
 		CC86A1952B7465B5003A2DCC /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1942B7465B5003A2DCC /* SignIn.swift */; };
 		CC86A1972B7465EC003A2DCC /* SignOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1962B7465EC003A2DCC /* SignOut.swift */; };
 		CC86A1992B7466F0003A2DCC /* SocialIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1982B7466F0003A2DCC /* SocialIdentityProvider.swift */; };
+		CC9AB57D2B92751F008B7D98 /* RemoteLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9AB57C2B92751F008B7D98 /* RemoteLog.swift */; };
 		CCB2F9622A2568EE00F24F2D /* MonocleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* MonocleController.swift */; };
 		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
 		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
@@ -175,6 +176,7 @@
 		CC86A1942B7465B5003A2DCC /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
 		CC86A1962B7465EC003A2DCC /* SignOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignOut.swift; sourceTree = "<group>"; };
 		CC86A1982B7466F0003A2DCC /* SocialIdentityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialIdentityProvider.swift; sourceTree = "<group>"; };
+		CC9AB57C2B92751F008B7D98 /* RemoteLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteLog.swift; sourceTree = "<group>"; };
 		CCB2F9612A2568EE00F24F2D /* MonocleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonocleController.swift; sourceTree = "<group>"; };
 		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
 		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
@@ -512,6 +514,7 @@
 				CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */,
 				CCDCFEF82B322845008EDB1D /* MultipartForm.swift */,
 				CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */,
+				CC9AB57C2B92751F008B7D98 /* RemoteLog.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -755,6 +758,7 @@
 				CC86A1992B7466F0003A2DCC /* SocialIdentityProvider.swift in Sources */,
 				CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */,
 				CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */,
+				CC9AB57D2B92751F008B7D98 /* RemoteLog.swift in Sources */,
 				CCF4F3572B3CD7C700146A59 /* AsyncBluetoothManager.swift in Sources */,
 				CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */,
 				CC3FE00D2A09C8A400756941 /* Settings.swift in Sources */,

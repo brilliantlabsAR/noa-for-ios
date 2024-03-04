@@ -6,6 +6,8 @@
 //
 //  TODO:
 //  -----
+//  - Check CRCs of loaded scripts
+//  - Eliminate JPEG feature flag and RGB332 decoding once JPEGs confirmed working
 //  - Clear internal history whenever a Frame message arrives N minutes after last Frame or GUI
 //    message.
 //  - Make M4AWriter and AI assistant URL requests completely async if possible so we don't need
@@ -75,6 +77,7 @@ class FrameController: ObservableObject {
     private var _textBuffer = Data()
     private var _audioBuffer = Data()
     private var _photoBuffer = Data()
+    private let _useJPEGPhotos = true
     private var _receiveMultimodalInProgress = false
     private var _outgoingQueue: [Data] = []
 
@@ -150,20 +153,24 @@ class FrameController: ObservableObject {
 
         while true {
             do {
-                let connection = try await connectToDevice()
+                let (connection, wasUnpaired) = try await connectToDevice()
                 isConnected = true
                 try await onConnect(on: connection)
                 print("MTU size: \(connection.maximumWriteLength(for: .withoutResponse)) bytes")
 
-                // Send scripts and issue ^D to reset and execute main.lua
-                try await loadScript(named: "state.lua", on: connection)
-                try await loadScript(named: "graphics.lua", on: connection)
-                try await loadScript(named: "main.lua", on: connection)
-                log("Starting...")
-                connection.send(text: "\u{4}")
-//                try await loadScript(named: "test_restore.lua", on: connection, run: true)
-                print("Starting...")
+                // Send scripts
+                if wasUnpaired {
+                    log("Sending scripts...")
+                    try await loadScript(named: "state.lua", on: connection)
+                    try await loadScript(named: "graphics.lua", on: connection)
+                    try await loadScript(named: "main.lua", on: connection)
+                    log("Starting...")
+                    connection.send(text: "\u{4}")  // ^D executes main.lua
+//                    try await loadScript(named: "test_restore.lua", on: connection, run: true)
+//                    print("Starting...")
+                }
 
+                // Receive data perpetually
                 for try await data in connection.receivedData {
                     //Util.hexDump(data)
                     onDataReceived(data: data, on: connection)
@@ -193,8 +200,9 @@ class FrameController: ObservableObject {
     // be nice by sleeping when possible and checks for cancellation between async methods that do
     // not throw. Because we don't currently ever cancel the Bluetooth task (it would be a real
     // mess to try to cancel/restart it), this could be eliminated.
-    private func connectToDevice() async throws -> AsyncBluetoothManager.Connection {
+    private func connectToDevice() async throws -> (AsyncBluetoothManager.Connection, Bool) {
         var candidateHysteresisTime = Date.distantPast
+        var wasUnpaired = false
 
         // Keep trying until we connect
         while true {
@@ -226,13 +234,14 @@ class FrameController: ObservableObject {
                         }
                     }
                     try await Task.sleep(for: .seconds(0.25))
+                    wasUnpaired = true
                 }
             }
 
             if let connection = await _bluetooth.connect(to: chosenDevice!) {
                 // Once connected, safe to hide the device sheet
                 log("Connected successfully")
-                return connection
+                return (connection, wasUnpaired)
             }
             try await Task.sleep(for: .seconds(0.5))
             log("Connection to device failed! Starting over...")
@@ -306,11 +315,17 @@ class FrameController: ObservableObject {
     // MARK: AI
 
     private func submitMultimodal(connection: AsyncBluetoothManager.Connection) {
-        // RGB332 -> UIImage
+        // Photo
         var photo: UIImage? = nil
-        if _photoBuffer.count == 200 * 200, // require a complete image to decode
-           let pixelBuffer = CVPixelBuffer.fromRGB332(_photoBuffer, width: 200, height: 200) {
-            photo = UIImage(pixelBuffer: pixelBuffer)?.rotated(by: -90)?.resized(to: CGSize(width: 512, height: 512))
+        if _useJPEGPhotos {
+            // JPEG
+            photo = UIImage(data: _photoBuffer)
+        } else {
+            // RGB332
+            if _photoBuffer.count == 200 * 200, // require a complete image to decode
+               let pixelBuffer = CVPixelBuffer.fromRGB332(_photoBuffer, width: 200, height: 200) {
+                photo = UIImage(pixelBuffer: pixelBuffer)?.rotated(by: -90)?.resized(to: CGSize(width: 512, height: 512))
+            }
         }
 
         // Text
