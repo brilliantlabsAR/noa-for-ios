@@ -51,7 +51,7 @@ while true do
             frame.camera.capture()
             graphics:clear()
             graphics:append_text("Noa: *Listening*")
-            frame.microphone.record(10, 8000, 8) -- TODO switch to improved API: frame.microphone.record()
+            frame.microphone.record{}
             send_data(MESSAGE_START_FLAG)
             image_data_sent = false
             audio_data_sent = false
