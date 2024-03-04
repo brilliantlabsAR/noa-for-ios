@@ -77,7 +77,7 @@ class FrameController: ObservableObject {
     private var _textBuffer = Data()
     private var _audioBuffer = Data()
     private var _photoBuffer = Data()
-    private let _useJPEGPhotos = true
+    private let _useJPEGPhotos = false
     private var _receiveMultimodalInProgress = false
     private var _outgoingQueue: [Data] = []
 
