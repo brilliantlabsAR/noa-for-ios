@@ -77,7 +77,7 @@ class FrameController: ObservableObject {
     private var _textBuffer = Data()
     private var _audioBuffer = Data()
     private var _photoBuffer = Data()
-    private let qtos = true
+    private let _useJPEGPhotos = true
     private var _receiveMultimodalInProgress = false
     private var _outgoingQueue: [Data] = []
 
@@ -161,8 +161,6 @@ class FrameController: ObservableObject {
                 // Send scripts
                 if wasUnpaired {
                     log("Sending scripts...")
-                    //connection.send(text: "\u{3}")  // ^C to stop currently running script
-                    //TODO: need to await for something that contains "break signal" after ^C. E.g.: [string "frame.sleep(0.01)"]:1: break signal
                     try await loadScript(named: "state.lua", on: connection)
                     try await loadScript(named: "graphics.lua", on: connection)
                     try await loadScript(named: "main.lua", on: connection)
