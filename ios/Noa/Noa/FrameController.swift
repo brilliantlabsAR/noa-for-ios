@@ -253,10 +253,6 @@ class FrameController: ObservableObject {
     private func onConnect(on connection: AsyncBluetoothManager.Connection) async throws {
         _receiveMultimodalInProgress = false
         _outgoingQueue.removeAll()
-
-        // Send ^C to kill current running app. Do NOT use runCommand(). Not entirely sure why but
-        // it appears to generate an additional error response and get stuck.
-//        connection.send(text: "\u{3}")
     }
 
     private func onDisconnect() {
