@@ -276,6 +276,7 @@ class AsyncBluetoothManager: NSObject {
                     if existingPeripheral == peripheral {
                         // Already have this peripheral, just make sure to refresh service and
                         // characteristics to be sure
+                        _connectContinuation = continuation // don't forget this because we are returning early!
                         finishConnecting(to: peripheral)
                         _manager.stopScan()
                         return
