@@ -86,6 +86,42 @@
 // - Thanks to Yasuhito Nagamoto for his async Bluetooth example here:
 //   https://github.com/ynagatomo/microbit-swift-controller
 //
+// Bluetooth State Restoration
+// ---------------------------
+// Bluetooth state restoration allows the application to be relaunched in the background in
+// response to Bluetooth events (messages, reconnect, etc.) after iOS has suspended it. State
+// preservation and restoration is enabled by:
+//
+//  1. Passing CBCentralManagerOptionRestoreIdentifierKey to CBCentralManager's initializer.
+//  2. Implementing UIApplicationDelegate's application(_:,didFinishLaunchingWithOptions:) method
+//     to ensure that the Bluetooth manager and any other require application components are
+//     instantiated (it seems that the SwiftUI views will not necessarily be instantiated until
+//     the user foregrounds the app again).
+//  3. Enabling the required Bluetooth background mode for the project.
+//  4. Handling centralManager(_:,willRestoreState:), which is called first after
+//     AsyncBluetoothManager is instantiated during the restoration process.
+//
+// We restore the peripheral by holding on to it and also updating discoveredDevices. The app's
+// connect loop, once brought up, will find it and initiate a connection via
+// AsyncBluetoothManager's connect() method (even though it may already be "connected" internally),
+// which in turn handles the case of an existing peripheral being known.
+//
+// It has been observed that the order of delegate calls during restoration is:
+//
+//  1. centralManager(_:,willRestoreState:) -- we update discoveredDevices here, surfacing any
+//     restored peripherals. This seems to always be called first.
+//  2. centralManagerDidUpdateState(_:) -- switches to the .poweredOn state. We begin scanning
+//     here, in case the peripheral is no longer connected.
+//  3. centralManager(_:,didConnect:) -- unsure whether this happens before or after the above but
+//     it results in our finishConnecting() method being called, which saves a reference to the
+//     peripheral that is used when connect() is later called by the app. Restored peripherals can
+//     already be connected and it appears that CoreBluetooth calls this method as part of the
+//     restoration process.
+//
+// For more information, see Apple's documentation:
+//
+// - https://developer.apple.com/documentation/technotes/tn3115-bluetooth-state-restoration-app-relaunch-rules
+//
 
 import CoreBluetooth
 import os
@@ -268,16 +304,16 @@ class AsyncBluetoothManager: NSObject {
                 }
 
                 // Disconnect any existing peripheral, unless it is same peripheral we are trying
-                // to connect to. Unsure of how this could happen but it has been observed. At one
-                // point, disconnects would cancel a connection without immediately forgetting the
-                // peripheral (waiting for the disconect callback to handle that), which may have
-                // resulted in this unusual state
+                // to connect to. As far as I can tell, this occurs because
+                // centralManager(_:,didConnect:) can be called during the restoration process and
+                // we call finishConnecting() there, which sets _connectedPeripheral. Therefore, we
+                // must be prepared for a connected device already existing.
                 if let existingPeripheral = _connectedPeripheral {
                     if existingPeripheral == peripheral {
                         // Already have this peripheral, just make sure to refresh service and
                         // characteristics to be sure
                         _connectContinuation = continuation // don't forget this because we are returning early!
-                        finishConnecting(to: peripheral)
+                        finishConnecting(to: peripheral)    // refreshes characteristics and finishes the continuation
                         _manager.stopScan()
                         return
                     }
