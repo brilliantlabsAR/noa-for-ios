@@ -40,8 +40,8 @@ end
 
 function Graphics:print_text()
     -- Otherwise print text
-    local MAX_LINES = 3
-    local Y_OFFSET = 150
+    local MAX_LINES = 4
+    local Y_OFFSET = 90
     local SCREEN_WIDTH = 640
     local CHARACTER_WIDTH = 24
     local WORD_DELAY = 0.075

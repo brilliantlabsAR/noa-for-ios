@@ -77,7 +77,7 @@ class FrameController: ObservableObject {
     private var _textBuffer = Data()
     private var _audioBuffer = Data()
     private var _photoBuffer = Data()
-    private let _useJPEGPhotos = true
+    private let _useJPEGPhotos = false
     private var _receiveMultimodalInProgress = false
     private var _outgoingQueue: [Data] = []
 
@@ -256,7 +256,7 @@ class FrameController: ObservableObject {
 
         // Send ^C to kill current running app. Do NOT use runCommand(). Not entirely sure why but
         // it appears to generate an additional error response and get stuck.
-        connection.send(text: "\u{3}")
+//        connection.send(text: "\u{3}")
     }
 
     private func onDisconnect() {
