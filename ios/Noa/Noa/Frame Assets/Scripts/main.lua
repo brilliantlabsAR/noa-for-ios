@@ -15,9 +15,7 @@ MESSAGE_IMAGE_FLAG = "\x13"
 MESSAGE_END_FLAG = "\x16"
 
 function bluetooth_callback(message)
-    if string.sub(message, 1, 1) == MESSAGE_START_FLAG then
-        graphics:clear()
-    elseif string.sub(message, 1, 1) == MESSAGE_TEXT_FLAG then
+    if string.sub(message, 1, 1) == MESSAGE_TEXT_FLAG then
         if state:is("WAIT") then
             graphics:clear()
             state:switch("SHOW")
