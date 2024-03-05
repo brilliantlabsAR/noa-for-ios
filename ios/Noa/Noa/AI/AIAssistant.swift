@@ -29,9 +29,11 @@ public class AIAssistant: NSObject {
     private class CompletionData {
         let completion: (UIImage?, String, String, AIError?) -> Void
         var receivedData = Data()
+        var backgroundTaskID: UIBackgroundTaskIdentifier
 
-        init(completion: @escaping (UIImage?, String, String, AIError?) -> Void) {
+        init(completion: @escaping (UIImage?, String, String, AIError?) -> Void, backgroundTaskID: UIBackgroundTaskIdentifier) {
             self.completion = completion
+            self.backgroundTaskID = backgroundTaskID
         }
     }
 
@@ -148,7 +150,11 @@ public class AIAssistant: NSObject {
         let task = _tempFileURL == nil ? _session.dataTask(with: request) : _session.uploadTask(with: request, fromFile: _tempFileURL!)
 
         // Associate completion handler with this task
-        _completionByTask[task.taskIdentifier] = CompletionData(completion: completion)
+        var backgroundTaskID: UIBackgroundTaskIdentifier?
+        backgroundTaskID = UIApplication.shared.beginBackgroundTask {
+            UIApplication.shared.endBackgroundTask(backgroundTaskID!)
+        }
+        _completionByTask[task.taskIdentifier] = CompletionData(completion: completion, backgroundTaskID: backgroundTaskID!)
 
         // Begin
         task.resume()
@@ -294,6 +300,7 @@ extension AIAssistant: URLSessionDelegate {
             guard let self = self else { return }
             for (_, completionData) in self._completionByTask {
                 completionData.completion(nil, "", "", AIError.clientSideNetworkError(error: error))
+                UIApplication.shared.endBackgroundTask(completionData.backgroundTaskID)
             }
             _completionByTask = [:]
         }
@@ -337,6 +344,7 @@ extension AIAssistant: URLSessionDataDelegate {
                 if let completionData = self._completionByTask[task.taskIdentifier] {
                     completionData.completion(nil, "", "", AIError.urlAuthenticationFailed)
                     self._completionByTask.removeValue(forKey: task.taskIdentifier)
+                    UIApplication.shared.endBackgroundTask(completionData.backgroundTaskID)
                 }
             }
         }
@@ -375,6 +383,7 @@ extension AIAssistant: URLSessionDataDelegate {
             if let completionData = _completionByTask[task.taskIdentifier] {
                 processCompleteResponse(completionData: completionData)
                 _completionByTask.removeValue(forKey: task.taskIdentifier)
+                UIApplication.shared.endBackgroundTask(completionData.backgroundTaskID)
             }
         }
 
@@ -386,6 +395,7 @@ extension AIAssistant: URLSessionDataDelegate {
             if let completionData = self._completionByTask[task.taskIdentifier] {
                 completionData.completion(nil, "", "", AIError.clientSideNetworkError(error: error))
                 self._completionByTask.removeValue(forKey: task.taskIdentifier)
+                UIApplication.shared.endBackgroundTask(completionData.backgroundTaskID)
             }
         }
     }
