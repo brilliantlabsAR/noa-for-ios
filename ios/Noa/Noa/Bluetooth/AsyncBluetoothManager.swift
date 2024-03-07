@@ -56,7 +56,7 @@
 //
 //      connection.send(text: "Hello") { (error: AsyncBluetoothManager.StreamError?) in
 //          if let error = error {
-//              print("DIsconnected: \(error.localizedDescription)")
+//              print("Disconnected: \(error.localizedDescription)")
 //          }
 //      }
 //
