@@ -53,8 +53,8 @@ struct ContentView: View {
                         AppleSignInButtonView(onComplete: { (token: String?, userID: String?, fullName: String?, email: String?) in
                             signInSheet = .hidden
                             if let token = token {
-                                // We obtained an auth token and can start the app
-                                _settings.setAuthorizationToken(token)
+                                // We obtained an API token and can start the app
+                                _settings.setAPIToken(token)
                             }
                         })
                         .aspectRatio(contentMode: .fit)
@@ -64,7 +64,7 @@ struct ContentView: View {
                         GoogleSignInButtonView(onComplete: { (token: String?, userID: String?, fullName: String?, email: String?) in
                             signInSheet = .hidden
                             if let token = token {
-                                _settings.setAuthorizationToken(token)
+                                _settings.setAPIToken(token)
                             }
                         })
                         .aspectRatio(contentMode: .fit)
@@ -92,8 +92,8 @@ struct ContentView: View {
                         DiscordLoginView(onDismiss: { (token: String?, email: String?) in
                             signInSheet = .hidden
                             if let token = token {
-                                // We obtained an auth token and can start the app
-                                _settings.setAuthorizationToken(token)
+                                // We obtained an API token and can start the app
+                                _settings.setAPIToken(token)
                             }
                         })
                     }
@@ -120,7 +120,7 @@ struct ContentView: View {
     }
 
     private func isLoggedIn() -> Bool {
-        return _settings.authorizationToken != nil
+        return _settings.apiToken != nil
     }
 }
 

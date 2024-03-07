@@ -4,10 +4,15 @@
 //
 //  Created by Bart Trzynadlowski on 5/8/23.
 //
+//  Manages settings using UserDefaults or keychain.
+//
+//
 //  Resources
 //  ---------
 //  - "How To Use Multi Value Title and Value From Settings Bundle"
 //    https://stackoverflow.com/questions/16451136/how-to-use-multi-value-title-and-value-from-settings-bundle
+//  - "Store accessToken in iOS keychain"
+//    https://stackoverflow.com/questions/68209016/store-accesstoken-in-ios-keychain
 //
 
 import Combine
@@ -15,24 +20,30 @@ import Foundation
 
 class Settings: ObservableObject {
     @Published private(set) var imageStrength: Float = 0
-    private static let k_imageStrength = "stability_image_strength"
+    private let k_imageStrength = "stability_image_strength"
 
     @Published private(set) var imageGuidance: Int = 0
-    private static let k_imageGuidance = "stability_guidance"
+    private let k_imageGuidance = "stability_guidance"
 
     @Published private(set) var pairedDeviceID: UUID?
-    private static let k_pairedDeviceID = "paired_device_id"    // this key should *not* appear in Root.plist (therefore cannot be edited in Settings by user directly; only from app)
+    private let k_pairedDeviceID = "paired_device_id"   // this key should *not* appear in Root.plist (therefore cannot be edited in Settings by user directly; only from app)
 
     @Published private(set) var debug200pxImageMode: Bool = false
-    private static let k_debug200pxImageMode = "debug_200px_images"
+    private let k_debug200pxImageMode = "debug_200px_images"
 
-    @Published private(set) var authorizationToken: String?
-    private static let k_authorizationToken = "authorization_token"
+    @Published private(set) var apiToken: String?
+
+    private let k_serviceIdentifier = "xyz.brilliant.argpt.keys.api_tokens"
+    private let k_accountIdentifier = "noa"
+    private let _keychainQueue = DispatchQueue(label: "xyz.brilliant.argpt.keys", qos: .default)
 
     public init() {
         Self.registerDefaults()
         NotificationCenter.default.addObserver(self, selector: #selector(Self.onSettingsChanged), name: UserDefaults.didChangeNotification, object: nil)
         onSettingsChanged()
+        if let token = loadAPITokenFromKeychain() {
+            apiToken = token
+        }
     }
 
     /// Sets the value of the paired device ID.
@@ -41,19 +52,26 @@ class Settings: ObservableObject {
         if pairedDeviceID != value {
             pairedDeviceID = value
             let uuidString = value?.uuidString ?? ""    // use "" for none
-            UserDefaults.standard.set(uuidString, forKey: Self.k_pairedDeviceID)
-            print("[Settings] Set: \(Self.k_pairedDeviceID) = \(uuidString)")
+            UserDefaults.standard.set(uuidString, forKey: k_pairedDeviceID)
+            print("[Settings] Set: \(k_pairedDeviceID) = \(uuidString)")
         }
     }
 
-    /// Sets the authorization token to use for logging into Brillaint's server automatically.
+    /// Sets the Noa API token to use for logging into Brillaint's server automatically.
     /// - Parameter token: The new token or `nil` for none.
-    public func setAuthorizationToken(_ token: String?) {
-        if authorizationToken != token {
-            authorizationToken = token
-            let tokenString = token ?? ""
-            UserDefaults.standard.set(tokenString, forKey: Self.k_authorizationToken)
-            // Do not log auth token
+    public func setAPIToken(_ token: String?) {
+        if apiToken != token {
+            apiToken = token
+
+            // Use queue because these operations are slow
+            _keychainQueue.async { [weak self] in
+                guard let self = self else { return }
+                if let token = token {
+                    saveAPITokenToKeychain(token)
+                } else {
+                    deleteAPITokenFromKeychain()
+                }
+            }
         }
     }
 
@@ -124,39 +142,106 @@ class Settings: ObservableObject {
 
     @objc private func onSettingsChanged() {
         // Publish changes when settings have been edited
-        let imageStrength = UserDefaults.standard.float(forKey: Self.k_imageStrength)
+        let imageStrength = UserDefaults.standard.float(forKey: k_imageStrength)
         if imageStrength != self.imageStrength {
             self.imageStrength = imageStrength
         }
 
-        let imageGuidance = UserDefaults.standard.integer(forKey: Self.k_imageGuidance)
+        let imageGuidance = UserDefaults.standard.integer(forKey: k_imageGuidance)
         if imageGuidance != self.imageGuidance {
             self.imageGuidance = imageGuidance
         }
 
-        let debug200pxImageMode = UserDefaults.standard.bool(forKey: Self.k_debug200pxImageMode)
+        let debug200pxImageMode = UserDefaults.standard.bool(forKey: k_debug200pxImageMode)
         if debug200pxImageMode != self.debug200pxImageMode {
             self.debug200pxImageMode = debug200pxImageMode
         }
 
         // The following properties are not exposed to users in Settings and so may be absent
         var uuid: UUID?
-        if let pairedDeviceIDString = UserDefaults.standard.string(forKey: Self.k_pairedDeviceID) {
+        if let pairedDeviceIDString = UserDefaults.standard.string(forKey: k_pairedDeviceID) {
             uuid = UUID(uuidString: pairedDeviceIDString)   // will be nil if invalid
         }
         if self.pairedDeviceID != uuid {
             self.pairedDeviceID = uuid
         }
+    }
 
-        var token = UserDefaults.standard.string(forKey: Self.k_authorizationToken)
-        if token != nil {
-            if token!.isEmpty {
-                // If empty string was stored, no auth token
-                token = nil
-            }
+    private func loadAPITokenFromKeychain() -> String? {
+        let query = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: k_serviceIdentifier,
+            kSecAttrAccount: k_accountIdentifier,
+            kSecMatchLimit: kSecMatchLimitOne,
+            kSecReturnData: true
+        ] as CFDictionary
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query, &result)
+        if status != errSecSuccess {
+            print("[Settings] No API token in keychain")
+            return nil
         }
-        if self.authorizationToken != token {
-            self.authorizationToken = token
+
+        if let data = result as? Data,
+           let token = String(data: data, encoding: .utf8) {
+            return token
+        } else {
+            print("[Settings] Unable to decode token")
+        }
+
+        return nil
+    }
+
+    private func deleteAPITokenFromKeychain() {
+        let query = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: k_serviceIdentifier,
+            kSecAttrAccount: k_accountIdentifier
+        ] as CFDictionary
+
+        let status = SecItemDelete(query)
+        if status != errSecSuccess {
+            print("[Settings] Unable to delete token: \(status)")
+        }
+    }
+
+    private func saveAPITokenToKeychain(_ token: String) {
+        let attributes = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: k_serviceIdentifier,
+            kSecAttrAccount: k_accountIdentifier,
+            kSecValueData: token.data(using: .utf8)!
+        ] as CFDictionary
+
+        let status = SecItemAdd(attributes, nil)
+        if status != errSecSuccess {
+            if status == errSecDuplicateItem {
+                updateAPITokenInKeychain(token)
+            } else {
+                print("[Settings] Unable to save API token: \(status.description)")
+            }
+        } else {
+            print("[Settings] Saved API token")
+        }
+    }
+
+    private func updateAPITokenInKeychain(_ token: String) {
+        let query = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: k_serviceIdentifier,
+            kSecAttrAccount: k_accountIdentifier
+        ] as CFDictionary
+
+        let attributes = [
+            kSecValueData: token.data(using: .utf8)!
+        ] as CFDictionary
+
+        let status = SecItemUpdate(query, attributes)
+        if status != errSecSuccess {
+            print("[Settings] Unable to update API token: \(status.description)")
+        } else {
+            print("[Settings] Updated existing API token")
         }
     }
 }

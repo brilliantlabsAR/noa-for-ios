@@ -28,7 +28,7 @@ struct GoogleSignInButtonView: View {
         // The bridge method described at the bottom of this question did not work but would have been preferrable:
         // https://stackoverflow.com/questions/74908372/how-to-pass-rootviewcontroller-to-google-sign-in-in-swiftui
         guard let presentingViewController = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.windows.first?.rootViewController else { return }
-
+        
         GIDSignIn.sharedInstance.signIn(withPresenting: /*_bridge.viewController*/ presentingViewController) { (result: GIDSignInResult?, error: Error?) in
             guard let result = result else {
                 print("[GoogleSignInButtonView] Sign-in failed: \(error?.localizedDescription ?? "unknown error")")
@@ -54,11 +54,15 @@ struct GoogleSignInButtonView: View {
                 guard let authorizationToken = authorizationToken else {
                     print("[GoogleSignInButtonView] Error: Noa server sign-in failed")
                     _onComplete(nil, nil, nil, nil)
+                    GIDSignIn.sharedInstance.signOut()
                     return
                 }
 
                 // Successfully signed in
                 _onComplete(authorizationToken, userID, fullName, email)
+
+                // We only needed Google for identity verification and can safely sign out
+                GIDSignIn.sharedInstance.signOut()
             }
         }
     }

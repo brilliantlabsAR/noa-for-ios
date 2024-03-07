@@ -35,10 +35,10 @@ struct SettingsMenuView: View {
             }
 
             Button(role: .destructive, action: {
-                if let token = _settings.authorizationToken {
-                    signOut(authorizationToken: token)
+                if let token = _settings.apiToken {
+                    signOut(apiToken: token)
                 }
-                _settings.setAuthorizationToken(nil)
+                _settings.setAPIToken(nil)
             }) {
                 Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
             }

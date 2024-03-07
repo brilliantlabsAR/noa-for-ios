@@ -62,8 +62,7 @@
 		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
 		CC86A1902B7438C5003A2DCC /* MainAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A18F2B7438C5003A2DCC /* MainAppView.swift */; };
 		CC86A1922B743D26003A2DCC /* LogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1912B743D26003A2DCC /* LogoView.swift */; };
-		CC86A1952B7465B5003A2DCC /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1942B7465B5003A2DCC /* SignIn.swift */; };
-		CC86A1972B7465EC003A2DCC /* SignOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1962B7465EC003A2DCC /* SignOut.swift */; };
+		CC86A1952B7465B5003A2DCC /* SignInOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1942B7465B5003A2DCC /* SignInOut.swift */; };
 		CC86A1992B7466F0003A2DCC /* SocialIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1982B7466F0003A2DCC /* SocialIdentityProvider.swift */; };
 		CC9AB57D2B92751F008B7D98 /* RemoteLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9AB57C2B92751F008B7D98 /* RemoteLog.swift */; };
 		CCB2F9622A2568EE00F24F2D /* MonocleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* MonocleController.swift */; };
@@ -173,8 +172,7 @@
 		CC6851672A9964C2004EA777 /* Tahoe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tahoe.jpg; sourceTree = "<group>"; };
 		CC86A18F2B7438C5003A2DCC /* MainAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppView.swift; sourceTree = "<group>"; };
 		CC86A1912B743D26003A2DCC /* LogoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoView.swift; sourceTree = "<group>"; };
-		CC86A1942B7465B5003A2DCC /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
-		CC86A1962B7465EC003A2DCC /* SignOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignOut.swift; sourceTree = "<group>"; };
+		CC86A1942B7465B5003A2DCC /* SignInOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInOut.swift; sourceTree = "<group>"; };
 		CC86A1982B7466F0003A2DCC /* SocialIdentityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialIdentityProvider.swift; sourceTree = "<group>"; };
 		CC9AB57C2B92751F008B7D98 /* RemoteLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteLog.swift; sourceTree = "<group>"; };
 		CCB2F9612A2568EE00F24F2D /* MonocleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonocleController.swift; sourceTree = "<group>"; };
@@ -484,8 +482,7 @@
 		CC86A1932B7465A4003A2DCC /* Authentication */ = {
 			isa = PBXGroup;
 			children = (
-				CC86A1942B7465B5003A2DCC /* SignIn.swift */,
-				CC86A1962B7465EC003A2DCC /* SignOut.swift */,
+				CC86A1942B7465B5003A2DCC /* SignInOut.swift */,
 				CC86A1982B7466F0003A2DCC /* SocialIdentityProvider.swift */,
 			);
 			path = Authentication;
@@ -730,7 +727,7 @@
 				CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
 				CC212D6A2A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift in Sources */,
-				CC86A1952B7465B5003A2DCC /* SignIn.swift in Sources */,
+				CC86A1952B7465B5003A2DCC /* SignInOut.swift in Sources */,
 				CC4E3AF52A01A7A90058AC20 /* ChatMessageStore.swift in Sources */,
 				CC3FE0362A0F12F700756941 /* AIAssistant.swift in Sources */,
 				CC3FE0262A0EEAA900756941 /* MockInputGenerator.swift in Sources */,
@@ -751,7 +748,6 @@
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
 				CC5274D12B7C439D00593B67 /* GoogleSignInButtonView.swift in Sources */,
 				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
-				CC86A1972B7465EC003A2DCC /* SignOut.swift in Sources */,
 				CC86A1902B7438C5003A2DCC /* MainAppView.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
 				CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */,

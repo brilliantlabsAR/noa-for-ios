@@ -99,7 +99,7 @@ public class AIAssistant: NSObject {
         }
 
         // We shouldn't be here if we are not logged in with an auth token
-        guard let authorizationToken = settings.authorizationToken else {
+        guard let apiToken = settings.apiToken else {
             completion(nil, "", "", AIError.internalError(message: "User is not logged in"))
             return
         }
@@ -129,7 +129,7 @@ public class AIAssistant: NSObject {
 
         // Build request
         let requestHeader = [
-            "Authorization": authorizationToken, //brilliantAPIKey,
+            "Authorization": apiToken, //brilliantAPIKey,
             "Content-Type": "multipart/form-data;boundary=\(form.boundary)"
         ]
         let url = URL(string: "https://api.brilliant.xyz/noa/mm")!
