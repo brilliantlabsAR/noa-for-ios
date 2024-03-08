@@ -1007,6 +1007,7 @@ class MonocleController: ObservableObject, LoggerDelegate, DFUServiceDelegate, D
             audio: fileData,
             image: picture,
             resizeImageTo200px: _settings.debug200pxImageMode,
+            location: nil,
             settings: _settings
         ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
             guard let self = self else { return }
@@ -1050,6 +1051,7 @@ class MonocleController: ObservableObject, LoggerDelegate, DFUServiceDelegate, D
             audio: nil,
             image: nil,
             resizeImageTo200px: false,
+            location: nil,
             settings: _settings
         ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
             guard let self = self else { return }

@@ -72,6 +72,8 @@ class FrameController: ObservableObject {
     private let _m4aWriter = M4AWriter()
     private let _ai = AIAssistant(configuration: .normal)   // paradoxically, .normal seems to work best when app is suspended/backgrounded
 
+    private let _location = LocationManager()
+
     private var _nearbyDevices: [AsyncBluetoothManager.Peripheral] = []
 
     private var _textBuffer = Data()
@@ -106,6 +108,13 @@ class FrameController: ObservableObject {
             await mainTask()
         }
         setupPlaybackAudioSession()
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE, MMMM d, yyyy, h:mm a"
+        let date = Date.now
+
+        let formattedDate = dateFormatter.string(from: date)
+        print(formattedDate)
     }
 
     /// Pair to device. This will also cause the Frame controller to attempt to auto-connect to the
@@ -359,6 +368,7 @@ class FrameController: ObservableObject {
             audio: audioFile,
             image: image,
             resizeImageTo200px: false,
+            location: _location.location,
             settings: _settings
         ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
             guard let self = self else { return }

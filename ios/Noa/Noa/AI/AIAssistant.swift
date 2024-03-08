@@ -51,7 +51,14 @@ public class AIAssistant: NSObject {
         ],
     ]
 
+    private let _localTimeFormatter: DateFormatter
+
     init(configuration: NetworkConfiguration) {
+        var formatter = DateFormatter()
+        formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMMM d, yyyy, h:mm a"
+        _localTimeFormatter = formatter
+
         super.init()
 
         switch configuration {
@@ -87,6 +94,7 @@ public class AIAssistant: NSObject {
         audio: Data?,
         image: UIImage?,
         resizeImageTo200px: Bool,
+        location: Location?,
         settings: Settings,
         completion: @escaping (UIImage?, String, String, AIError?) -> Void
     ) {
@@ -107,9 +115,15 @@ public class AIAssistant: NSObject {
         // Create form data
         var fields: [Util.MultipartForm.Field] = [
             .init(name: "messages", data: messageHistoryPayload, isJSON: true),
+            .init(name: "local_time", text: _localTimeFormatter.string(from: Date.now)),
             .init(name: "image_strength", text: "\(settings.imageStrength)"),
             .init(name: "cfg_scale", text: "\(settings.imageGuidance)")
         ]
+        if let location = location {
+            fields.append(.init(name: "address", text: location.address))
+            fields.append(.init(name: "latitude", text: "\(location.latitude)"))
+            fields.append(.init(name: "longitude", text: "\(location.longitude)"))
+        }
         if let prompt = prompt {
             fields.append(.init(name: "prompt", text: prompt))
         }
