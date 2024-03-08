@@ -4,11 +4,6 @@
 //
 //  Created by Bart Trzynadlowski on 5/12/23.
 //
-//  Background URLRequest Notes
-//  ---------------------------
-//  - https://discord.com/channels/@me/1163530731012771840/1202397629049344201
-//  - Can we set configuration similar to .backgroundData mode for .backgroundUpload?
-//
 
 import UIKit
 
@@ -56,7 +51,7 @@ public class AIAssistant: NSObject {
     init(configuration: NetworkConfiguration) {
         var formatter = DateFormatter()
         formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMMM d, yyyy, h:mm a"
+        formatter.dateFormat = "EEEE, MMMM d, yyyy, h:mm a" // e.g., Friday, March 8, 2024, 12:21 PM
         _localTimeFormatter = formatter
 
         super.init()
