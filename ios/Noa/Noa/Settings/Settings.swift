@@ -211,7 +211,8 @@ class Settings: ObservableObject {
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: k_serviceIdentifier,
             kSecAttrAccount: k_accountIdentifier,
-            kSecValueData: token.data(using: .utf8)!
+            kSecValueData: token.data(using: .utf8)!,
+            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly    // so we can access this in background mode (but on reset requires unlock)
         ] as CFDictionary
 
         let status = SecItemAdd(attributes, nil)
