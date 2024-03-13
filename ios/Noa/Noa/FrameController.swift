@@ -162,24 +162,13 @@ class FrameController: ObservableObject {
 
         while true {
             do {
+                // Pair and/or connect
                 let (connection, wasUnpaired) = try await connectToDevice()
-                isConnected = true
                 try await onConnect(on: connection)
-                print("MTU size: \(connection.maximumWriteLength(for: .withoutResponse)) bytes")
+                try await loadScriptsOntoFrame(on: connection, wasUnpaired: wasUnpaired)    //TODO: remove wasUnpaired and check file CRCs instead
+                isConnected = true
 
-                // Send scripts
-                if wasUnpaired {
-                    log("Sending scripts...")
-                    try await loadScript(named: "state.lua", on: connection)
-                    try await loadScript(named: "graphics.lua", on: connection)
-                    try await loadScript(named: "main.lua", on: connection)
-                    log("Starting...")
-                    connection.send(text: "\u{4}")  // ^D executes main.lua
-//                    try await loadScript(named: "test_restore.lua", on: connection, run: true)
-//                    print("Starting...")
-                }
-
-                // Receive data perpetually
+                // Receive data perpetually until disconnected
                 for try await data in connection.receivedData {
                     //Util.hexDump(data)
                     onDataReceived(data: data, on: connection)
@@ -530,6 +519,20 @@ class FrameController: ObservableObject {
     }
 
     // MARK: Frame commands and scripts
+
+    private func loadScriptsOntoFrame(on connection: AsyncBluetoothManager.Connection, wasUnpaired: Bool) async throws {
+        if wasUnpaired {
+            log("Sending scripts...")
+            connection.send(text: "\u{3}\u{3}\u{3}")    // spam ^C to make sure current app is killed
+            try await loadScript(named: "state.lua", on: connection)
+            try await loadScript(named: "graphics.lua", on: connection)
+            try await loadScript(named: "main.lua", on: connection)
+            log("Starting...")
+            connection.send(text: "\u{4}")  // ^D executes main.lua
+//            try await loadScript(named: "test_restore.lua", on: connection, run: true)
+//            print("Starting...")
+        }
+    }
 
     /// Loads a script from the iPhone's file system and writes it to the Frame's file system.
     /// It does this by sending a series of file write commands with chunks of the script encoded
