@@ -51,6 +51,7 @@
 		CC5274D12B7C439D00593B67 /* GoogleSignInButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5274D02B7C439D00593B67 /* GoogleSignInButtonView.swift */; };
 		CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */; };
 		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
+		CC82EEA02BA248DA00DB5F21 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC82EE9F2BA248DA00DB5F21 /* LoginView.swift */; };
 		CC86A1902B7438C5003A2DCC /* MainAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A18F2B7438C5003A2DCC /* MainAppView.swift */; };
 		CC86A1922B743D26003A2DCC /* LogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1912B743D26003A2DCC /* LogoView.swift */; };
 		CC86A1952B7465B5003A2DCC /* SignInOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1942B7465B5003A2DCC /* SignInOut.swift */; };
@@ -154,6 +155,7 @@
 		CC5274D02B7C439D00593B67 /* GoogleSignInButtonView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleSignInButtonView.swift; sourceTree = "<group>"; };
 		CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
 		CC6851672A9964C2004EA777 /* Tahoe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tahoe.jpg; sourceTree = "<group>"; };
+		CC82EE9F2BA248DA00DB5F21 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		CC86A18F2B7438C5003A2DCC /* MainAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppView.swift; sourceTree = "<group>"; };
 		CC86A1912B743D26003A2DCC /* LogoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoView.swift; sourceTree = "<group>"; };
 		CC86A1942B7465B5003A2DCC /* SignInOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInOut.swift; sourceTree = "<group>"; };
@@ -466,6 +468,7 @@
 				CC5274D02B7C439D00593B67 /* GoogleSignInButtonView.swift */,
 				CCCEC3B32B72E8960024DDAC /* DiscordLoginView.swift */,
 				CC5274BB2B7B11B800593B67 /* AppleSignInButtonView.swift */,
+				CC82EE9F2BA248DA00DB5F21 /* LoginView.swift */,
 			);
 			path = Authentication;
 			sourceTree = "<group>";
@@ -692,6 +695,7 @@
 				CC4E3AF72A01AA350058AC20 /* ChatView.swift in Sources */,
 				CC5274D12B7C439D00593B67 /* GoogleSignInButtonView.swift in Sources */,
 				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
+				CC82EEA02BA248DA00DB5F21 /* LoginView.swift in Sources */,
 				CC86A1902B7438C5003A2DCC /* MainAppView.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
 				CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */,

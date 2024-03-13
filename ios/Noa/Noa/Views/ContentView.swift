@@ -7,24 +7,8 @@
 //  Top-level application view.
 //
 
-//
-// TODO:
-// -----
-// - Auth token needs to be stored in Keychain, not Settings!
-// - Need a button in DiscordLoginView to cancel out.
-// - When Apple sign in initially returns, but before Noa sign in is complete, should display some sort of "signing in..." spinner
-// - Need to implement account deletion and for Apple ID case, refresh token and identity token must be revoked
-//
-
 import CoreBluetooth
-import Foundation
-import GoogleSignIn
 import SwiftUI
-
-enum SignInSheetState {
-    case hidden
-    case discord
-}
 
 struct ContentView: View {
     @ObservedObject private var _settings: Settings
@@ -32,9 +16,6 @@ struct ContentView: View {
     @ObservedObject private var _frameController: FrameController
 
     @Environment(\.colorScheme) var colorScheme
-
-    // Login
-    @State private var signInSheet = SignInSheetState.hidden
 
     var body: some View {
         ZStack {
@@ -44,73 +25,10 @@ struct ContentView: View {
                 if isLoggedIn() {
                     MainAppView(settings: _settings, chatMessageStore: _chatMessageStore, frameController: _frameController)
                 } else {
-                    LogoView()
-
-                    switch signInSheet {
-                    case .hidden:
-                        Spacer()
-
-                        AppleSignInButtonView(onComplete: { (token: String?, userID: String?, fullName: String?, email: String?) in
-                            signInSheet = .hidden
-                            if let token = token {
-                                // We obtained an API token and can start the app
-                                _settings.setAPIToken(token)
-                            }
-                        })
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 300)
-                        .padding()
-
-                        GoogleSignInButtonView(onComplete: { (token: String?, userID: String?, fullName: String?, email: String?) in
-                            signInSheet = .hidden
-                            if let token = token {
-                                _settings.setAPIToken(token)
-                            }
-                        })
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 300)
-                        .padding()
-
-                        Button(
-                            action: {
-                                signInSheet = .discord
-                            },
-                            label: {
-                                Image("DiscordLogo")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 300)
-                            }
-                        )
-                            .padding()
-                        Text("Choose a method to sign in with.")
-                            .font(.system(size: 15))
-                            .frame(width: 314, height: 60)
-                        Spacer()
-
-                    case .discord:
-                        DiscordLoginView(onDismiss: { (token: String?, email: String?) in
-                            signInSheet = .hidden
-                            if let token = token {
-                                // We obtained an API token and can start the app
-                                _settings.setAPIToken(token)
-                            }
-                        })
-                    }
+                    LoginView(settings: _settings)
                 }
             }
         }
-        /*
-        .onOpenURL(perform: { url in
-            GIDSignIn.sharedInstance.handle(url)
-        })
-        .onAppear {
-            GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
-                // Check if 'user' exists, otherwise, handle 'error'
-                //TODO: I don't think we need this. We use sign in just for user validation and then store our own token.
-            }
-        }
-         */
     }
 
     init(settings: Settings, chatMessageStore: ChatMessageStore, frameController: FrameController) {
