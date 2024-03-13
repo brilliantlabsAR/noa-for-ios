@@ -26,11 +26,11 @@ struct SettingsMenuView: View {
             Button(role: isDevicePaired ? .destructive : .none, action: {
                 _onPairToggled?(!isDevicePaired)
             }) {
-                // Unpair/pair Monocle
+                // Unpair/pair
                 if isDevicePaired {
-                    Label("Unpair Monocle", systemImage: "wake")
+                    Label("Unpair Frame", systemImage: "wake")
                 } else {
-                    Label("Pair Monocle", systemImage: "wake")
+                    Label("Pair Frame", systemImage: "wake")
                 }
             }
 

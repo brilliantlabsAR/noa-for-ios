@@ -666,7 +666,6 @@ fileprivate let _logger = Logger()
 
 fileprivate func log(_ message: String) {
     _logger.notice("[AsyncBluetoothManager] \(message, privacy: .public)")
-
 }
 
 extension AsyncBluetoothManager.StreamError: LocalizedError {

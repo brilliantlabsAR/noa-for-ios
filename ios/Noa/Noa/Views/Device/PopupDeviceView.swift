@@ -9,9 +9,9 @@ import SwiftUI
 
 struct PopupDeviceView: View {
     @Binding var deviceSheetState: DeviceSheetState
-    @Binding var connectButtonState: DeviceSheetConnectButtonState
+    @Binding var connectButtonState: DeviceSheetButtonState
     @Binding var updateProgressPercent: Int
-    private let _onConnectPressed: (() -> Void)?
+    private let _onPairPressed: (() -> Void)?
     private let _onCancelPressed: (() -> Void)?
 
     // Video logic
@@ -75,11 +75,11 @@ struct PopupDeviceView: View {
                             .id(triggerUpdate)
                     )
 
-                let buttonEnabled = connectButtonState == .canConnect && deviceSheetState == .searching
+                let pairButtonEnabled = connectButtonState == .pair && deviceSheetState == .searching
 
                 Button(action: {
-                    if buttonEnabled {
-                        _onConnectPressed?()
+                    if pairButtonEnabled {
+                        _onPairPressed?()
                     }
                 }) {
                     Text(getButtonLabel())
@@ -87,20 +87,20 @@ struct PopupDeviceView: View {
                         .frame(width: 306, height: 50)
                 }
                 .background(Color(red: 242/255, green: 242/255, blue: 247/255))
-                .foregroundColor(buttonEnabled ? .black : Color(red: 141/255, green: 141/255, blue: 147/255))
+                .foregroundColor(pairButtonEnabled ? .black : Color(red: 141/255, green: 141/255, blue: 147/255))
                 .cornerRadius(15)
-                .disabled(!buttonEnabled)
+                .disabled(!pairButtonEnabled)
                 .padding(.bottom, 40)
             }
         }
     }
 
 
-    init(deviceSheetState: Binding<DeviceSheetState>, connectButtonState: Binding<DeviceSheetConnectButtonState>, updateProgressPercent: Binding<Int>, onConnectPressed: (() -> Void)?, onCancelPressed: (() -> Void)?) {
+    init(deviceSheetState: Binding<DeviceSheetState>, connectButtonState: Binding<DeviceSheetButtonState>, updateProgressPercent: Binding<Int>, onPairPressed: (() -> Void)?, onCancelPressed: (() -> Void)?) {
         _deviceSheetState = deviceSheetState
         _connectButtonState = connectButtonState
         _updateProgressPercent = updateProgressPercent
-        _onConnectPressed = onConnectPressed
+        _onPairPressed = onPairPressed
         _onCancelPressed = onCancelPressed
     }
 
@@ -111,8 +111,8 @@ struct PopupDeviceView: View {
         switch connectButtonState {
         case .searching:
             return "Searching"
-        case .canConnect:
-            return "Monocle. Connect"
+        case .pair:
+            return "Pair"
         case .connecting:
             return "Connecting..."
         }

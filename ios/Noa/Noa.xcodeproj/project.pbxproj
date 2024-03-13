@@ -8,24 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		352D27F82A7B01820019EFDB /* SpinningMonocle.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 352D27F72A7B01820019EFDB /* SpinningMonocle.mp4 */; };
-		CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */; };
-		CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */ = {isa = PBXBuildFile; productRef = CC0039952A6C7E57009E3BAC /* NordicDFU */; };
 		CC0039A12A6DA51A009E3BAC /* PopupDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */; };
 		CC0039A52A6DA57E009E3BAC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0039A42A6DA57E009E3BAC /* ContentView.swift */; };
 		CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */; };
 		CC07BD9B2A1962DC0082999A /* M4AWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9A2A1962DC0082999A /* M4AWriter.swift */; };
 		CC07BD9D2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */; };
 		CC0B99D52B5F297400312987 /* test_restore.lua in Resources */ = {isa = PBXBuildFile; fileRef = CC0B99D42B5F297400312987 /* test_restore.lua */; };
-		CC1632422AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip in Resources */ = {isa = PBXBuildFile; fileRef = CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */; };
-		CC200A4D2A37E38C005C67E0 /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4C2A37E38C005C67E0 /* main.py */; };
-		CC200A502A37E396005C67E0 /* states.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4E2A37E396005C67E0 /* states.py */; };
-		CC200A512A37E396005C67E0 /* graphics.py in Resources */ = {isa = PBXBuildFile; fileRef = CC200A4F2A37E396005C67E0 /* graphics.py */; };
 		CC200A552A3D589D005C67E0 /* StreamingStringMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */; };
 		CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC202CBF2A9036C400A71EE4 /* TimestampView.swift */; };
 		CC212D6A2A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */; };
-		CC212D6E2A9E6F130093479F /* monocle-fpga.bin in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6D2A9E6F130093479F /* monocle-fpga.bin */; };
-		CC212D702A9E74870093479F /* audio.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D6F2A9E74870093479F /* audio.py */; };
-		CC212D722A9E764B0093479F /* photo.py in Resources */ = {isa = PBXBuildFile; fileRef = CC212D712A9E764B0093479F /* photo.py */; };
 		CC21C12E2B55BFA500DEAAEC /* Stopwatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */; };
 		CC21C1322B55E5EF00DEAAEC /* ColorQuantization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC21C1302B55E5EF00DEAAEC /* ColorQuantization.cpp */; };
 		CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27DC542A0304D600A942A9 /* TypingIndicatorView.swift */; };
@@ -65,7 +56,6 @@
 		CC86A1952B7465B5003A2DCC /* SignInOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1942B7465B5003A2DCC /* SignInOut.swift */; };
 		CC86A1992B7466F0003A2DCC /* SocialIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1982B7466F0003A2DCC /* SocialIdentityProvider.swift */; };
 		CC9AB57D2B92751F008B7D98 /* RemoteLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9AB57C2B92751F008B7D98 /* RemoteLog.swift */; };
-		CCB2F9622A2568EE00F24F2D /* MonocleController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9612A2568EE00F24F2D /* MonocleController.swift */; };
 		CCB2F9662A2598F600F24F2D /* HexDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9652A2598F600F24F2D /* HexDump.swift */; };
 		CCB2F9682A25990F00F24F2D /* UtilNamespace.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */; };
 		CCB350202B59A59000B62534 /* Girl.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = CCB3501F2B59A59000B62534 /* Girl.jpeg */; };
@@ -116,23 +106,15 @@
 
 /* Begin PBXFileReference section */
 		352D27F72A7B01820019EFDB /* SpinningMonocle.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = SpinningMonocle.mp4; sourceTree = "<group>"; };
-		CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
 		CC0039A02A6DA51A009E3BAC /* PopupDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupDeviceView.swift; sourceTree = "<group>"; };
 		CC0039A42A6DA57E009E3BAC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CC03F4902A8301E6006E9353 /* Statement_Chinese.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Statement_Chinese.m4a; sourceTree = "<group>"; };
 		CC07BD9A2A1962DC0082999A /* M4AWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = M4AWriter.swift; sourceTree = "<group>"; };
 		CC07BD9C2A19632F0082999A /* AVAudioPCMBuffer+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVAudioPCMBuffer+Extensions.swift"; sourceTree = "<group>"; };
 		CC0B99D42B5F297400312987 /* test_restore.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = test_restore.lua; sourceTree = "<group>"; };
-		CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "monocle-micropython-v23.248.0754.zip"; sourceTree = "<group>"; };
-		CC200A4C2A37E38C005C67E0 /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
-		CC200A4E2A37E396005C67E0 /* states.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = states.py; sourceTree = "<group>"; };
-		CC200A4F2A37E396005C67E0 /* graphics.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = graphics.py; sourceTree = "<group>"; };
 		CC200A542A3D589D005C67E0 /* StreamingStringMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingStringMatcher.swift; sourceTree = "<group>"; };
 		CC202CBF2A9036C400A71EE4 /* TimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampView.swift; sourceTree = "<group>"; };
 		CC212D692A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CVPixelBuffer+Extensions.swift"; sourceTree = "<group>"; };
-		CC212D6D2A9E6F130093479F /* monocle-fpga.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "monocle-fpga.bin"; sourceTree = "<group>"; };
-		CC212D6F2A9E74870093479F /* audio.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = audio.py; sourceTree = "<group>"; };
-		CC212D712A9E764B0093479F /* photo.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = photo.py; sourceTree = "<group>"; };
 		CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stopwatch.swift; sourceTree = "<group>"; };
 		CC21C1302B55E5EF00DEAAEC /* ColorQuantization.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ColorQuantization.cpp; sourceTree = "<group>"; };
 		CC21C1312B55E5EF00DEAAEC /* ColorQuantization.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ColorQuantization.hpp; sourceTree = "<group>"; };
@@ -177,7 +159,6 @@
 		CC86A1942B7465B5003A2DCC /* SignInOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInOut.swift; sourceTree = "<group>"; };
 		CC86A1982B7466F0003A2DCC /* SocialIdentityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialIdentityProvider.swift; sourceTree = "<group>"; };
 		CC9AB57C2B92751F008B7D98 /* RemoteLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteLog.swift; sourceTree = "<group>"; };
-		CCB2F9612A2568EE00F24F2D /* MonocleController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonocleController.swift; sourceTree = "<group>"; };
 		CCB2F9652A2598F600F24F2D /* HexDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexDump.swift; sourceTree = "<group>"; };
 		CCB2F9672A25990F00F24F2D /* UtilNamespace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilNamespace.swift; sourceTree = "<group>"; };
 		CCB3501F2B59A59000B62534 /* Girl.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Girl.jpeg; sourceTree = "<group>"; };
@@ -215,7 +196,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CC5274CF2B7C432B00593B67 /* GoogleSignInSwift in Frameworks */,
-				CC0039962A6C7E57009E3BAC /* NordicDFU in Frameworks */,
 				CC5274CD2B7C432B00593B67 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -247,34 +227,6 @@
 				CCEE17512ACF8CC1000170F5 /* Tutorial_5.png */,
 			);
 			path = "UI Assets";
-			sourceTree = "<group>";
-		};
-		CC00398C2A6B7F4E009E3BAC /* Scripts */ = {
-			isa = PBXGroup;
-			children = (
-				CC200A4F2A37E396005C67E0 /* graphics.py */,
-				CC200A4E2A37E396005C67E0 /* states.py */,
-				CC212D6F2A9E74870093479F /* audio.py */,
-				CC212D712A9E764B0093479F /* photo.py */,
-				CC200A4C2A37E38C005C67E0 /* main.py */,
-			);
-			path = Scripts;
-			sourceTree = "<group>";
-		};
-		CC00398D2A6B7F5A009E3BAC /* Firmware */ = {
-			isa = PBXGroup;
-			children = (
-				CC1632412AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip */,
-			);
-			path = Firmware;
-			sourceTree = "<group>";
-		};
-		CC00399B2A6D0D14009E3BAC /* FPGA */ = {
-			isa = PBXGroup;
-			children = (
-				CC212D6D2A9E6F130093479F /* monocle-fpga.bin */,
-			);
-			path = FPGA;
 			sourceTree = "<group>";
 		};
 		CC00399C2A6DA398009E3BAC /* Views */ = {
@@ -345,7 +297,6 @@
 			isa = PBXGroup;
 			children = (
 				CCF4F3562B3CD7C700146A59 /* AsyncBluetoothManager.swift */,
-				CC00398A2A6A4F11009E3BAC /* BluetoothManager.swift */,
 			);
 			path = Bluetooth;
 			sourceTree = "<group>";
@@ -403,7 +354,6 @@
 				CC00399C2A6DA398009E3BAC /* Views */,
 				CCD4B9012A93EB47004E3ADD /* NoaApp.swift */,
 				CCF4F3542B3CC7EB00146A59 /* FrameController.swift */,
-				CCB2F9612A2568EE00F24F2D /* MonocleController.swift */,
 				CC3FE0202A0DF25100756941 /* SceneDelegate.swift */,
 				CC3FE0252A0EEAA900756941 /* MockInputGenerator.swift */,
 				CC3FE00A2A09C0BF00756941 /* Settings.bundle */,
@@ -411,7 +361,6 @@
 				CC4E3AC72A00BA4C0058AC20 /* Assets.xcassets */,
 				352D27F62A7B01480019EFDB /* UI Assets */,
 				CC3FE0272A0EF80300756941 /* Test Assets */,
-				CCB2F9632A25812B00F24F2D /* Monocle Assets */,
 				CCD170D32B3E08D1008665F6 /* Frame Assets */,
 				CC4E3AC92A00BA4D0058AC20 /* Preview Content */,
 			);
@@ -493,16 +442,6 @@
 			path = Authentication;
 			sourceTree = "<group>";
 		};
-		CCB2F9632A25812B00F24F2D /* Monocle Assets */ = {
-			isa = PBXGroup;
-			children = (
-				CC00398D2A6B7F5A009E3BAC /* Firmware */,
-				CC00399B2A6D0D14009E3BAC /* FPGA */,
-				CC00398C2A6B7F4E009E3BAC /* Scripts */,
-			);
-			path = "Monocle Assets";
-			sourceTree = "<group>";
-		};
 		CCB2F9642A2598E900F24F2D /* Util */ = {
 			isa = PBXGroup;
 			children = (
@@ -576,7 +515,6 @@
 			);
 			name = Noa;
 			packageProductDependencies = (
-				CC0039952A6C7E57009E3BAC /* NordicDFU */,
 				CC5274CC2B7C432B00593B67 /* GoogleSignIn */,
 				CC5274CE2B7C432B00593B67 /* GoogleSignInSwift */,
 			);
@@ -654,7 +592,6 @@
 			);
 			mainGroup = CC4E3AB72A00BA4C0058AC20;
 			packageReferences = (
-				CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */,
 				CC5274CB2B7C432B00593B67 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			productRefGroup = CC4E3AC12A00BA4C0058AC20 /* Products */;
@@ -679,26 +616,19 @@
 				CC0B99D52B5F297400312987 /* test_restore.lua in Resources */,
 				CC3FE0322A0EF81A00756941 /* Question_Nutrition.m4a in Resources */,
 				CC4E3ACB2A00BA4D0058AC20 /* Preview Assets.xcassets in Resources */,
-				CC1632422AA7D191006A8E6A /* monocle-micropython-v23.248.0754.zip in Resources */,
 				CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */,
 				CC3FE00B2A09C0BF00756941 /* Settings.bundle in Resources */,
 				CC03F4912A8301E6006E9353 /* Statement_Chinese.m4a in Resources */,
 				CCB350202B59A59000B62534 /* Girl.jpeg in Resources */,
-				CC212D6E2A9E6F130093479F /* monocle-fpga.bin in Resources */,
 				CC2E4FC92B560DBC00718A65 /* graphics.lua in Resources */,
 				CC2E4FC72B560DBC00718A65 /* state.lua in Resources */,
-				CC212D702A9E74870093479F /* audio.py in Resources */,
 				CC3FE0302A0EF81A00756941 /* Question_Lizards.m4a in Resources */,
-				CC200A512A37E396005C67E0 /* graphics.py in Resources */,
 				CC3FE02E2A0EF81A00756941 /* Question_Tootsie.m4a in Resources */,
 				CC3FE0332A0EF81A00756941 /* Question_CPU.m4a in Resources */,
 				CCEE17542ACF8CC1000170F5 /* Tutorial_2.png in Resources */,
 				CC3FE02F2A0EF81A00756941 /* Question_Movies.m4a in Resources */,
-				CC200A502A37E396005C67E0 /* states.py in Resources */,
 				CCC573982B58EBFA0021A108 /* Bouquet.webp in Resources */,
-				CC200A4D2A37E38C005C67E0 /* main.py in Resources */,
 				CCEE17552ACF8CC1000170F5 /* Tutorial_5.png in Resources */,
-				CC212D722A9E764B0093479F /* photo.py in Resources */,
 				CCCECE762A1EF36C00DBB7CA /* Question_Nutrition.wav in Resources */,
 				CCEE17562ACF8CC1000170F5 /* Tutorial_4.png in Resources */,
 				CCCECE772A1EF36C00DBB7CA /* Question_Tootsie.wav in Resources */,
@@ -738,7 +668,6 @@
 				CC27DC552A0304D600A942A9 /* TypingIndicatorView.swift in Sources */,
 				CC5274BE2B7B15A600593B67 /* APIKey.swift in Sources */,
 				F8BC4DE52A4DBD680005F6F0 /* DeviceScreenView.swift in Sources */,
-				CC00398B2A6A4F11009E3BAC /* BluetoothManager.swift in Sources */,
 				CC4E3AEF2A00BBE90058AC20 /* Message.swift in Sources */,
 				CC212D6A2A9D6FDB0093479F /* CVPixelBuffer+Extensions.swift in Sources */,
 				CC86A1952B7465B5003A2DCC /* SignInOut.swift in Sources */,
@@ -750,7 +679,6 @@
 				CCDE4A792B9BA07A00861D04 /* Location.swift in Sources */,
 				CCCEC3B42B72E8960024DDAC /* DiscordLoginView.swift in Sources */,
 				CCDCFEF92B322845008EDB1D /* MultipartForm.swift in Sources */,
-				CCB2F9622A2568EE00F24F2D /* MonocleController.swift in Sources */,
 				CCDE4A772B9ADE1E00861D04 /* LocationManager.swift in Sources */,
 				CCCECE6D2A1EE7C700DBB7CA /* AIError.swift in Sources */,
 				CC4E3AF12A00BC8A0058AC20 /* MessageContentView.swift in Sources */,
@@ -1153,14 +1081,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.0;
-			};
-		};
 		CC5274CB2B7C432B00593B67 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
@@ -1172,11 +1092,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		CC0039952A6C7E57009E3BAC /* NordicDFU */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CC0039942A6C7E57009E3BAC /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */;
-			productName = NordicDFU;
-		};
 		CC5274CC2B7C432B00593B67 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = CC5274CB2B7C432B00593B67 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;

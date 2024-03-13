@@ -14,8 +14,8 @@ struct ChatView: View {
     @EnvironmentObject private var _chatMessageStore: ChatMessageStore
     @EnvironmentObject private var _settings: Settings
 
-    // Monocle state
-    @Binding private var _isMonocleConnected: Bool
+    // Device state
+    @Binding private var _isConnected: Bool
 
     // Stores text being input in text field
     @State private var _textInput: String = ""
@@ -81,7 +81,7 @@ struct ChatView: View {
                 // Bottom bar: connection status and text entry
                 if _expandedPicture == nil {
                     ChatTextFieldView(
-                        isMonocleConnected: $_isMonocleConnected,
+                        isConnected: $_isConnected,
                         textInput: $_textInput,
                         onTextSubmitted: _onTextSubmitted
                     )
@@ -107,13 +107,13 @@ struct ChatView: View {
     }
 
     public init(
-        isMonocleConnected: Binding<Bool>,
+        isConnected: Binding<Bool>,
         onTextSubmitted: ((String) -> Void)? = nil,
         onClearChatButtonPressed: (() -> Void)? = nil,
         onAssistantModeChanged: ((AIAssistant.Mode) ->Void)? = nil,
         onPairToggled: ((Bool) -> Void)? = nil
     ) {
-        __isMonocleConnected = isMonocleConnected
+        __isConnected = isConnected
         _onTextSubmitted = onTextSubmitted
         _onClearChatButtonPressed = onClearChatButtonPressed
         _onAssistantModeChanged = onAssistantModeChanged
@@ -156,7 +156,7 @@ fileprivate struct ChatTitleBarView: View {
 }
 
 fileprivate struct ChatTextFieldView: View {
-    @Binding var isMonocleConnected: Bool
+    @Binding var isConnected: Bool
     @Binding var textInput: String
     let onTextSubmitted: ((String) -> Void)?
 
@@ -164,7 +164,7 @@ fileprivate struct ChatTextFieldView: View {
         VStack {
             // Connection status
             VStack {
-                if !isMonocleConnected  {
+                if !isConnected  {
                     Text("Not Connected \(Image(systemName: "exclamationmark.circle"))")
                         .foregroundColor(Color.red)
                         .padding(.bottom)
@@ -270,7 +270,7 @@ struct ChatView_Previews: PreviewProvider {
 
     static var previews: some View {
         ChatView(
-            isMonocleConnected: .constant(false)
+            isConnected: .constant(false)
         )
             .environmentObject(ChatView_Previews._chatMessageStore)
             .environmentObject(Settings())

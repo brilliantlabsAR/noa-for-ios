@@ -17,12 +17,9 @@ struct MainAppView: View {
     @State private var _nearbyDevices: [(peripheral: CBPeripheral, rssi: Float)] = []
 
     // Pairing and connection state
-    @State private var connectButtonState: DeviceSheetConnectButtonState = .searching
+    @State private var pairButtonState: DeviceSheetButtonState = .searching
     @State private var deviceSheetState: DeviceSheetState = .searching
-    @State private var firstTimeConnecting = false         // if device was ever unpaired and is connected for first time, this is used to show tutorial
-
-    // Translation mode state
-    @State private var _mode: AIAssistant.Mode = .assistant
+    @State private var firstTimeConnecting = false  // if device was ever unpaired and is connected for first time, this is used to show tutorial
 
     var body: some View {
         VStack {
@@ -31,12 +28,12 @@ struct MainAppView: View {
                 // deviceSheetState = .hidden
                 DeviceScreenView(
                     deviceSheetState: $deviceSheetState,
-                    connectButtonState: $connectButtonState,
+                    pairButtonState: $pairButtonState,
                     updateProgressPercent: .constant(0),
-                    onConnectPressed: {
+                    onPairPressed: {
                         if let device = _frameController.nearbyUnpairedDevice {
                             _frameController.pair(to: device)
-                            connectButtonState = .connecting
+                            pairButtonState = .connecting
                         }
                     },
                     onCancelPressed: {
@@ -45,7 +42,7 @@ struct MainAppView: View {
                 )
             } else {
                 ChatView(
-                    isMonocleConnected: $_frameController.isConnected,
+                    isConnected: $_frameController.isConnected,
                     onTextSubmitted: { (query: String) in
                         _frameController.submitQuery(query: query)
                     },
@@ -68,7 +65,7 @@ struct MainAppView: View {
             }
         }
         .onAppear {
-            firstTimeConnecting = isUnpaired()
+            firstTimeConnecting = true
         }
         .onChange(of: deviceSheetState) {
             let dismissed = $0 == .hidden
@@ -85,44 +82,21 @@ struct MainAppView: View {
                 return
             }
         }
-        /*
-        .onChange(of: _controller.monocleState) { (value: MonocleController.MonocleState) in
-            // Tutorial
-            if _controller.pairedMonocleID == nil {
-                _firstTimeConnecting = true
-            } else if value == .ready && _firstTimeConnecting {
-                // Connected. Do we need to display tutorial?
-                Task {
-                    try await displayTutorialInChatWindow(chatMessageStore: _chatMessageStore)
-                }
-                _firstTimeConnecting = false
-            }
-
-            // Device sheet?
-            deviceSheetState = decideDeviceSheetState()
-        }
-        */
-        .onChange(of: _mode) {
-            // Settings menu may change mode
-            //_controller.mode = $0
-            _ = $0 // shut up for now
-        }
-
         .onChange(of: _frameController.isConnected) { (isConnected: Bool) in
             if isConnected {
                 deviceSheetState = .hidden
             } else {
                 deviceSheetState = .searching
-                connectButtonState = .searching
+                pairButtonState = .searching
             }
         }
         .onChange(of: _frameController.nearbyUnpairedDevice) { (device: CBPeripheral?) in
             guard !_frameController.isConnected else { return }
             guard device != nil else {
-                connectButtonState = .searching
+                pairButtonState = .searching
                 return
             }
-            connectButtonState = .canConnect
+            pairButtonState = .pair
         }
     }
 
@@ -137,14 +111,7 @@ struct MainAppView: View {
             // No device paired, show pairing sheet
             return .searching
         }
-
-        //TODO: state if not connected
-
         return .hidden
-    }
-
-    private func isUnpaired() -> Bool {
-        return true
     }
 
     private func isUpdating() -> Bool {

@@ -4,9 +4,8 @@
 //
 //  Created by Artur Burlakin on 6/29/23.
 //
-//  This is the initial view on a fresh start when Moncole is unpaired and is used for device-
-//  related operations: pairing, firmware update, FPGA update. Specific sheets are used for each
-//  case.
+//  This is the view used when the device is not connected or paired. Updates are also handled
+//  here.
 //
 //  Resources
 //  ---------
@@ -21,24 +20,23 @@ enum DeviceSheetState {
     case hidden
     case searching
     case firmwareUpdate
-    case fpgaUpdate
 }
 
 /// State of connect button (used for pairing)
-enum DeviceSheetConnectButtonState {
+enum DeviceSheetButtonState {
     case searching
-    case canConnect
+    case pair
     case connecting
 }
 
 struct DeviceScreenView: View {
     @Binding var state: DeviceSheetState
-    @Binding var connectButtonState: DeviceSheetConnectButtonState
+    @Binding var connectButtonState: DeviceSheetButtonState
     @Binding var updateProgressPercent: Int
     @Environment(\.openURL) var openURL
     @Environment(\.colorScheme) var colorScheme
 
-    private let _onConnectPressed: (() -> Void)?
+    private let _onPairPressed: (() -> Void)?
     private let _onCancelPressed: (() -> Void)?
 
     var body: some View {
@@ -50,7 +48,7 @@ struct DeviceScreenView: View {
 
                     Spacer()
                 
-                    Text("Let’s set up your Monocle. Take it out of the case, and bring it close.")
+                    Text("Let’s set up your Frame. Take it out of the case, and bring it close.")
                         .font(.system(size: 15))
                         .frame(width: 314, height: 60)
                     
@@ -76,7 +74,7 @@ struct DeviceScreenView: View {
                                     deviceSheetState: $state,
                                     connectButtonState: $connectButtonState,
                                     updateProgressPercent: $updateProgressPercent,
-                                    onConnectPressed: _onConnectPressed,
+                                    onPairPressed: _onPairPressed,
                                     onCancelPressed: _onCancelPressed
                                 )
                             )
@@ -87,11 +85,11 @@ struct DeviceScreenView: View {
         .ignoresSafeArea(.all)
     }
 
-    init(deviceSheetState: Binding<DeviceSheetState>, connectButtonState: Binding<DeviceSheetConnectButtonState>, updateProgressPercent: Binding<Int>, onConnectPressed: (() -> Void)?, onCancelPressed: (() -> Void)?) {
+    init(deviceSheetState: Binding<DeviceSheetState>, pairButtonState: Binding<DeviceSheetButtonState>, updateProgressPercent: Binding<Int>, onPairPressed: (() -> Void)?, onCancelPressed: (() -> Void)?) {
         _state = deviceSheetState
-        _connectButtonState = connectButtonState
+        _connectButtonState = pairButtonState
         _updateProgressPercent = updateProgressPercent
-        _onConnectPressed = onConnectPressed
+        _onPairPressed = onPairPressed
         _onCancelPressed = onCancelPressed
     }
 }
@@ -100,9 +98,9 @@ struct DeviceScreenView_Previews: PreviewProvider {
     static var previews: some View {
         DeviceScreenView(
             deviceSheetState: .constant(.firmwareUpdate),
-            connectButtonState: .constant(.searching),
+            pairButtonState: .constant(.searching),
             updateProgressPercent: .constant(50),
-            onConnectPressed: { print("Connect pressed") },
+            onPairPressed: { print("Pair pressed") },
             onCancelPressed: { print("Cancel pressed")}
         )
     }
