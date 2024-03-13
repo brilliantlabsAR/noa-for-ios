@@ -27,11 +27,14 @@ function bluetooth_callback(message)
 end
 
 function send_data(data)
-    while true do
+    -- Try send and if fails after some seconds, assume connection lost
+    try_until = frame.time.utc() + 2
+    while frame.time.utc() < try_until do
         if pcall(frame.bluetooth.send, data) then
-            break
+            return
         end
     end
+    state:switch("RECONNECT")
 end
 
 frame.bluetooth.receive_callback(bluetooth_callback)
@@ -112,6 +115,12 @@ while true do
         state:on_entry(function()
             frame.sleep()
         end)
+    elseif state:is("RECONNECT") then
+        state:on_entry(function()
+            graphics:clear()
+            graphics:append_text("Launch app")
+        end)
+        state:switch_after(3, "START")
     end
 
     graphics:print_text()
