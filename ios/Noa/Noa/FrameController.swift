@@ -173,7 +173,7 @@ class FrameController: ObservableObject {
                     //Util.hexDump(data)
                     onDataReceived(data: data, on: connection)
                 }
-            } catch let error as AsyncBluetoothManager.ConnectionError {
+            } catch let error as AsyncBluetoothManager.StreamError {
                 // Disconnection falls through to loop around again
                 deviceState = .notConnected
                 onDisconnect()
@@ -238,16 +238,13 @@ class FrameController: ObservableObject {
             }
 
             // Attempt to connect
-            do {
-                let connection = try await _bluetooth.connect(to: chosenDevice!)
+            if let connection = await _bluetooth.connect(to: chosenDevice!) {
                 log("Connected successfully")
                 return (connection, wasUnpaired)
-            } catch let error as AsyncBluetoothManager.ConnectionError {
-                // Connection attempt failed
+            } else {
+                // Connection failure
                 deviceState = .unableToConnect
-                log("Unable to connect: \(error.localizedDescription)")
-            } catch let error {
-                log("Connection attempt unexpectedly failed: \(error.localizedDescription)")
+                log("Unable to connect")
             }
 
             // Wait a bit before retry

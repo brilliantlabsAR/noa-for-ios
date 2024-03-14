@@ -23,11 +23,10 @@
 //   connection is allowed at a time. Subsequent calls to connect() will try to disconnect the
 //   previous connection.
 //
-//      do {
-//          let connection = await _bluetooth.connect(to: device)
+//      if let connection = await _bluetooth.connect(to: device) {
 //          print("Success!")
-//      } catch let error {
-//          print("Connection failed: \(error.localizedDescription)")
+//      } else {
+//          print("Failed!")
 //      }
 //
 // - When the connection reference is lost, the device will be disconnected.
@@ -144,7 +143,7 @@ class AsyncBluetoothManager: NSObject {
     private var _discoveryTimer: Timer?
 
     private var _discoveredDevicesContinuation: AsyncStream<[Peripheral]>.Continuation!
-    private var _connectContinuation: AsyncThrowingStream<Connection, Error>.Continuation?
+    private var _connectContinuation: AsyncStream<Connection>.Continuation?
     private weak var _connection: Connection?
 
     private var _connectedPeripheral: CBPeripheral?
@@ -153,15 +152,11 @@ class AsyncBluetoothManager: NSObject {
 
     // MARK: API - Error definitions
 
-    enum ConnectionError: Error {
+    enum StreamError: Error {
         case connectionLost         // closed because underlying connection to peripheral was lost somehow
         case connectionReplaced     // closed because connect() was called again
         case connectionClosed       // closed intentionally by e.g. a disconnect() call
         case utf8EncodingFailed     // failed to convert string to data and could not send
-        case unknownError           // an error resulting from an unexpected (and unhandled) state in our code
-        case connectAttemptCanceled // connection process canceled explicitly by calling disconnect()
-        case managerDestroyed       // AsyncBluetoothManager was deinitialized before an operation completed
-        case connectAttemptFailed(error: Error?)    // connection process failed due to a CoreBluetooth error
     }
 
     // MARK: API - Discovered peripheral object
@@ -183,7 +178,7 @@ class AsyncBluetoothManager: NSObject {
         private weak var _tx: CBCharacteristic?
         private weak var _asyncManager: AsyncBluetoothManager?
         fileprivate let connectionID = UUID()
-        private var _error: ConnectionError?
+        private var _error: StreamError?
 
         fileprivate init(queue: DispatchQueue, asyncManager: AsyncBluetoothManager, peripheral: CBPeripheral, rx: CBCharacteristic, tx: CBCharacteristic) {
             _queue = queue
@@ -207,7 +202,7 @@ class AsyncBluetoothManager: NSObject {
             }
         }
 
-        fileprivate func closeStream(with error: ConnectionError) {
+        fileprivate func closeStream(with error: StreamError) {
             _receivedDataContinuation?.finish(throwing: error)
             _error = error
         }
@@ -216,7 +211,7 @@ class AsyncBluetoothManager: NSObject {
             return writeType == .withResponse ? _maximumWriteLengthWithResponse : _maximumWriteLengthWithoutResponse
         }
 
-        func send(data: Data, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((ConnectionError?) -> Void)? = nil) {
+        func send(data: Data, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((StreamError?) -> Void)? = nil) {
             _queue?.async { [weak self] in
                 if let error = self?._error, let completion = completion {
                     // Connection is already closed
@@ -249,7 +244,7 @@ class AsyncBluetoothManager: NSObject {
             }
         }
 
-        func send(text: String, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((ConnectionError?) -> Void)? = nil) {
+        func send(text: String, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((StreamError?) -> Void)? = nil) {
             _queue?.async { [weak self] in
                 if let data = text.data(using: .utf8) {
                     self?.send(data: data, response: response, completionQueue: completionQueue, completion: completion)
@@ -292,19 +287,19 @@ class AsyncBluetoothManager: NSObject {
         }
     }
 
-    func connect(to peripheral: CBPeripheral) async throws -> Connection {
+    func connect(to peripheral: CBPeripheral) async -> Connection? {
         // Create an async stream we will use to await the first connection-related event (there
         // should only ever be one: successful or unsuccessful connection).
         log("Connecting...")
-        let connectStream = AsyncThrowingStream<Connection, Error> { [weak self] continuation in
+        let connectStream = AsyncStream<Connection> { [weak self] continuation in
             guard let self = self else {
-                continuation.finish(throwing: ConnectionError.managerDestroyed)
+                continuation.finish()
                 return
             }
 
             _queue.async { [weak self] in
                 guard let self = self else {
-                    continuation.finish(throwing: ConnectionError.managerDestroyed)
+                    continuation.finish()
                     return
                 }
 
@@ -346,43 +341,19 @@ class AsyncBluetoothManager: NSObject {
             }
         }
 
-        // Only care about first event. On error, nil out internal connection reference and
-        // rethrow.
+        // Only care about first event
         var it = connectStream.makeAsyncIterator()
-        var connection: Connection?
-        var connectionError: Error?
-        do {
-            connection = try await it.next()
-        } catch let error {
-            connection = nil
-            connectionError = error
-        }
-        let capturableConnection = connection   // because var cannot be captured in concurrent code below
+        let connection = await it.next()
         _queue.async { [weak self] in
             // Safe for connect() to be called again
             self?._connectContinuation = nil
 
             // Retain connection. Weak because if user disposes of it, there is no way to get it
             // back anyway, so no point in risking a retain cycle.
-            self?._connection = capturableConnection
+            self?._connection = connection
         }
-        if connection == nil && connectionError == nil {
-            // This should never happen and indicates we have an internal state management issue
-            // causing the connection continuation to be finished without yielding a connection nor
-            // an error. If a connection cannot be established, there should be an error sent.
-            throw ConnectionError.unknownError
-        }
-        if let error = connectionError {
-            log("Connection not established")
-            if case ConnectionError.connectAttemptFailed = error {
-                // If the error happened while trying to connect, scanning should have been
-                // turned off, and we must re-enable it
-                _queue.async { [weak self] in self?.startScan() }
-            }
-            throw error // rethrow
-        }
-        log("Connection established")
-        return connection!
+        log("Connection \(connection == nil ? "not " : "")established")
+        return connection
     }
 
     func disconnect() {
@@ -407,13 +378,13 @@ class AsyncBluetoothManager: NSObject {
             // Have observed instances where after we call peripheral connect(), nothing happens
             // and CoreBluetooth gets stuck. Canceling peripheral connection does nothing. We are
             // still in a "connecting" state. Disrupt it.
-            _connectContinuation?.finish(throwing: ConnectionError.connectAttemptCanceled)
+            _connectContinuation?.finish()
         }
     }
 
     // MARK: Internal methods
 
-    fileprivate func disconnect(connectionID: UUID, with error: ConnectionError) {
+    fileprivate func disconnect(connectionID: UUID, with error: StreamError) {
         if let connection = _connection, connection.connectionID == connectionID {
             // connect() can already replace an existing connection. Need to guard against
             // accidentally closing the subsequent connection, which would happen if the old
@@ -554,8 +525,8 @@ extension AsyncBluetoothManager: CBCentralManagerDelegate {
         updateDiscoveredPeripherals()
 
         // Return nil from stream to indicate connection failure
-        //assert(_connectContinuation != nil)   // can be nil when trying to connect and disconnect() is called from another task
-        _connectContinuation?.finish(throwing: ConnectionError.connectAttemptFailed(error: error))
+        //assert(_connectContinuation != nil)   // connect continuation can be nil when we restore and then fail to connect
+        _connectContinuation?.finish()
 
         if let connection = _connection {
             disconnect(connectionID: connection.connectionID, with: .connectionLost)
@@ -580,7 +551,7 @@ extension AsyncBluetoothManager: CBCentralManagerDelegate {
         // Possible to get a disconnect before connect event being fired (when characteristics are
         // discovered). If still listening for connect event, indicate failure.
         if let continuation = _connectContinuation {
-            continuation.finish(throwing: ConnectionError.connectAttemptFailed(error: error))
+            continuation.finish()
         }
 
         // Disconnect happened during a connected session. Close connection and remove it.
@@ -670,7 +641,7 @@ extension AsyncBluetoothManager: CBPeripheralDelegate {
            let tx = _tx,
            let continuation = _connectContinuation {
             continuation.yield(Connection(queue: _queue, asyncManager: self, peripheral: peripheral, rx: rx, tx: tx))
-            continuation.finish()   // clean termination that yielded a connection
+            continuation.finish()
         }
     }
 
@@ -697,7 +668,7 @@ fileprivate func log(_ message: String) {
     _logger.notice("[AsyncBluetoothManager] \(message, privacy: .public)")
 }
 
-extension AsyncBluetoothManager.ConnectionError: LocalizedError {
+extension AsyncBluetoothManager.StreamError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .connectionLost:
@@ -708,18 +679,6 @@ extension AsyncBluetoothManager.ConnectionError: LocalizedError {
             return "Connection closed by application"
         case .utf8EncodingFailed:
             return "Failed to encode and send UTF-8 string"
-        case .unknownError:
-            return "Unknown error caused by an unexpected and improperly handled internal state"
-        case .connectAttemptCanceled:
-            return "Connection attempt was canceled with an explicit disconnect request"
-        case .managerDestroyed:
-            return "AsyncBluetoothManager object was deinitialized before an operation completed"
-        case .connectAttemptFailed(error: let error):
-            if let error = error {
-                return "Connection attempt failed: \(error.localizedDescription)"
-            } else {
-                return "Connection attempt failed for an unspecified reason"
-            }
         }
     }
 }
