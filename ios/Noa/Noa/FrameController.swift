@@ -22,14 +22,26 @@ import UIKit
 
 import ColorQuantization
 
+fileprivate let k_frameServiceUUID = CBUUID(string: "7a230001-5475-a6a4-654c-8431f6ad49c4")
+fileprivate let k_frameTxUUID = CBUUID(string: "7a230002-5475-a6a4-654c-8431f6ad49c4")
+fileprivate let k_frameRxUUID = CBUUID(string: "7a230003-5475-a6a4-654c-8431f6ad49c4")
+fileprivate let k_frameDescription = AsyncBluetoothManager.PeripheralDescription(
+    services: [
+        .init(
+            uuid: k_frameServiceUUID,
+            characteristics: [
+                .init(uuid: k_frameTxUUID, notify: false),
+                .init(uuid: k_frameRxUUID, notify: true)
+            ]
+        )
+    ]
+)
+
 @MainActor
 class FrameController: ObservableObject {
     // MARK: Bluetooth
 
-    private static let k_serviceUUID = CBUUID(string: "7a230001-5475-a6a4-654c-8431f6ad49c4")
-    private static let k_txUUID = CBUUID(string: "7a230002-5475-a6a4-654c-8431f6ad49c4")
-    private static let k_rxUUID = CBUUID(string: "7a230003-5475-a6a4-654c-8431f6ad49c4")
-    private lazy var _bluetooth = AsyncBluetoothManager(service: Self.k_serviceUUID, rxCharacteristic: Self.k_rxUUID, txCharacteristic: Self.k_txUUID)
+    private lazy var _bluetooth = AsyncBluetoothManager(peripherals: [ k_frameDescription ])
 
     // MARK: Internal state
 
@@ -203,9 +215,13 @@ class FrameController: ObservableObject {
                 }
 
                 // Receive data perpetually until disconnected
-                for try await data in connection.receivedData {
-                    //Util.hexDump(data)
-                    onDataReceived(data: data, on: connection)
+                if let stream = connection.receivedData(from: k_frameRxUUID) {
+                    for try await data in stream {
+                        //Util.hexDump(data)
+                        onDataReceived(data: data, on: connection)
+                    }
+                } else {
+                    log("Error: No stream for Rx characteristic")
                 }
             } catch let error as AsyncBluetoothManager.StreamError {
                 // Disconnection falls through to loop around again
@@ -247,7 +263,7 @@ class FrameController: ObservableObject {
         // tolerate the delay this causes.
         try? await Task.sleep(for: .seconds(5)) // give ample time for scripts to start to avoid a doom loop
         if let connection = connection.value {
-            connection.send(data: _scriptVersionRequestMessage)
+            connection.send(data: _scriptVersionRequestMessage, to: k_frameTxUUID)
         }
         try? await Task.sleep(for: .seconds(2))
         guard !Task.isCancelled else { return }
@@ -582,7 +598,7 @@ class FrameController: ObservableObject {
                   let nextMessage = _outgoingQueue.first else {
                 return
             }
-            connection.send(data: nextMessage)
+            connection.send(data: nextMessage, to: k_frameTxUUID)
             _outgoingQueue.removeFirst()
             sendEnqueuedMessagesToFrame(on: connection)
 
@@ -618,12 +634,12 @@ class FrameController: ObservableObject {
     private func loadScriptsOntoFrame(on connection: AsyncBluetoothManager.Connection, wasUnpaired: Bool) async throws {
         if wasUnpaired {
             log("Sending scripts...")
-            connection.send(text: "\u{3}\u{3}\u{3}")    // spam ^C to make sure current app is killed
+            connection.send(text: "\u{3}\u{3}\u{3}", to: k_frameTxUUID) // spam ^C to make sure current app is killed
             try await loadScript(named: "state.lua", on: connection)
             try await loadScript(named: "graphics.lua", on: connection)
             try await loadScript(named: "main.lua", on: connection)
             log("Starting...")
-            connection.send(text: "\u{4}")  // ^D executes main.lua
+            connection.send(text: "\u{4}", to: k_frameTxUUID)   // ^D executes main.lua
 //            try await loadScript(named: "test_restore.lua", on: connection, run: true)
 //            print("Starting...")
         }
@@ -655,7 +671,7 @@ class FrameController: ObservableObject {
         }
         try await runCommand("f:close()", on: connection)
         if run {
-            connection.send(text: "require('\(filePrefix)')")
+            connection.send(text: "require('\(filePrefix)')", to: k_frameTxUUID)
         }
     }
 
@@ -669,8 +685,12 @@ class FrameController: ObservableObject {
 
     private func runCommand(_ command: String, on connection: AsyncBluetoothManager.Connection) async throws {
         // Send command and wait for "nil" or end of stream
-        connection.send(text: "\(command);print(nil)")
-        for try await data in connection.receivedData {
+        connection.send(text: "\(command);print(nil)", to: k_frameTxUUID)
+        guard let stream = connection.receivedData(from: k_frameRxUUID) else {
+            log("Error: No stream for Rx characteristic")
+            return
+        }
+        for try await data in stream {
             let response = String(decoding: data, as: UTF8.self)
             if response == "nil" {
                 break

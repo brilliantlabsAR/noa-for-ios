@@ -135,9 +135,7 @@ class AsyncBluetoothManager: NSObject {
         return CBCentralManager(delegate: self, queue: _queue, options: [CBCentralManagerOptionRestoreIdentifierKey: "AsyncBluetoothManager"])
     }()
 
-    private let _serviceUUID: CBUUID
-    private let _rxCharacteristicUUID: CBUUID
-    private let _txCharacteristicUUID: CBUUID
+    private let _peripheralDescriptions: [PeripheralDescription]
 
     private var _discoveredPeripherals: [(peripheral: Peripheral, timeout: TimeInterval)] = []
     private var _discoveryTimer: Timer?
@@ -147,8 +145,23 @@ class AsyncBluetoothManager: NSObject {
     private weak var _connection: Connection?
 
     private var _connectedPeripheral: CBPeripheral?
-    private var _rx: CBCharacteristic?
-    private var _tx: CBCharacteristic?
+    private var _characteristicByUUID: [CBUUID: CBCharacteristic] = [:]
+
+    // MARK: API - Peripheral description
+
+    struct CharacteristicDescription {
+        let uuid: CBUUID
+        let notify: Bool
+    }
+
+    struct ServiceDescription {
+        let uuid: CBUUID
+        let characteristics: [CharacteristicDescription]
+    }
+
+    struct PeripheralDescription {
+        let services: [ServiceDescription]
+    }
 
     // MARK: API - Error definitions
 
@@ -169,8 +182,13 @@ class AsyncBluetoothManager: NSObject {
     // MARK: API - Connection object
 
     class Connection {
-        private(set) var receivedData: AsyncThrowingStream<Data, Error>!
-        fileprivate var _receivedDataContinuation: AsyncThrowingStream<Data, Error>.Continuation?
+        fileprivate var _characteristicByUUID: [CBUUID: CBCharacteristic]
+        private var _streamByUUID: [CBUUID: AsyncThrowingStream<Data, Error>] = [:]
+        private var _streamContinuationByUUID: [CBUUID: AsyncThrowingStream<Data, Error>.Continuation] = [:]
+
+        //private(set) var receivedData: AsyncThrowingStream<Data, Error>!
+        //fileprivate var _receivedDataContinuation: AsyncThrowingStream<Data, Error>.Continuation?
+
         private weak var _queue: DispatchQueue?
         private weak var _peripheral: CBPeripheral?
         private let _maximumWriteLengthWithResponse: Int
@@ -180,15 +198,20 @@ class AsyncBluetoothManager: NSObject {
         fileprivate let connectionID = UUID()
         private var _error: StreamError?
 
-        fileprivate init(queue: DispatchQueue, asyncManager: AsyncBluetoothManager, peripheral: CBPeripheral, rx: CBCharacteristic, tx: CBCharacteristic) {
+        fileprivate init(queue: DispatchQueue, asyncManager: AsyncBluetoothManager, peripheral: CBPeripheral, characteristicByUUID: [CBUUID: CBCharacteristic]) {
             _queue = queue
             _peripheral = peripheral
-            _tx = tx
+            _characteristicByUUID = characteristicByUUID
             _asyncManager = asyncManager
             _maximumWriteLengthWithResponse = peripheral.maximumWriteValueLength(for: .withResponse)
             _maximumWriteLengthWithoutResponse = peripheral.maximumWriteValueLength(for: .withoutResponse)
-            receivedData = AsyncThrowingStream<Data, Error> { [weak self] continuation in
-                self?._receivedDataContinuation = continuation
+
+            // Create all the async streams (we could further optimize this by only creating
+            // streams for readable characteristics)
+            for uuid in characteristicByUUID.keys {
+                _streamByUUID[uuid] = AsyncThrowingStream<Data, Error> { [weak self] continuation in
+                    self?._streamContinuationByUUID[uuid] = continuation
+                }
             }
         }
 
@@ -202,16 +225,26 @@ class AsyncBluetoothManager: NSObject {
             }
         }
 
+        fileprivate func yieldData(_ data: Data, characteristicUUID: CBUUID) {
+            _streamContinuationByUUID[characteristicUUID]?.yield(data)
+        }
+
         fileprivate func closeStream(with error: StreamError) {
-            _receivedDataContinuation?.finish(throwing: error)
+            for continuation in _streamContinuationByUUID.values {
+                continuation.finish(throwing: error)
+            }
             _error = error
+        }
+
+        func receivedData(from characteristicUUID: CBUUID) -> AsyncThrowingStream<Data, Error>? {
+            return _streamByUUID[characteristicUUID]
         }
 
         func maximumWriteLength(for writeType: CBCharacteristicWriteType) -> Int {
             return writeType == .withResponse ? _maximumWriteLengthWithResponse : _maximumWriteLengthWithoutResponse
         }
 
-        func send(data: Data, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((StreamError?) -> Void)? = nil) {
+        func send(data: Data, to characteristicUUID: CBUUID, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((StreamError?) -> Void)? = nil) {
             _queue?.async { [weak self] in
                 if let error = self?._error, let completion = completion {
                     // Connection is already closed
@@ -222,7 +255,7 @@ class AsyncBluetoothManager: NSObject {
 
                 guard let self = self,
                       let peripheral = _peripheral,
-                      let tx = _tx else {
+                      let characteristic = _characteristicByUUID[characteristicUUID] else {
                     return
                 }
 
@@ -231,7 +264,7 @@ class AsyncBluetoothManager: NSObject {
                 var idx = 0
                 while idx < data.count {
                     let endIdx = min(idx + chunkSize, data.count)
-                    peripheral.writeValue(data.subdata(in: idx..<endIdx), for: tx, type: writeType)
+                    peripheral.writeValue(data.subdata(in: idx..<endIdx), for: characteristic, type: writeType)
                     idx = endIdx
                 }
 
@@ -244,10 +277,10 @@ class AsyncBluetoothManager: NSObject {
             }
         }
 
-        func send(text: String, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((StreamError?) -> Void)? = nil) {
+        func send(text: String, to characteristicUUID: CBUUID, response: Bool = false, completionQueue: DispatchQueue = .main, completion: ((StreamError?) -> Void)? = nil) {
             _queue?.async { [weak self] in
                 if let data = text.data(using: .utf8) {
-                    self?.send(data: data, response: response, completionQueue: completionQueue, completion: completion)
+                    self?.send(data: data, to: characteristicUUID, response: response, completionQueue: completionQueue, completion: completion)
                 } else {
                     // Indicate encoding failure
                     completionQueue.async {
@@ -262,14 +295,9 @@ class AsyncBluetoothManager: NSObject {
 
     private(set) var discoveredDevices: AsyncStream<[Peripheral]>!
 
-    init(
-        service: CBUUID,
-        rxCharacteristic: CBUUID,
-        txCharacteristic: CBUUID
-    ) {
-        _serviceUUID = service
-        _rxCharacteristicUUID = rxCharacteristic
-        _txCharacteristicUUID = txCharacteristic
+    init(peripherals: [PeripheralDescription]) {
+        _peripheralDescriptions = peripherals
+        Self.verifyPeripheralUniqueness(peripherals)
 
         super.init()
 
@@ -405,8 +433,8 @@ class AsyncBluetoothManager: NSObject {
             log("Warning: Already scanning!")
         }
 
-        _manager.scanForPeripherals(withServices: [ _serviceUUID ], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true ])
-        log("Scan initiated")
+        _manager.scanForPeripherals(withServices: getServiceUUIDsToScanFor(), options: [CBCentralManagerScanOptionAllowDuplicatesKey: true ])
+        log("Scan initiated: \(getServiceUUIDsToScanFor())")
 
         // Create a timer to update discoved peripheral list. Timers can only be scheduled from
         // main queue, evidently. This is so silly.
@@ -457,7 +485,7 @@ class AsyncBluetoothManager: NSObject {
         log("Connected to peripheral: name=\(name), UUID=\(peripheral.identifier)")
         _connectedPeripheral = peripheral
         peripheral.delegate = self
-        peripheral.discoverServices([ _serviceUUID ])
+        peripheral.discoverServices(getServiceUUIDsForPeripheral(peripheral))
     }
 
     private func forgetPeripheral() {
@@ -466,19 +494,112 @@ class AsyncBluetoothManager: NSObject {
         forgetCharacteristics()
     }
 
-    private func forgetCharacteristics() {
-        _rx = nil
-        _tx = nil
+    private func forgetCharacteristics(forService service: CBService? = nil) {
+        if let service = service {
+            // Forget only specific service
+            for uuid in getCharacteristicUUIDsForService(service) {
+                _characteristicByUUID.removeValue(forKey: uuid)
+            }
+        } else {
+            // Forget *all* characteristics
+            _characteristicByUUID = [:]
+        }
     }
 
-    private func toString(_ characteristic: CBCharacteristic) -> String {
-        if characteristic == _rx {
-            return "Rx"
-        } else if characteristic == _tx {
-            return "Tx"
-        } else {
-            return characteristic.uuid.uuidString
+    private static func verifyPeripheralUniqueness(_ peripherals: [PeripheralDescription]) {
+        // Ensure no duplicate services or characteristics
+        var services: Set<CBUUID> = []
+        var characteristics: Set<CBUUID> = []
+        for peripheral in peripherals {
+            precondition(peripheral.services.count > 0)
+            for service in peripheral.services {
+                precondition(!services.contains(service.uuid))
+                services.insert(service.uuid)
+                precondition(service.characteristics.count > 0)
+                for characteristic in service.characteristics {
+                    precondition(!characteristics.contains(characteristic.uuid))
+                    characteristics.insert(characteristic.uuid)
+                }
+            }
         }
+    }
+
+    /// Returns one service from each device because we only need to scan for a single service
+    private func getServiceUUIDsToScanFor() -> [CBUUID] {
+        return _peripheralDescriptions.map { $0.services[0].uuid }
+    }
+
+    private func getServiceUUIDsForPeripheral(_ peripheral: CBPeripheral) -> [CBUUID] {
+        // Identify the matching peripheral description and return all of its services, otherwise
+        // return *all* services for *all* possible peripherals because we don't know which this
+        // is
+        if let services = peripheral.services,
+           services.count > 0 {
+            for service in services {
+                if let peripheralDescription = getPeripheralDescriptionForService(service) {
+                    return peripheralDescription.services.map { $0.uuid }
+                }
+            }
+        }
+
+        log("Warning: Peripheral reports no known services, need to discover all possible services")
+        var serviceUUIDs: [CBUUID] = []
+        for peripheralDescription in _peripheralDescriptions {
+            for serviceDescription in peripheralDescription.services {
+                serviceUUIDs.append(serviceDescription.uuid)
+            }
+        }
+        return serviceUUIDs
+    }
+
+    private func getPeripheralDescriptionForService(_ service: CBService) -> PeripheralDescription? {
+        for peripheralDescription in _peripheralDescriptions {
+            for serviceDescription in peripheralDescription.services {
+                if service.uuid == serviceDescription.uuid {
+                    return peripheralDescription
+                }
+            }
+        }
+        return nil
+    }
+
+    private func getCharacteristicUUIDsForService(_ service: CBService) -> [CBUUID] {
+        for peripheralDescription in _peripheralDescriptions {
+            for serviceDescription in peripheralDescription.services {
+                if service.uuid == serviceDescription.uuid {
+                    return serviceDescription.characteristics.map { $0.uuid }
+                }
+            }
+        }
+        log("Warning: Service \(service.uuid.uuidString) does not exist in peripheral descriptions")
+        return []
+    }
+
+    private func getCharacteristicDescription(service: CBService, characteristic: CBCharacteristic) -> CharacteristicDescription? {
+        guard let peripheralDescription = getPeripheralDescriptionForService(service) else { return nil }
+        for serviceDescription in peripheralDescription.services {
+            if serviceDescription.uuid == service.uuid {
+                for characteristicDescription in serviceDescription.characteristics {
+                    if characteristicDescription.uuid == characteristic.uuid {
+                        return characteristicDescription
+                    }
+                }
+            }
+        }
+        return nil
+    }
+
+    private func allCharacteristicsDiscovered() -> Bool {
+        for peripheralDescription in _peripheralDescriptions {
+            for serviceDescription in peripheralDescription.services {
+                for characteristicDescription in serviceDescription.characteristics {
+                    if !_characteristicByUUID.keys.contains(characteristicDescription.uuid) {
+                        return false
+                    }
+                }
+            }
+        }
+        return true
     }
 }
 
@@ -537,6 +658,7 @@ extension AsyncBluetoothManager: CBCentralManagerDelegate {
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         if peripheral != _connectedPeripheral {
+            //TODO: have seen this occur and then get stuck because it is not scanning. Should we force disconnect?
             log("Internal error: Disconnected from an unexpected peripheral")
             return
         }
@@ -601,10 +723,14 @@ extension AsyncBluetoothManager: CBPeripheralDelegate {
         }
         forgetCharacteristics()
         for service in services {
-            peripheral.discoverCharacteristics([ _rxCharacteristicUUID, _txCharacteristicUUID ], for: service)
+            let characteristicUUIDs = getCharacteristicUUIDsForService(service)
+            if characteristicUUIDs.count > 0 {
+                peripheral.discoverCharacteristics(characteristicUUIDs, for: service)
+            }
         }
     }
 
+    //TODO: This is not handled correctly. Once a connection is established, these changes will not propagate to an active connection!
     func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
         if peripheral != _connectedPeripheral {
             log("Internal error: peripheral(_:, didModifyServices:) called unexpectedly")
@@ -612,10 +738,15 @@ extension AsyncBluetoothManager: CBPeripheralDelegate {
         }
 
         // If service is invalidated, forget it and rediscover
-        if invalidatedServices.contains(where: { $0.uuid == _serviceUUID }) {
-            forgetCharacteristics()
+        var serviceUUIDs: [CBUUID] = []
+        for service in invalidatedServices {
+            let isKnownService = getPeripheralDescriptionForService(service) != nil
+            if isKnownService {
+                forgetCharacteristics(forService: service)
+                serviceUUIDs.append(service.uuid)
+            }
         }
-        peripheral.discoverServices([ _serviceUUID ])
+        peripheral.discoverServices(serviceUUIDs)
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
@@ -626,38 +757,34 @@ extension AsyncBluetoothManager: CBPeripheralDelegate {
 
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
-                if _rxCharacteristicUUID == characteristic.uuid {
-                    _rx = characteristic
+                guard let characteristicDescription = getCharacteristicDescription(service: service, characteristic: characteristic) else { continue }
+                if characteristicDescription.notify {
                     peripheral.setNotifyValue(true, for: characteristic)
-                    log("Discovered Rx characteristic")
-                } else if _txCharacteristicUUID == characteristic.uuid {
-                    _tx = characteristic
-                    log("Discovered Tx characteristic")
                 }
+                _characteristicByUUID[characteristic.uuid] = characteristic
+                log("Discovered characteristic: \(characteristic.uuid.uuidString)")
             }
         }
 
         // Send connection event when both characteristics obtained and someone is waiting for it
         //assert(_connectContinuation != nil)
-        if let rx = _rx,
-           let tx = _tx,
+        if allCharacteristicsDiscovered(),
            let continuation = _connectContinuation {
-            continuation.yield(Connection(queue: _queue, asyncManager: self, peripheral: peripheral, rx: rx, tx: tx))
+            continuation.yield(Connection(queue: _queue, asyncManager: self, peripheral: peripheral, characteristicByUUID: _characteristicByUUID))
             continuation.finish()
         }
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if let error = error {
-            log("Error: Value update for \(toString(characteristic)) failed: \(error.localizedDescription)")
+            log("Error: Value update for \(characteristic.uuid.uuidString) failed: \(error.localizedDescription)")
             return
         }
 
         // Return data via Connection's receivedData stream
-        if _rx == characteristic,
-           let connection = _connection,
+        if let connection = _connection,
            let data = characteristic.value {
-            connection._receivedDataContinuation?.yield(data)
+            connection.yieldData(data, characteristicUUID: characteristic.uuid)
         }
     }
 }
