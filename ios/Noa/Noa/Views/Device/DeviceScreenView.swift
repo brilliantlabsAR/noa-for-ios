@@ -27,11 +27,12 @@ enum DeviceSheetButtonState {
     case searching
     case pair
     case connecting
+    case unableToConnect
 }
 
 struct DeviceScreenView: View {
     @Binding var state: DeviceSheetState
-    @Binding var connectButtonState: DeviceSheetButtonState
+    @Binding var pairButtonState: DeviceSheetButtonState
     @Binding var updateProgressPercent: Int
     @Environment(\.openURL) var openURL
     @Environment(\.colorScheme) var colorScheme
@@ -72,7 +73,7 @@ struct DeviceScreenView: View {
                             .overlay(
                                 PopupDeviceView(
                                     deviceSheetState: $state,
-                                    connectButtonState: $connectButtonState,
+                                    pairButtonState: $pairButtonState,
                                     updateProgressPercent: $updateProgressPercent,
                                     onPairPressed: _onPairPressed,
                                     onCancelPressed: _onCancelPressed
@@ -87,7 +88,7 @@ struct DeviceScreenView: View {
 
     init(deviceSheetState: Binding<DeviceSheetState>, pairButtonState: Binding<DeviceSheetButtonState>, updateProgressPercent: Binding<Int>, onPairPressed: (() -> Void)?, onCancelPressed: (() -> Void)?) {
         _state = deviceSheetState
-        _connectButtonState = pairButtonState
+        _pairButtonState = pairButtonState
         _updateProgressPercent = updateProgressPercent
         _onPairPressed = onPairPressed
         _onCancelPressed = onCancelPressed

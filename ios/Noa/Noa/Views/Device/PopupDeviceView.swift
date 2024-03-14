@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PopupDeviceView: View {
     @Binding var deviceSheetState: DeviceSheetState
-    @Binding var connectButtonState: DeviceSheetButtonState
+    @Binding var pairButtonState: DeviceSheetButtonState
     @Binding var updateProgressPercent: Int
     private let _onPairPressed: (() -> Void)?
     private let _onCancelPressed: (() -> Void)?
@@ -19,9 +19,7 @@ struct PopupDeviceView: View {
     let videoURL = Bundle.main.url(forResource: "SpinningMonocle", withExtension: "mp4")!
     
     var body: some View {
-        
         ZStack {
-            
             // Cancel button
             VStack {
                 HStack {
@@ -56,7 +54,6 @@ struct PopupDeviceView: View {
             
             // Other stuff
             VStack {
-            
                 Text(deviceSheetState == .searching
                      ? "Bring your device close."
                      : "Updating Software \(updateProgressPercent)%")
@@ -75,7 +72,7 @@ struct PopupDeviceView: View {
                             .id(triggerUpdate)
                     )
 
-                let pairButtonEnabled = connectButtonState == .pair && deviceSheetState == .searching
+                let pairButtonEnabled = pairButtonState == .pair && deviceSheetState == .searching
 
                 Button(action: {
                     if pairButtonEnabled {
@@ -96,9 +93,9 @@ struct PopupDeviceView: View {
     }
 
 
-    init(deviceSheetState: Binding<DeviceSheetState>, connectButtonState: Binding<DeviceSheetButtonState>, updateProgressPercent: Binding<Int>, onPairPressed: (() -> Void)?, onCancelPressed: (() -> Void)?) {
+    init(deviceSheetState: Binding<DeviceSheetState>, pairButtonState: Binding<DeviceSheetButtonState>, updateProgressPercent: Binding<Int>, onPairPressed: (() -> Void)?, onCancelPressed: (() -> Void)?) {
         _deviceSheetState = deviceSheetState
-        _connectButtonState = connectButtonState
+        _pairButtonState = pairButtonState
         _updateProgressPercent = updateProgressPercent
         _onPairPressed = onPairPressed
         _onCancelPressed = onCancelPressed
@@ -108,13 +105,15 @@ struct PopupDeviceView: View {
         if deviceSheetState != .searching {
             return "Keep the app open"
         }
-        switch connectButtonState {
+        switch pairButtonState {
         case .searching:
             return "Searching"
         case .pair:
             return "Pair"
         case .connecting:
-            return "Connecting..."
+            return "Connecting"
+        case .unableToConnect:
+            return "Unable to connect"
         }
     }
 }

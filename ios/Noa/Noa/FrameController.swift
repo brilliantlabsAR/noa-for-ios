@@ -95,8 +95,9 @@ class FrameController: ObservableObject {
 
     enum DeviceState {
         case notConnected       // not connected (and not in an error state)
+        case connecting         // connecting to device
         case unableToConnect    // error during connection process
-        case connected
+        case connected          // currently connected to device
     }
 
     /// Device connection state
@@ -251,9 +252,9 @@ class FrameController: ObservableObject {
             }
 
             // Attempt to connect
+            deviceState = .connecting
             if let connection = await _bluetooth.connect(to: chosenDevice!) {
                 log("Connected successfully")
-                deviceState = .notConnected
                 return (connection, chosenDevice!.identifier)
             } else {
                 // Connection failure

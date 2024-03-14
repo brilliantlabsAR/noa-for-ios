@@ -97,9 +97,12 @@ struct MainAppView: View {
             case .notConnected:
                 deviceSheetState = .searching
                 pairButtonState = .searching
-            case .unableToConnect:
+            case .connecting:
                 deviceSheetState = .searching
                 pairButtonState = .connecting
+            case .unableToConnect:
+                deviceSheetState = .searching
+                pairButtonState = .unableToConnect
                 _showConnectionProblemAlert = true
             }
         }
