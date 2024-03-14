@@ -6,7 +6,7 @@
 //
 //  TODO:
 //  -----
-//  - Check CRCs of loaded scripts
+//  - Script SHAs.
 //  - Eliminate JPEG feature flag and RGB332 decoding once JPEGs confirmed working
 //  - Clear internal history whenever a Frame message arrives N minutes after last Frame or GUI
 //    message.
@@ -64,6 +64,12 @@ class FrameController: ObservableObject {
 
         /// Ends a multimodal message. All data attachments must have been transmitted.
         case multimodalEnd = 0x16
+
+        /// Script version request. Sent by iOS to Frame to check whether scripts are present.
+        case scriptVersionRequest = 0x17
+
+        /// Script version response. Sent by Frame back to iOS. Contains a version string.
+        case scriptVersionResponse = 0x18
     }
 
     private let _settings: Settings
@@ -76,7 +82,8 @@ class FrameController: ObservableObject {
 
     private var _nearbyDevices: [AsyncBluetoothManager.Peripheral] = []
     private var _pairedDeviceID: UUID?
-    private var _sendScripts = true //TODO: remove this once we have CRC checks in place
+    private var _sendScripts = true
+    private var _scriptVersionConfirmed = false
 
     private var _textBuffer = Data()
     private var _audioBuffer = Data()
@@ -85,8 +92,9 @@ class FrameController: ObservableObject {
     private var _receiveMultimodalInProgress = false
     private var _outgoingQueue: [Data] = []
 
-    private let _multimodalStartMessage = Data([UInt8]([ 0x01, MessageID.multimodalStart.rawValue ] ))
+    private let _multimodalStartMessage = Data([UInt8]([ 0x01, MessageID.multimodalStart.rawValue ]))
     private let _multimodalEndMessage = Data([UInt8]([ 0x01, MessageID.multimodalEnd.rawValue ]))
+    private let _scriptVersionRequestMessage = Data([UInt8]([ 0x01, MessageID.scriptVersionRequest.rawValue ]))
 
     private var _scanTask: Task<Void, Never>!
     private var _mainTask: Task<Void, Never>!
@@ -136,6 +144,7 @@ class FrameController: ObservableObject {
     func unpair() {
         _settings.setPairedDeviceID(nil)
         _pairedDeviceID = nil
+        _sendScripts = true
     }
 
     /// Terminate Bluetooth connection, which will cause the controller to search for a new device
@@ -174,15 +183,24 @@ class FrameController: ObservableObject {
         deviceState = .notConnected
 
         while true {
+            var scriptCheckTask: Task<Void, Never>?
+
             do {
                 // Pair and/or connect
                 //TODO: when first pairing, button continues to say "Searching..." when it should say "Connecting..."
                 let (connection, deviceID) = try await connectToDevice()
                 try await onConnect(on: connection)
-                try await loadScriptsOntoFrame(on: connection, wasUnpaired: _sendScripts)   //TODO: remove wasUnpaired and check file CRCs instead
+                try await loadScriptsOntoFrame(on: connection, wasUnpaired: _sendScripts)
                 _sendScripts = false
                 _settings.setPairedDeviceID(deviceID)
                 deviceState = .connected
+
+                // Ensure scripts actually got loaded (there is an edge case where we believe we
+                // are paired and avoid loading the scripts when in fact the device has been reset)
+                _scriptVersionConfirmed = false
+                scriptCheckTask = Task {
+                    await failsafeScriptLoaderTask(connection: Weak(connection))
+                }
 
                 // Receive data perpetually until disconnected
                 for try await data in connection.receivedData {
@@ -201,11 +219,47 @@ class FrameController: ObservableObject {
             } catch {
                 log("Unknown error: \(error.localizedDescription)")
             }
+
+            scriptCheckTask?.cancel()
         }
 
         // We should never fall through to here
         deviceState = .notConnected
         log("Frame task finished")
+    }
+
+    private func failsafeScriptLoaderTask(connection: Weak<AsyncBluetoothManager.Connection>) async {
+        // Check to ensure scripts are actually loaded and, if not, force them to reload. Because
+        // another task is already reading values from the connection, we cannot send/receive here.
+        // We have to disconnect and signal to the main task to load scripts when it re-connects.
+        //
+        // The edge case:
+        // 1. Frame is unpaired in iOS settings.
+        // 2. Frame itself is unpaired (i.e., it has been physically reset).
+        // 3. The iOS app is still logged in and thinks it is paired.
+        // 4. Upon connect, iOS will pair the Frame but this is invisible to the app, which thinks
+        //    it has already been paired. We do not transmit scripts unless paired in order to
+        //    reduce connection latency.
+        // 5. Scripts are not loaded in this case. Hence, we need to check the script version.
+        //
+        // NOTE: You do not need to do this in your own apps. We are being extremely fastidious
+        // here. A sound strategy is to just load the scripts on each connection, if you can
+        // tolerate the delay this causes.
+        try? await Task.sleep(for: .seconds(5)) // give ample time for scripts to start to avoid a doom loop
+        if let connection = connection.value {
+            connection.send(data: _scriptVersionRequestMessage)
+        }
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled else { return }
+        if !_scriptVersionConfirmed {
+            log("Scripts were not detected and will be loaded. Closing connection in order to force a re-connect...")
+            _sendScripts = true
+            if connection.value != nil {
+                _bluetooth.disconnect()
+            }
+        } else {
+            log("Scripts confirmed loaded")
+        }
     }
 
     // Finds and connects to a device. If paired, will search for that device. Otherwise, will
@@ -322,6 +376,21 @@ class FrameController: ObservableObject {
 
         case .multimodalEnd:
             submitMultimodal(connection: connection)
+
+        case .scriptVersionResponse:
+            _scriptVersionConfirmed = false
+            if data.count > 1,
+               let version = String(data: data.subdata(in: 1..<data.count), encoding: .utf8) {
+                if version == "0.0" {
+                    // Script version is as expected
+                    _scriptVersionConfirmed = true
+                    log("Script version is correct: \(version)")
+                } else {
+                    log("Script version is incorrect: \(version)")
+                }
+            } else {
+                log("Script version string is empty")
+            }
 
         default:
             break

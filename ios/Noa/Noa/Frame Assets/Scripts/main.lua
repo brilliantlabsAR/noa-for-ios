@@ -8,11 +8,14 @@ local image_data_sent = false
 local audio_data_sent = false
 local last_exposure_time = 0
 
+SCRIPT_VERSION = "0.0"  -- TODO: auto-insert this into script and use a SHA
 MESSAGE_START_FLAG = "\x10"
 MESSAGE_TEXT_FLAG = "\x11"
 MESSAGE_AUDIO_FLAG = "\x12"
 MESSAGE_IMAGE_FLAG = "\x13"
 MESSAGE_END_FLAG = "\x16"
+MESSAGE_SCRIPT_VERSION_REQUEST_FLAG = "\x17"
+MESSAGE_SCRIPT_VERSION_RESPONSE_FLAG = "\x18"
 
 function bluetooth_callback(message)
     if string.sub(message, 1, 1) == MESSAGE_TEXT_FLAG then
@@ -23,6 +26,8 @@ function bluetooth_callback(message)
         if state:is("SHOW") then
             graphics:append_text(string.sub(message, 2))
         end
+    elseif string.sub(message, 1, 1) == MESSAGE_SCRIPT_VERSION_REQUEST_FLAG then
+        send_data(MESSAGE_SCRIPT_VERSION_RESPONSE_FLAG .. SCRIPT_VERSION)
     end
 end
 

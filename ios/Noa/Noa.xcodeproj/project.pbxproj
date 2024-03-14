@@ -52,6 +52,7 @@
 		CC6851662A995EA9004EA777 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */; };
 		CC6851682A9964C2004EA777 /* Tahoe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CC6851672A9964C2004EA777 /* Tahoe.jpg */; };
 		CC82EEA02BA248DA00DB5F21 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC82EE9F2BA248DA00DB5F21 /* LoginView.swift */; };
+		CC82EEA52BA3801100DB5F21 /* Weak.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC82EEA42BA3801100DB5F21 /* Weak.swift */; };
 		CC86A1902B7438C5003A2DCC /* MainAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A18F2B7438C5003A2DCC /* MainAppView.swift */; };
 		CC86A1922B743D26003A2DCC /* LogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1912B743D26003A2DCC /* LogoView.swift */; };
 		CC86A1952B7465B5003A2DCC /* SignInOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86A1942B7465B5003A2DCC /* SignInOut.swift */; };
@@ -156,6 +157,7 @@
 		CC6851652A995EA9004EA777 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
 		CC6851672A9964C2004EA777 /* Tahoe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Tahoe.jpg; sourceTree = "<group>"; };
 		CC82EE9F2BA248DA00DB5F21 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		CC82EEA42BA3801100DB5F21 /* Weak.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Weak.swift; sourceTree = "<group>"; };
 		CC86A18F2B7438C5003A2DCC /* MainAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppView.swift; sourceTree = "<group>"; };
 		CC86A1912B743D26003A2DCC /* LogoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoView.swift; sourceTree = "<group>"; };
 		CC86A1942B7465B5003A2DCC /* SignInOut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInOut.swift; sourceTree = "<group>"; };
@@ -458,6 +460,7 @@
 				CCDCFEF82B322845008EDB1D /* MultipartForm.swift */,
 				CC21C12D2B55BFA500DEAAEC /* Stopwatch.swift */,
 				CC9AB57C2B92751F008B7D98 /* RemoteLog.swift */,
+				CC82EEA42BA3801100DB5F21 /* Weak.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -697,6 +700,7 @@
 				CC202CC02A9036C400A71EE4 /* TimestampView.swift in Sources */,
 				CC82EEA02BA248DA00DB5F21 /* LoginView.swift in Sources */,
 				CC86A1902B7438C5003A2DCC /* MainAppView.swift in Sources */,
+				CC82EEA52BA3801100DB5F21 /* Weak.swift in Sources */,
 				CC3FE0212A0DF25100756941 /* SceneDelegate.swift in Sources */,
 				CCF9DA812A5C9C46004C1EAE /* SettingsMenuView.swift in Sources */,
 				CC86A1992B7466F0003A2DCC /* SocialIdentityProvider.swift in Sources */,

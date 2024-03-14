@@ -455,7 +455,6 @@ class AsyncBluetoothManager: NSObject {
     private func finishConnecting(to peripheral: CBPeripheral) {
         let name = peripheral.name ?? ""
         log("Connected to peripheral: name=\(name), UUID=\(peripheral.identifier)")
-
         _connectedPeripheral = peripheral
         peripheral.delegate = self
         peripheral.discoverServices([ _serviceUUID ])
