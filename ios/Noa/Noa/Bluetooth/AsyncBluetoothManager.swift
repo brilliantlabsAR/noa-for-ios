@@ -129,7 +129,7 @@ import os
 class AsyncBluetoothManager: NSObject {
     // MARK: Internal state
 
-    private let _queue = DispatchQueue(label: "xyz.brilliant.argpt.bluetooth", qos: .default)
+    private let _queue = DispatchQueue(label: "xyz.brilliant.argpt.bluetooth", qos: .userInitiated)
 
     private lazy var _manager: CBCentralManager = {
         return CBCentralManager(delegate: self, queue: _queue, options: [CBCentralManagerOptionRestoreIdentifierKey: "AsyncBluetoothManager"])
@@ -290,7 +290,7 @@ class AsyncBluetoothManager: NSObject {
     func connect(to peripheral: CBPeripheral) async -> Connection? {
         // Create an async stream we will use to await the first connection-related event (there
         // should only ever be one: successful or unsuccessful connection).
-        log("Connecting...")
+        log("Connecting to \(peripheral.identifier)...")
         let connectStream = AsyncStream<Connection> { [weak self] continuation in
             guard let self = self else {
                 continuation.finish()
@@ -530,6 +530,9 @@ extension AsyncBluetoothManager: CBCentralManagerDelegate {
 
         if let connection = _connection {
             disconnect(connectionID: connection.connectionID, with: .connectionLost)
+        } else {
+            // disconnect() on a connection will restart scanning, but must also restart in this case
+            startScan()
         }
     }
 
