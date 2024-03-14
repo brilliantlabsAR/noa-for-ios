@@ -15,7 +15,7 @@ struct ChatView: View {
     @EnvironmentObject private var _settings: Settings
 
     // Device state
-    @Binding private var _isConnected: Bool
+    private var _isConnected: Bool
 
     // Stores text being input in text field
     @State private var _textInput: String = ""
@@ -81,7 +81,7 @@ struct ChatView: View {
                 // Bottom bar: connection status and text entry
                 if _expandedPicture == nil {
                     ChatTextFieldView(
-                        isConnected: $_isConnected,
+                        isConnected: _isConnected,
                         textInput: $_textInput,
                         onTextSubmitted: _onTextSubmitted
                     )
@@ -107,13 +107,13 @@ struct ChatView: View {
     }
 
     public init(
-        isConnected: Binding<Bool>,
+        isConnected: Bool,
         onTextSubmitted: ((String) -> Void)? = nil,
         onClearChatButtonPressed: (() -> Void)? = nil,
         onAssistantModeChanged: ((AIAssistant.Mode) ->Void)? = nil,
         onPairToggled: ((Bool) -> Void)? = nil
     ) {
-        __isConnected = isConnected
+        _isConnected = isConnected
         _onTextSubmitted = onTextSubmitted
         _onClearChatButtonPressed = onClearChatButtonPressed
         _onAssistantModeChanged = onAssistantModeChanged
@@ -156,7 +156,7 @@ fileprivate struct ChatTitleBarView: View {
 }
 
 fileprivate struct ChatTextFieldView: View {
-    @Binding var isConnected: Bool
+    var isConnected: Bool
     @Binding var textInput: String
     let onTextSubmitted: ((String) -> Void)?
 
@@ -270,9 +270,9 @@ struct ChatView_Previews: PreviewProvider {
 
     static var previews: some View {
         ChatView(
-            isConnected: .constant(false)
+            isConnected: false
         )
-            .environmentObject(ChatView_Previews._chatMessageStore)
-            .environmentObject(Settings())
+        .environmentObject(ChatView_Previews._chatMessageStore)
+        .environmentObject(Settings())
     }
 }

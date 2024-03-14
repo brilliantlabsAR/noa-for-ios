@@ -91,8 +91,14 @@ class FrameController: ObservableObject {
 
     // MARK: API
 
-    /// Whether a BLE connection to Frame has been established.
-    @Published var isConnected = false
+    enum DeviceState {
+        case notConnected       // not connected (and not in an error state)
+        case unableToConnect    // error during connection process
+        case connected
+    }
+
+    /// Device connection state
+    @Published var deviceState = DeviceState.notConnected
 
     /// When not connected and unpaired, the nearest unpaired candidate device to which we can try
     /// to connect.
@@ -108,13 +114,6 @@ class FrameController: ObservableObject {
             await mainTask()
         }
         setupPlaybackAudioSession()
-
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEEE, MMMM d, yyyy, h:mm a"
-        let date = Date.now
-
-        let formattedDate = dateFormatter.string(from: date)
-        print(formattedDate)
     }
 
     /// Pair to device. This will also cause the Frame controller to attempt to auto-connect to the
@@ -158,24 +157,25 @@ class FrameController: ObservableObject {
     /// Handles the Frame connect loop and responds to events from the device.
     private func mainTask() async {
         log("Started Frame task")
-        isConnected = false
+        deviceState = .notConnected
 
         while true {
             do {
                 // Pair and/or connect
+                //TODO: when first pairing, button continues to say "Searching..." when it should say "Connecting..."
                 let (connection, wasUnpaired) = try await connectToDevice()
                 try await onConnect(on: connection)
                 try await loadScriptsOntoFrame(on: connection, wasUnpaired: wasUnpaired)    //TODO: remove wasUnpaired and check file CRCs instead
-                isConnected = true
+                deviceState = .connected
 
                 // Receive data perpetually until disconnected
                 for try await data in connection.receivedData {
                     //Util.hexDump(data)
                     onDataReceived(data: data, on: connection)
                 }
-            } catch let error as AsyncBluetoothManager.StreamError {
+            } catch let error as AsyncBluetoothManager.ConnectionError {
                 // Disconnection falls through to loop around again
-                isConnected = false
+                deviceState = .notConnected
                 onDisconnect()
                 log("Connection lost: \(error.localizedDescription)")
             } catch is CancellationError {
@@ -188,7 +188,7 @@ class FrameController: ObservableObject {
         }
 
         // We should never fall through to here
-        isConnected = false
+        deviceState = .notConnected
         log("Frame task finished")
     }
 
@@ -205,6 +205,7 @@ class FrameController: ObservableObject {
         // Keep trying until we connect
         while true {
             log("Looking for a Frame device to connect to...")
+            deviceState = .notConnected
             var chosenDevice: CBPeripheral?
             while chosenDevice == nil {
                 if let pairedDeviceID = _settings.pairedDeviceID {
@@ -236,11 +237,20 @@ class FrameController: ObservableObject {
                 }
             }
 
-            if let connection = await _bluetooth.connect(to: chosenDevice!) {
-                // Once connected, safe to hide the device sheet
+            // Attempt to connect
+            do {
+                let connection = try await _bluetooth.connect(to: chosenDevice!)
                 log("Connected successfully")
                 return (connection, wasUnpaired)
+            } catch let error as AsyncBluetoothManager.ConnectionError {
+                // Connection attempt failed
+                deviceState = .unableToConnect
+                log("Unable to connect: \(error.localizedDescription)")
+            } catch let error {
+                log("Connection attempt unexpectedly failed: \(error.localizedDescription)")
             }
+
+            // Wait a bit before retry
             try await Task.sleep(for: .seconds(0.5))
             log("Connection to device failed! Starting over...")
         }
@@ -352,30 +362,34 @@ class FrameController: ObservableObject {
             printTypingIndicatorToChat(as: .assistant)
         }
 
-        _ai.send(
-            prompt: prompt,
-            audio: audioFile,
-            image: image,
-            resizeImageTo200px: false,
-            location: _location.location,
-            settings: _settings
-        ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
-            guard let self = self else { return }
-
-            if let error = error {
-                printErrorToChat(error.description, as: .assistant, connection: connection)
-                return
-            }
-
-            if userPrompt.count > 0, !alreadyPrintedUser {
-                // Now that we know what user said, print it
-                printToChat(userPrompt, picture: image, as: .user, connection: connection)
-            }
-
-            if response.count > 0 || responseImage != nil {
-                printToChat(response, picture: responseImage, as: .assistant, connection: connection)
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            self?.printToChat("Booyakasha!", picture: nil, as: .assistant, connection: connection)
         }
+
+//        _ai.send(
+//            prompt: prompt,
+//            audio: audioFile,
+//            image: image,
+//            resizeImageTo200px: false,
+//            location: _location.location,
+//            settings: _settings
+//        ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
+//            guard let self = self else { return }
+//
+//            if let error = error {
+//                printErrorToChat(error.description, as: .assistant, connection: connection)
+//                return
+//            }
+//
+//            if userPrompt.count > 0, !alreadyPrintedUser {
+//                // Now that we know what user said, print it
+//                printToChat(userPrompt, picture: image, as: .user, connection: connection)
+//            }
+//
+//            if response.count > 0 || responseImage != nil {
+//                printToChat(response, picture: responseImage, as: .assistant, connection: connection)
+//            }
+//        }
     }
 
     // MARK: Frame response

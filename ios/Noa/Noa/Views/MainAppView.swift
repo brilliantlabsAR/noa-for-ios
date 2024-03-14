@@ -15,6 +15,7 @@ struct MainAppView: View {
 
     // Bluetooth
     @State private var _nearbyDevices: [(peripheral: CBPeripheral, rssi: Float)] = []
+    @State private var _showConnectionProblemAlert = false
 
     // Pairing and connection state
     @State private var pairButtonState: DeviceSheetButtonState = .searching
@@ -40,9 +41,16 @@ struct MainAppView: View {
                         deviceSheetState = .hidden
                     }
                 )
+                .alert(isPresented: $_showConnectionProblemAlert) {
+                    Alert(
+                        title: Text("Connection Problem"),
+                        message: Text("Go to Settings, then Bluetooth, and remove any Frame devices listed under My Devices."),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
             } else {
                 ChatView(
-                    isConnected: $_frameController.isConnected,
+                    isConnected: _frameController.deviceState == .connected,
                     onTextSubmitted: { (query: String) in
                         _frameController.submitQuery(query: query)
                     },
@@ -82,16 +90,21 @@ struct MainAppView: View {
                 return
             }
         }
-        .onChange(of: _frameController.isConnected) { (isConnected: Bool) in
-            if isConnected {
+        .onChange(of: _frameController.deviceState) { (deviceState: FrameController.DeviceState) in
+            switch deviceState {
+            case .connected:
                 deviceSheetState = .hidden
-            } else {
+            case .notConnected:
                 deviceSheetState = .searching
                 pairButtonState = .searching
+            case .unableToConnect:
+                deviceSheetState = .searching
+                pairButtonState = .connecting
+                _showConnectionProblemAlert = true
             }
         }
         .onChange(of: _frameController.nearbyUnpairedDevice) { (device: CBPeripheral?) in
-            guard !_frameController.isConnected else { return }
+            guard _frameController.deviceState != .connected else { return }
             guard device != nil else {
                 pairButtonState = .searching
                 return
@@ -116,5 +129,10 @@ struct MainAppView: View {
 
     private func isUpdating() -> Bool {
         return false
+    }
+
+    private func openSystemSettings() {
+        guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(settingsURL)
     }
 }
