@@ -75,6 +75,8 @@ class FrameController: ObservableObject {
     private let _location = LocationManager()
 
     private var _nearbyDevices: [AsyncBluetoothManager.Peripheral] = []
+    private var _pairedDeviceID: UUID?
+    private var _sendScripts = true //TODO: remove this once we have CRC checks in place
 
     private var _textBuffer = Data()
     private var _audioBuffer = Data()
@@ -107,6 +109,8 @@ class FrameController: ObservableObject {
     init(settings: Settings, messages: ChatMessageStore) {
         _settings = settings
         _messages = messages
+        _pairedDeviceID = _settings.pairedDeviceID
+        _sendScripts = _pairedDeviceID == nil
         _scanTask = Task {
             await scanForNearbyDevicesTask()
         }
@@ -117,11 +121,20 @@ class FrameController: ObservableObject {
     }
 
     /// Pair to device. This will also cause the Frame controller to attempt to auto-connect to the
-    /// paired device.
+    /// paired device. This will not change the settings until the pairing succeeds.
     func pair(to peripheral: CBPeripheral) {
         // Update pairing ID. The main task's connect loop will automatically pick this up and 
-        // auto-connect.
-        _settings.setPairedDeviceID(peripheral.identifier)
+        // auto-connect. We cache it in a local var rather than updating settings so that if
+        // pairing fails, we don't appear to be paired to a device that we cannot connect to.
+        _settings.setPairedDeviceID(nil)
+        _pairedDeviceID = peripheral.identifier
+        _sendScripts = true
+    }
+
+    /// Unpair from device. Changes settings immediately.
+    func unpair() {
+        _settings.setPairedDeviceID(nil)
+        _pairedDeviceID = nil
     }
 
     /// Terminate Bluetooth connection, which will cause the controller to search for a new device
@@ -163,9 +176,11 @@ class FrameController: ObservableObject {
             do {
                 // Pair and/or connect
                 //TODO: when first pairing, button continues to say "Searching..." when it should say "Connecting..."
-                let (connection, wasUnpaired) = try await connectToDevice()
+                let (connection, deviceID) = try await connectToDevice()
                 try await onConnect(on: connection)
-                try await loadScriptsOntoFrame(on: connection, wasUnpaired: wasUnpaired)    //TODO: remove wasUnpaired and check file CRCs instead
+                try await loadScriptsOntoFrame(on: connection, wasUnpaired: _sendScripts)   //TODO: remove wasUnpaired and check file CRCs instead
+                _sendScripts = false
+                _settings.setPairedDeviceID(deviceID)
                 deviceState = .connected
 
                 // Receive data perpetually until disconnected
@@ -198,17 +213,16 @@ class FrameController: ObservableObject {
     // be nice by sleeping when possible and checks for cancellation between async methods that do
     // not throw. Because we don't currently ever cancel the Bluetooth task (it would be a real
     // mess to try to cancel/restart it), this could be eliminated.
-    private func connectToDevice() async throws -> (AsyncBluetoothManager.Connection, Bool) {
+    private func connectToDevice() async throws -> (AsyncBluetoothManager.Connection, UUID) {
         var candidateHysteresisTime = Date.distantPast
-        var wasUnpaired = false
 
         // Keep trying until we connect
         while true {
-            log("Looking for a Frame device to connect to...")
+            log("Looking for \(_pairedDeviceID == nil ? "a Frame device to connect to" : "\(_pairedDeviceID!)")...")
             deviceState = .notConnected
             var chosenDevice: CBPeripheral?
             while chosenDevice == nil {
-                if let pairedDeviceID = _settings.pairedDeviceID {
+                if let pairedDeviceID = _pairedDeviceID {
                     // Paired case: wait for paired device to appear, auto-connect to it
                     if let targetDevice = _nearbyDevices.first(where: { $0.peripheral.identifier == pairedDeviceID })?.peripheral {
                         chosenDevice = targetDevice
@@ -233,14 +247,14 @@ class FrameController: ObservableObject {
                         }
                     }
                     try await Task.sleep(for: .seconds(0.25))
-                    wasUnpaired = true
                 }
             }
 
             // Attempt to connect
             if let connection = await _bluetooth.connect(to: chosenDevice!) {
                 log("Connected successfully")
-                return (connection, wasUnpaired)
+                deviceState = .notConnected
+                return (connection, chosenDevice!.identifier)
             } else {
                 // Connection failure
                 deviceState = .unableToConnect

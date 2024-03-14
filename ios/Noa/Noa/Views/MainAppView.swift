@@ -61,7 +61,7 @@ struct MainAppView: View {
                         //TODO
                     },
                     onPairToggled: { (pair: Bool) in
-                        _settings.setPairedDeviceID(nil)
+                        _frameController.unpair()
                         _frameController.disconnect()
                         if pair {
                             deviceSheetState = .searching
