@@ -459,34 +459,30 @@ class FrameController: ObservableObject {
             printTypingIndicatorToChat(as: .assistant)
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-            self?.printToChat("Booyakasha!", picture: nil, as: .assistant, connection: connection)
-        }
+        _ai.send(
+            prompt: prompt,
+            audio: audioFile,
+            image: image,
+            resizeImageTo200px: false,
+            location: _location.location,
+            settings: _settings
+        ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
+            guard let self = self else { return }
 
-//        _ai.send(
-//            prompt: prompt,
-//            audio: audioFile,
-//            image: image,
-//            resizeImageTo200px: false,
-//            location: _location.location,
-//            settings: _settings
-//        ) { [weak self] (responseImage: UIImage?, userPrompt: String, response: String, error: AIError?) in
-//            guard let self = self else { return }
-//
-//            if let error = error {
-//                printErrorToChat(error.description, as: .assistant, connection: connection)
-//                return
-//            }
-//
-//            if userPrompt.count > 0, !alreadyPrintedUser {
-//                // Now that we know what user said, print it
-//                printToChat(userPrompt, picture: image, as: .user, connection: connection)
-//            }
-//
-//            if response.count > 0 || responseImage != nil {
-//                printToChat(response, picture: responseImage, as: .assistant, connection: connection)
-//            }
-//        }
+            if let error = error {
+                printErrorToChat(error.description, as: .assistant, connection: connection)
+                return
+            }
+
+            if userPrompt.count > 0, !alreadyPrintedUser {
+                // Now that we know what user said, print it
+                printToChat(userPrompt, picture: image, as: .user, connection: connection)
+            }
+
+            if response.count > 0 || responseImage != nil {
+                printToChat(response, picture: responseImage, as: .assistant, connection: connection)
+            }
+        }
     }
 
     // MARK: Frame response
